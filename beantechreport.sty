@@ -4,7 +4,7 @@
 % Portable pdfLaTeX setup: no system fonts or shell escape required.
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
-\RequirePackage[english]{babel}
+\RequirePackage[italian]{babel}
 \RequirePackage[a4paper,margin=26mm,headheight=24pt,headsep=8mm,footskip=12mm]{geometry}
 \RequirePackage{mathpazo}
 \RequirePackage{microtype}
@@ -39,7 +39,8 @@
 \setlist{topsep=4pt,itemsep=2pt,parsep=0pt,leftmargin=*}
 \renewcommand{\arraystretch}{1.15}
 \captionsetup{font=small,labelfont=bf,labelsep=period,skip=8pt}
-\captionsetup[table]{position=top}
+\captionsetup[table]{position=bottom}
+\captionsetup[figure]{position=bottom}
 \titleformat{\section}{\Large\bfseries\color{ReportBlue}}{\thesection}{0.7em}{}
 \titleformat{\subsection}{\large\bfseries\color{ReportBlue}}{\thesubsection}{0.7em}{}
 \titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.7em}{}

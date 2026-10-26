@@ -12,8 +12,6 @@ Un \textbf{ordine di produzione (ODP)} formalizza la richiesta interna di realiz
 
 % Domain sources: StrategicPlannerBeanTech/notes/Email Correspondence
 % August 24-26 2026.md; notes/Meeting September 29 2026 Decisions.md.
-% The August one-to-one statement is superseded by the September description
-% and the one-to-many relationships observed in the September snapshot.
 Nel contesto considerato, ogni ODP è associato a una e una sola posizione ODV, mentre una stessa posizione ODV può essere associata a uno o più ODP. L'ODV esprime quindi la domanda del cliente; gli ODP ne rappresentano la traduzione in richieste di produzione.
 
 % Example verified directly against StrategicPlannerBeanTech/data/raw/2026-09-24/:
@@ -50,16 +48,12 @@ Nei consuntivi, ogni registrazione riferita a una macrofase ne descrive una spec
 % Inventory checked directly against all records in
 % StrategicPlannerBeanTech/data/raw/2026-09-24/Consuntivi_260915.csv,
 % field MACHINE_AGGREGATION_CODE: 14 distinct values, 35893 records.
-% This is the raw September snapshot, not the August inventory or the
-% physically filtered September baseline.
+% Counts refer to the final source files before physical-consistency filtering.
 % Domain sources:
 % - data/raw/2026-09-24/ABS_Flussi_Luna.pptx, slides 1--8;
 % - notes/Email Correspondence August 24-26 2026.md;
 % - notes/Meeting August 27 2026 Summary.md;
 % - notes/Meeting September 29 2026 Decisions.md.
-% Earlier interpretations were cross-checked with
-% docs/entity_model_specification.md and
-% notebooks/process understanding/03 - phase ontology.ipynb.
 Nei consuntivi dell'estrazione ricevuta il 24 settembre 2026 sono presenti 14 macrofasi distinte. Il loro significato è ricostruito a partire dal documento aziendale \emph{ABS\_Flussi\_Luna} e dalle note di progetto.
 
 \subsubsection{Processo iniziale aggregato}
@@ -75,7 +69,7 @@ Nei consuntivi dell'estrazione ricevuta il 24 settembre 2026 sono presenti 14 ma
 
 \item[\texttt{TAG}.] Identifica le operazioni di taglio, rappresentate nella documentazione dalla voce \emph{taglio seghetti}. Può comparire nei percorsi di rilavorazione del materiale.
 
-\item[\texttt{MOL}.] Indica la molatura, ovvero una lavorazione meccanica del materiale e compare negli schemi di recupero insieme al taglio e alla raddrizzatura.
+\item[\texttt{MOL}.] Indica la molatura, una lavorazione meccanica del materiale presente nei percorsi di recupero insieme al taglio e alla raddrizzatura.
 
 \item[\texttt{RADDR}.] Indica la raddrizzatura, ossia la lavorazione destinata a correggere la rettilineità del materiale. Nel diagramma compare sia nei percorsi di recupero sia dopo i trattamenti termici.
 
@@ -88,6 +82,8 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 
 \subsubsection{Trattamenti}
 
+Nel PowerPoint i trattamenti termici sono distinti in base alla lavorazione e alla risorsa utilizzata. Il forno a induzione può eseguire il solo rinvenimento o la normalizzazione, oppure il ciclo completo di tempra e rinvenimento: queste alternative impiegano la stessa risorsa. La voce \texttt{DFO} indica invece un trattamento termico esterno a Luna, presente nel percorso di ricottura. Dopo il trattamento, il materiale raggiunge il punto \texttt{HPT} per l'attesa dei risultati del controllo di laboratorio. Nei dati, i passaggi di trattamento sono registrati attraverso le seguenti macrofasi:
+
 \begin{description}
 \item[\texttt{TRATT\_LUNA}.] Identifica una macrofase di trattamento riferita a Luna.
 
@@ -97,7 +93,7 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 \subsubsection{Controlli di rilascio e stati di avanzamento}
 
 \begin{description}
-\item[\texttt{HPT}.] Rappresenta un punto di attesa per il controllo qualità fuori linea, svolto in laboratorio dopo un trattamento termico. Il materiale attende l'esito dei controlli prima di proseguire. Nei consuntivi questa macrofase ha durata registrata nulla: l'attesa dei risultati può comunque separare temporalmente le attività adiacenti.
+\item[\texttt{HPT}.] Rappresenta il punto di attesa dell'esito del controllo qualità fuori linea, svolto in laboratorio dopo un trattamento termico. Il rilascio del materiale dipende dal risultato del controllo. Nei consuntivi questa macrofase ha durata registrata nulla: l'attesa dei risultati può comunque separare temporalmente le attività adiacenti.
 
 \item[\texttt{ANTIMIX}.] Nel documento aziendale indica il controllo volto a rilevare mescolamenti qualitativi del materiale. Nelle indicazioni di progetto viene trattata come un punto di controllo o attesa, senza un vincolo di capacità proprio, anche quando il consuntivo riporta una durata positiva. Occorre quindi distinguere il significato fisico del controllo dalla sua rappresentazione nel modello di pianificazione.
 
@@ -107,21 +103,6 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 
 \item[\texttt{PRONTO\_QWR}.] È un'ulteriore variante dello stato terminale di approntamento. Anche il significato del suffisso \texttt{QWR} richiede un chiarimento aziendale; nei consuntivi resta distinta dalle altre due macrofasi terminali.
 \end{description}
-
-% Real example: September Consuntivi_260915.csv, ODP=000010858580,
-% ODV=0001117836, POSIZIONE_ODV=000020, source CSV lines 22--25.
-% Operation order is the source-row order.
-% Recorded route: TRENOLUNA > BANCHI > ANTIMIX > PRONTO.
-% ANTIMIX has DURATA_TOT_MIN=18; this is recorded duration, not waiting time.
-\begin{examplebox}[ex:recorded-phase-sequence]{Successione di macrofasi}
-
-L'ODP \texttt{000010858580} presenta nei consuntivi il percorso
-\[
-\texttt{TRENOLUNA}\;\rightarrow\;\texttt{BANCHI}\;\rightarrow\;
-\texttt{ANTIMIX}\;\rightarrow\;\texttt{PRONTO}.
-\]
-Al processo iniziale aggregato seguono il controllo ai banchi, il controllo antimix e lo stato finale di approntamento. Per \texttt{ANTIMIX} sono registrati 18 minuti di durata, mentre \texttt{PRONTO} ha durata nulla.
-\end{examplebox}
 
 \subsection{Cicli di base e varianti del percorso produttivo}
 \label{sec:base-production-cycles}
@@ -140,8 +121,6 @@ La presentazione aziendale \emph{ABS\_Flussi\_Luna} distingue sette flussi, ripo
 
 \begin{table}[htbp]
 \centering
-\caption{Flussi descritti nella presentazione aziendale e relativi percorsi principali.}
-\label{tab:documented-base-cycles}
 \small
 \begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}>{\raggedright\arraybackslash}X@{}}
 \toprule
@@ -169,17 +148,19 @@ Bordioni &
 LAM $\rightarrow$ BORDIONI $\rightarrow$ confezionamento $\rightarrow$ uscita. \\
 \bottomrule
 \end{tabularx}
+\caption{Flussi descritti nella presentazione aziendale e relativi percorsi principali.}
+\label{tab:documented-base-cycles}
 \end{table}
 
 \subsubsection{Percorsi principali}
 
 Nel \textbf{flusso naturale}, il materiale attraversa la laminazione, il raffreddamento sulla placca e il controllo in linea. Queste tre fasi sono aggregate nei dati nella macrofase \texttt{TRENOLUNA}. Se il materiale è conforme, prosegue verso il confezionamento e l'approntamento: al livello delle macrofasi, il ciclo di base è quindi \texttt{TRENOLUNA} $\rightarrow$ \texttt{PRONTO}.
 
-Nel \textbf{flusso ONA}, il passaggio nel forno ONA sostituisce il raffreddamento sulla placca. Anche in questo caso, laminazione, passaggio nel forno e controllo in linea sono aggregati nella macrofase \texttt{TRENOLUNA}. Segue il controllo di laboratorio, rappresentato da \texttt{HPT}: se l'esito è favorevole, il materiale raggiunge lo stato \texttt{PRONTO}. Il percorso di base è quindi \texttt{TRENOLUNA} $\rightarrow$ \texttt{HPT} $\rightarrow$ \texttt{PRONTO}.
+Nel \textbf{flusso ONA}, il passaggio nel forno ONA sostituisce il raffreddamento sulla placca. Anche in questo caso, laminazione, passaggio nel forno e controllo in linea sono aggregati nella macrofase \texttt{TRENOLUNA}. Segue il punto \texttt{HPT}, nel quale il materiale attende l'esito del controllo di laboratorio: se favorevole, il materiale raggiunge lo stato \texttt{PRONTO}. Il percorso di base è quindi \texttt{TRENOLUNA} $\rightarrow$ \texttt{HPT} $\rightarrow$ \texttt{PRONTO}.
 
 I quattro flussi con \textbf{trattamenti fuori linea} aggiungono al percorso iniziale il trattamento necessario a ottenere le caratteristiche richieste. Nel percorso ONA con rinvenimento, dopo il primo \texttt{HPT} sono previsti il rinvenimento a induzione, un nuovo \texttt{HPT} e il controllo antimix. Lo stesso diagramma ammette anche un ramo con ciclo completo a induzione, seguito da \texttt{HPT}, raddrizzatura, controllo CIRCOGRAPH e antimix. Il flusso ONA con induzione adotta quest'ultima successione come percorso principale.
 
-Nel percorso PLA con induzione, al raffreddamento e al controllo in linea seguono il trattamento a induzione, completo oppure di normalizzazione, e la successione di controllo di laboratorio, raddrizzatura, CIRCOGRAPH e antimix. Nel percorso PLA con ricottura DFO, il trattamento avviene all'esterno di Luna; al rientro sono previsti \texttt{HPT}, raddrizzatura e antimix, con CIRCOGRAPH indicato come opzionale.
+Nel percorso PLA con induzione, al raffreddamento e al controllo in linea seguono il trattamento a induzione, completo oppure di normalizzazione, e la successione di attesa dell'esito del controllo di laboratorio, raddrizzatura, CIRCOGRAPH e antimix. Nel percorso PLA con ricottura DFO, il trattamento avviene all'esterno di Luna; al rientro sono previsti \texttt{HPT}, raddrizzatura e antimix, con CIRCOGRAPH indicato come opzionale.
 
 Il \textbf{flusso bordioni} segue una struttura distinta: dopo la laminazione, il materiale passa agli avvolgitori, quindi al confezionamento e all'uscita.
 
@@ -189,7 +170,7 @@ Nei diagrammi dei flussi naturale, ONA e con trattamenti fuori linea, un esito n
 
 Nel flusso ONA, anche il controllo di laboratorio può determinare una diramazione. Se l'esito è favorevole, il materiale procede verso l'uscita; altrimenti il diagramma prevede un trattamento DFO, un rinvenimento a induzione oppure un ciclo completo a induzione. Seguono un nuovo \texttt{HPT} e il controllo antimix, con la possibilità di un passaggio intermedio di raddrizzatura.
 
-I percorsi possono riguardare soltanto una parte del materiale dello stesso ODP. Secondo le indicazioni di progetto, il materiale già conforme attende il completamento del percorso della parte da recuperare: l'approntamento dell'ordine avviene quando le parti si sono ricongiunte.
+I percorsi possono riguardare soltanto una parte del materiale dello stesso ODP. Nel modello si assume che il materiale già conforme attenda il completamento del percorso della parte da recuperare prima dell'approntamento dell'ordine. Questa ipotesi consente di rappresentare ciascun ODP mediante una sequenza che segue il percorso determinante per il completamento, senza identificare esplicitamente i singoli rami e i loro ricongiungimenti.
 
 \subsubsection{Rappresentazione attraverso le macrofasi}
 
@@ -205,7 +186,9 @@ Il ciclo di base è un riferimento tecnologico. Il ciclo osservato per un ODP do
 % ODV=0001117836, POSIZIONE_ODV=000020.
 % Both master records: PRODOTTO=LAMINATO BARRE, FINITURA=GREZZO,
 % STATO_FISICO=NATURALE. No cause of the extra checks is inferred from rows.
-\begin{examplebox}[ex:base-cycle-and-variant]{Ciclo di base e variante nei dati}
+% ODP 000010858580, source CSV lines 22--25: ANTIMIX has
+% DURATA_TOT_MIN=18, while PRONTO has DURATA_TOT_MIN=0.
+\begin{examplebox}[ex:base-cycle-and-variant]{Macrofasi, ciclo di base e variante nei dati}
 Gli ODP \texttt{000010859984} e \texttt{000010858580} appartengono entrambi alla tipologia \emph{laminato barre, grezzo, naturale}. I consuntivi riportano i seguenti percorsi:
 
 \begin{center}
@@ -221,4 +204,6 @@ Gli ODP \texttt{000010859984} e \texttt{000010858580} appartengono entrambi alla
 \end{center}
 
 Il primo ordine presenta la successione del ciclo di base; il secondo include i controlli aggiuntivi ai banchi e all'antimix prima dell'approntamento.
+
+Nel secondo ordine, le macrofasi descrivono quindi il processo iniziale aggregato, il controllo ai banchi, il controllo antimix e lo stato finale di approntamento. Per \texttt{ANTIMIX} sono registrati 18 minuti di durata, mentre \texttt{PRONTO} ha durata nulla.
 \end{examplebox}

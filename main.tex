@@ -17,37 +17,42 @@
 % actual dataset. Use the shared examplebox environment, without discussing why
 % the example was selected. Preserve source references in LaTeX comments.
 
-% Planned report structure
-% Add sections with \input when ready.
-% Domain knowledge comes before data treatment and modelling.
+% Scaletta del report: un file per sezione, numerato nell'ordine di lettura.
+% Attivare gli input delle sezioni successive quando verranno scritte.
 
-% Method and working procedures
-\input{sections/00-modus-operandi}
+% 1. Introduzione
+\input{sections/01-introduction}
 
-% Domain knowledge
-\input{sections/01-domain-knowledge}
-% Definizioni di ODV e ODP.
-% Conoscenza e analisi dei cicli produttivi (PowerPoint).
+% 2. Modus operandi
+\input{sections/02-modus-operandi}
 
-% Data and treatment
-\input{sections/02-data-and-treatment}
+% 3. Conoscenza di dominio
+\input{sections/03-domain-knowledge}
+% Definizioni di ODV, posizione ODV e ODP.
+% Macrofasi, cicli di base e varianti secondo la documentazione aziendale.
+
+% 4. Dati e trattamento
+\input{sections/04-data-and-treatment}
 % Regole logiche che governano i dati.
 % Errori riscontrati nei dati (con riferimento alle regole).
 % Correzioni e imposizioni.
 
-% Statistical cleaning and imputation
-% \input{sections/03-statistical-cleaning-and-imputation}
+% 5. Pulizia statistica e imputazione
+% \input{sections/05-statistical-cleaning-and-imputation}
 % - Trattamento degli outlier.
 % - Imputazione.
 
-% Modelling framework and experiments
-% \input{sections/04-modelling-framework and experiments}
+% 6. Modelli ed esperimenti
+% \input{sections/06-modelling-framework-and-experiments}
 
-% Scheduling
-% \input{sections/05-scheduling}
+% 7. Scheduling
+% \input{sections/07-scheduling}
 
-% Conclusions
-% \input{sections/06-conclusions}
+% 8. Implementazione dell'applicazione web e deployment
+% \input{sections/08-web-app-implementation-and-deployment}
+
+% 9. Conclusioni
+% \input{sections/09-conclusions}
 
 % Enable when the report has content and citations:
 % \printbibliography[heading=bibintoc,title={References}]
