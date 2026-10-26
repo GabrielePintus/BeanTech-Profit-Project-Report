@@ -1,0 +1,87 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beantechreport}[2026/10/26 BeanTech article report style]
+
+% Portable pdfLaTeX setup: no system fonts or shell escape required.
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[english]{babel}
+\RequirePackage[a4paper,margin=26mm,headheight=24pt,headsep=8mm,footskip=12mm]{geometry}
+\RequirePackage{mathpazo}
+\RequirePackage{microtype}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{graphicx}
+\graphicspath{{figures/}}
+\RequirePackage{booktabs,tabularx,array}
+\RequirePackage{xcolor}
+\RequirePackage{titlesec}
+\RequirePackage{fancyhdr}
+\RequirePackage{enumitem}
+\RequirePackage{caption}
+\RequirePackage{csquotes}
+\RequirePackage[backend=biber,style=authoryear,sorting=nyt,giveninits=true,uniquename=init,maxcitenames=2,maxbibnames=99]{biblatex}
+\RequirePackage{hyperref}
+\RequirePackage[capitalise,nameinlink,noabbrev]{cleveref}
+
+\definecolor{ReportBlue}{HTML}{285A73}
+\definecolor{ReportMuted}{HTML}{62727C}
+\definecolor{ReportRule}{HTML}{D9E2E7}
+\hypersetup{colorlinks=true,linkcolor=ReportBlue,citecolor=ReportBlue,urlcolor=ReportBlue,
+  pdfdisplaydoctitle=true,bookmarksnumbered=true}
+\pdfstringdefDisableCommands{\def\qquad{ and }}
+\urlstyle{same}
+\linespread{1.06}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlist{topsep=4pt,itemsep=2pt,parsep=0pt,leftmargin=*}
+\renewcommand{\arraystretch}{1.15}
+\captionsetup{font=small,labelfont=bf,labelsep=period,skip=8pt}
+\captionsetup[table]{position=top}
+\titleformat{\section}{\Large\bfseries\color{ReportBlue}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{ReportBlue}}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.7em}{}
+\titlespacing*{\section}{0pt}{20pt plus 3pt minus 2pt}{8pt}
+\titlespacing*{\subsection}{0pt}{14pt plus 2pt minus 2pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{10pt plus 2pt minus 1pt}{4pt}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% Project metadata lives in main.tex, independently of the design.
+\makeatletter
+\newcommand{\reportaffiliation}[1]{\gdef\report@affiliation{#1}}
+\newcommand{\reportversion}[1]{\gdef\report@version{#1}}
+\newcommand{\reportshorttitle}[1]{\gdef\report@shorttitle{#1}}
+\reportaffiliation{}
+\reportversion{Working draft}
+\reportshorttitle{BeanTech Profit Project}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ReportMuted}\report@shorttitle}
+\fancyhead[R]{\small\color{ReportMuted}\report@version}
+\fancyfoot[C]{\small\color{ReportMuted}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{ReportRule}\leaders\hrule height\headrulewidth\hfill}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\color{ReportMuted}\thepage}\renewcommand{\headrulewidth}{0pt}}
+\renewcommand{\maketitle}{%
+  \thispagestyle{plain}%
+  {\centering
+    {\LARGE\bfseries\color{ReportBlue}\@title\par}
+    \vspace{12pt}
+    {\normalsize\@author\par}
+    \vspace{4pt}
+    {\small\report@affiliation\par}
+    \vspace{9pt}
+    {\small\color{ReportMuted}\@date\enspace\textperiodcentered\enspace\report@version\par}
+  }%
+  \vspace{14pt}
+  {\color{ReportRule}\hrule height 0.5pt}
+  \vspace{12pt}
+  \hypersetup{pdftitle={\@title},pdfauthor={\@author}}%
+}
+\makeatother
+
+% Inline evidence labels for use once the report is written.
+\newcommand{\evidencelabel}[1]{{\sffamily\bfseries\small\color{ReportBlue}#1}}
+\newcommand{\domainknowledge}{\evidencelabel{Documented domain knowledge}}
+\newcommand{\datafinding}{\evidencelabel{Data-derived finding}}
+\newcommand{\workingassumption}{\evidencelabel{Working assumption}}
