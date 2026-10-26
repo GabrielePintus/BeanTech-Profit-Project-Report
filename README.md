@@ -59,3 +59,26 @@ citations, and `booktabs` rules for tables without vertical borders. Put table
 captions above tables and figure captions below figures. Optional inline labels
 `\domainknowledge`, `\datafinding`, and `\workingassumption` distinguish the
 source/interpretation of a statement; they do not substitute for citations.
+
+
+## Consistent example boxes
+
+Use the `examplebox` environment for every example. Its layout is defined once
+in `beantechreport.sty`: soft blue background, a subtle rounded frame, blue left
+accent, title band, uniform padding and automatic numbering within each section.
+Long examples can continue on the next page, with a repeated continuation title.
+
+```tex
+% Keep the verified dataset/source reference here, as a LaTeX comment.
+\begin{examplebox}[ex:descriptive-identifier]{A descriptive title}
+Example text, with equations or a table when useful.
+\end{examplebox}
+```
+
+The optional argument is a reference identifier, not a set of style overrides.
+Reference examples with `\cref{ex:descriptive-identifier}`. Do not introduce local
+`\colorbox`/`minipage` wrappers or override colours and spacing in section files.
+The current report uses the labels “Esempio” and “continua”; these can be changed
+centrally via `\reportexamplename` and `\reportexamplecontinued` if the report's
+language changes. Sources remain in comments; no selection rationale is added
+to an example's body.

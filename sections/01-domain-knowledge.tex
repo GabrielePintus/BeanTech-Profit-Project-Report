@@ -21,13 +21,7 @@ Nel contesto considerato, ogni ODP è associato a una e una sola posizione ODV, 
 % ordini_di_produzione_260915.csv: ODV=0001113724, POSIZIONE_ODV=000130.
 % Join on both identifiers, preserving leading zeros. Both ODP have material
 % 3010148, steel 35MNVS5+CR, dimension 91 mm and requested length 7968 mm.
-\begingroup
-\setlength{\fboxsep}{10pt}
-\par\medskip
-\noindent\colorbox{ReportBlue!7}{%
-\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}
-\small
-\textbf{Esempio dal dataset: una posizione ODV associata a due ODP}
+\begin{examplebox}[ex:odv-two-odp]{Una posizione ODV associata a due ODP}
 
 Nell'estrazione ricevuta il 24 settembre 2026, la posizione \texttt{000130} dell'ODV \texttt{0001113724} riguarda il materiale \texttt{3010148}, con data di consegna richiesta pari al 2 gennaio 2026. Alla posizione sono associati i seguenti ordini di produzione:
 
@@ -42,10 +36,7 @@ Nell'estrazione ricevuta il 24 settembre 2026, la posizione \texttt{000130} dell
 \end{tabular}
 \end{center}
 
-\end{minipage}%
-}
-\par\medskip
-\endgroup
+\end{examplebox}
 
 \subsection{Macrofasi del processo produttivo}
 \label{sec:production-phases}
@@ -122,13 +113,7 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 % Operation order is the source-row order.
 % Recorded route: TRENOLUNA > BANCHI > ANTIMIX > PRONTO.
 % ANTIMIX has DURATA_TOT_MIN=18; this is recorded duration, not waiting time.
-\begingroup
-\setlength{\fboxsep}{10pt}
-\par\medskip
-\noindent\colorbox{ReportBlue!7}{%
-\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}
-\small
-\textbf{Esempio dal dataset: successione di macrofasi}
+\begin{examplebox}[ex:recorded-phase-sequence]{Successione di macrofasi}
 
 L'ODP \texttt{000010858580} presenta nei consuntivi il percorso
 \[
@@ -136,7 +121,4 @@ L'ODP \texttt{000010858580} presenta nei consuntivi il percorso
 \texttt{ANTIMIX}\;\rightarrow\;\texttt{PRONTO}.
 \]
 Al processo iniziale aggregato seguono il controllo ai banchi, il controllo antimix e lo stato finale di approntamento. Per \texttt{ANTIMIX} sono registrati 18 minuti di durata, mentre \texttt{PRONTO} ha durata nulla.
-\end{minipage}%
-}
-\par\medskip
-\endgroup
+\end{examplebox}

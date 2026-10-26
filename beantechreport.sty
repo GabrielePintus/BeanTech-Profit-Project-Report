@@ -13,6 +13,8 @@
 \graphicspath{{figures/}}
 \RequirePackage{booktabs,tabularx,array}
 \RequirePackage{xcolor}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
 \RequirePackage{titlesec}
 \RequirePackage{fancyhdr}
 \RequirePackage{enumitem}
@@ -85,3 +87,30 @@
 \newcommand{\domainknowledge}{\evidencelabel{Documented domain knowledge}}
 \newcommand{\datafinding}{\evidencelabel{Data-derived finding}}
 \newcommand{\workingassumption}{\evidencelabel{Working assumption}}
+
+
+% One shared environment for every worked example; keep formatting out of sections.
+% Usage: \begin{examplebox}[ex:identifier]{Descriptive title} ... \end{examplebox}
+\newcommand{\reportexamplename}{Esempio}
+\newcommand{\reportexamplecontinued}{continua}
+\newtcolorbox[auto counter,number within=section,crefname={esempio}{esempi},Crefname={Esempio}{Esempi}]{examplebox}[2][]{%
+  enhanced,
+  breakable,
+  IfBlankF={#1}{label={#1}},
+  nameref={#2},
+  colback=ReportBlue!3!white,
+  colframe=ReportBlue!22!white,
+  colbacktitle=ReportBlue!8!white,
+  coltitle=ReportBlue,
+  boxrule=0.45pt,
+  borderline west={2pt}{0pt}{ReportBlue},
+  arc=2mm,
+  boxsep=0pt,
+  left=12pt,right=12pt,top=9pt,bottom=10pt,
+  lefttitle=12pt,righttitle=12pt,toptitle=8pt,bottomtitle=8pt,
+  before skip=14pt,after skip=14pt,
+  fonttitle=\small\bfseries,
+  fontupper=\small,
+  title={\reportexamplename~\thetcbcounter\enspace--\enspace #2},
+  title after break={\reportexamplename~\thetcbcounter\enspace--\enspace #2\space(\reportexamplecontinued)}
+}
