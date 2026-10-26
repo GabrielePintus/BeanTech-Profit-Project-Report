@@ -1,0 +1,56 @@
+% ODP 000010887181. Verified against current raw Consuntivi_260915.csv
+% and interim/intervalli_flusso_materiale_260915.parquet.
+% Order: 1=TRENOLUNA, 2=BANCHI, 3=PRONTO. No imputed quantities.
+\begin{minipage}[t]{0.47\linewidth}
+\centering
+\textbf{Grafo dei flussi [kg]}\par\smallskip
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  phase/.style={draw=ReportBlue!45,fill=white,rounded corners=2mm,
+    minimum height=8mm,inner sep=5pt,font=\small},
+  flow/.style={-{Stealth[length=2mm]},draw=ReportBlue,line width=0.8pt},
+  mass/.style={font=\small,inner sep=2pt}
+]
+\node[phase] (t) at (0,0) {\texttt{TRENOLUNA}};
+\node[phase] (b) at (3.7,1.1) {\texttt{BANCHI}};
+\node[phase] (p) at (3.7,-1.1) {\texttt{PRONTO}};
+\node[above=2pt,font=\small\bfseries] at (t.north) {1};
+\node[above=2pt,font=\small\bfseries] at (b.north) {2};
+\node[below=2pt,font=\small\bfseries] at (p.south) {3};
+\draw[draw=ReportBlue,line width=0.8pt] (t.east) -- (1.65,0);
+\draw[flow,rounded corners=2mm] (1.65,0) |- (b.west);
+\draw[flow,rounded corners=2mm] (1.65,0) |- (p.west);
+\node[mass,above] at (2.3,1.1) {\num{3590}};
+\node[mass,below] at (2.3,-1.1) {\num{13645}};
+\draw[flow] (b.south) -- node[mass,right=2pt] {\num{3590}} (p.north);
+\end{tikzpicture}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\linewidth}
+\centering
+\textbf{Matrice dei flussi $M$ [kg]}\par\smallskip
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\small]
+% Row 1: outgoing material. Column 3: incoming material.
+\fill[ReportExample!25,rounded corners=1.3mm] (-0.58,-0.29) rectangle (2.98,0.29);
+\foreach \x/\label in {0/1,1.2/2,2.4/3}
+  \node[font=\small\bfseries] at (\x,0.68) {\label};
+\foreach \y/\label in {0/1,-0.65/2,-1.3/3}
+  \node[font=\small\bfseries] at (-1.03,\y) {\label};
+\node at (0,0) {$0$};
+\node at (1.2,0) {\num{3590}};
+\node at (2.4,0) {\num{13645}};
+\node at (0,-0.65) {$0$};
+\node at (1.2,-0.65) {$0$};
+\node at (2.4,-0.65) {\num{3590}};
+\foreach \x in {0,1.2,2.4} \node at (\x,-1.3) {$0$};
+\draw[line width=0.7pt] (-0.6,0.38) -- (-0.76,0.38) -- (-0.76,-1.68) -- (-0.6,-1.68);
+\draw[line width=0.7pt] (3.0,0.38) -- (3.16,0.38) -- (3.16,-1.68) -- (3.0,-1.68);
+\draw[ReportBlue,line width=0.8pt,rounded corners=1.3mm] (1.82,-1.59) rectangle (2.98,0.29);
+\draw[-{Stealth[length=1.6mm]},ReportExample!70!black] (3.23,0) -- (3.72,0);
+\node[anchor=west,text=ReportExample!40!black,align=left] at (3.78,0)
+  {\textbf{Uscita 1}\\$u_1=\num{17235}$};
+\draw[-{Stealth[length=1.6mm]},ReportBlue] (2.4,-1.76) -- (2.4,-2.10);
+\node[below,text=ReportBlue,align=center] at (2.4,-2.14)
+  {\textbf{Ingresso 3}\\$F_3=\num{17235}$};
+\end{tikzpicture}}
+\end{minipage}

@@ -1,0 +1,34 @@
+\begin{tikzpicture}[font=\small]
+% Highlight row i (outgoing) and column i (incoming).
+\fill[ReportExample!25,rounded corners=1.5mm] (-0.42,-1.70) rectangle (4.22,-1.10);
+\foreach \x/\top/\middle/\bottom in {
+  0/{0}/{f_{i1}}/{f_{n1}},
+  0.95/{\cdots}/{\cdots}/{\cdots},
+  1.9/{f_{1i}}/{0}/{f_{ni}},
+  2.85/{\cdots}/{\cdots}/{\cdots},
+  3.8/{f_{1n}}/{f_{in}}/{0}}
+{
+  \node at (\x,0) {$\top$};
+  \node at (\x,-1.4) {$\middle$};
+  \node at (\x,-2.8) {$\bottom$};
+}
+\foreach \y in {-0.7,-2.1} {
+  \node at (0,\y) {$\vdots$};
+  \node at (0.95,\y) {$\ddots$};
+  \node at (1.9,\y) {$\vdots$};
+  \node at (2.85,\y) {$\ddots$};
+  \node at (3.8,\y) {$\vdots$};
+}
+\draw[line width=0.7pt] (-0.44,0.35) -- (-0.61,0.35) -- (-0.61,-3.15) -- (-0.44,-3.15);
+\draw[line width=0.7pt] (4.24,0.35) -- (4.41,0.35) -- (4.41,-3.15) -- (4.24,-3.15);
+\node at (-1.25,-1.4) {$M=$};
+\draw[ReportBlue,line width=0.8pt,rounded corners=1.5mm] (1.48,-3.10) rectangle (2.32,0.30);
+\draw[-{Stealth[length=1.7mm]},ReportExample!65!black,line width=0.65pt]
+  (4.48,-1.4) -- (5.10,-1.4);
+\node[anchor=west,align=left,text=ReportExample!40!black] at (5.18,-1.4)
+  {\textbf{Riga $i$: massa uscente}\\[4pt]$u_i=\displaystyle\sum_{j=1}^{n}f_{ij}$};
+\draw[-{Stealth[length=1.7mm]},ReportBlue,line width=0.65pt]
+  (1.9,-3.23) -- (1.9,-3.70);
+\node[below,align=center,text=ReportBlue] at (1.9,-3.76)
+  {\textbf{Colonna $i$: massa entrante}\\[4pt]$F_i=\displaystyle\sum_{j=1}^{n}f_{ji}$};
+\end{tikzpicture}
