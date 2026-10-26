@@ -85,3 +85,13 @@ The current report uses the labels “Esempio” and “continua”; these can b
 centrally via `\reportexamplename` and `\reportexamplecontinued` if the report's
 language changes. Sources remain in comments; no selection rationale is added
 to an example's body.
+
+## VS Code
+
+Install the recommended **LaTeX Workshop** extension and open this repository as
+the workspace folder. Saving a LaTeX source file (`Ctrl+S`) runs `latexmk` and
+writes the PDF and auxiliary files to `build/`. The recipe uses the report root
+`main.tex`; LaTeX Workshop finds it through its section inputs.
+
+A local TeX installation with Italian language support, `latexmk` and Biber is
+required. Run **LaTeX Workshop: View LaTeX PDF file** to open the PDF in VS Code.
