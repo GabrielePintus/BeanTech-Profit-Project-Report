@@ -1,0 +1,17 @@
+% Esempio reale: ODV 0001118887; fonti e verifica nel testo della sezione 2.1.
+\begin{tikzpicture}[
+  every node/.style={font=\small,align=center,inner sep=4pt},
+  branch/.style={draw=ReportExample!55!black,line width=0.65pt}
+]
+\node (odv) at (0,0) {\textbf{ODV}\\\texttt{0001118887}};
+\node (posone) at (4.25,0.9) {\textbf{Posizione} \texttt{000020}\\Materiale \texttt{3002629}};
+\node (postwo) at (4.25,-0.9) {\textbf{Posizione} \texttt{000030}\\Materiale \texttt{3000022}};
+\node (odpfirst) at (9,0.9) {\textbf{ODP} \texttt{000010862043}};
+\node (odpsecond) at (9,-0.5) {\textbf{ODP} \texttt{000010865639}};
+\node (odpthird) at (9,-1.3) {\textbf{ODP} \texttt{000010867470}};
+\draw[branch] (odv.east) -- (1.8,0);
+\draw[branch] (posone.west) -- (1.8,0.9) -- (1.8,-0.9) -- (postwo.west);
+\draw[branch] (posone.east) -- (odpfirst.west);
+\draw[branch] (postwo.east) -- (6.65,-0.9);
+\draw[branch] (odpsecond.west) -- (6.65,-0.5) -- (6.65,-1.3) -- (odpthird.west);
+\end{tikzpicture}

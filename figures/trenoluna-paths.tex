@@ -1,0 +1,22 @@
+% Fonte: ABS_Flussi_Luna.pptx, legenda slide 1 e percorsi slide 2, 3 e 8.
+% Sequenze alternative separate, non lavorazioni simultanee.
+\begin{tikzpicture}[
+  every node/.style={font=\small,inner sep=3pt},
+  route/.style={-{Stealth[length=1.5mm]},draw=ReportBlue!70!black,line width=0.6pt}
+]
+\node[anchor=east,font=\small\bfseries,text=ReportBlue] (macro) at (-0.6,-0.6) {TRENOLUNA};
+\draw[ReportBlue!35,line width=0.5pt] (0,-1.03) -- (0,-0.17);
+\node (lampla) at (0.75,0) {LAM};
+\node (pla) at (2.8,0) {PLA};
+\node (ctrpla) at (4.85,0) {CTR};
+\draw[route] (lampla) -- (pla);
+\draw[route] (pla) -- (ctrpla);
+\node (lamona) at (0.75,-0.6) {LAM};
+\node (ona) at (2.8,-0.6) {ONA};
+\node (ctrona) at (4.85,-0.6) {CTR};
+\draw[route] (lamona) -- (ona);
+\draw[route] (ona) -- (ctrona);
+\node (lambordioni) at (0.75,-1.2) {LAM};
+\node (bordioni) at (4.85,-1.2) {BORDIONI};
+\draw[route] (lambordioni) -- (bordioni);
+\end{tikzpicture}

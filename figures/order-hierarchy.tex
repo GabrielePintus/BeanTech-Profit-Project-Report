@@ -1,0 +1,22 @@
+% Schema concettuale: le cardinalità non rappresentano conteggi di un caso reale.
+\begin{tikzpicture}[
+  scale=0.8,transform shape,
+  entity/.style={draw=ReportBlue!45,fill=white,rounded corners=2mm,
+    text width=3.6cm,align=center,minimum height=17mm,inner sep=5pt,font=\small},
+  relation/.style={-{Stealth[length=2mm]},draw=ReportBlue,line width=0.7pt},
+  cardinality/.style={font=\small,text=ReportBlue,fill=white,inner sep=2pt,above=3pt},
+  grouplabel/.style={font=\small\bfseries,text=ReportBlue}
+]
+% Fondi tenui, disegnati prima dei nodi e dei collegamenti.
+\path[draw=ReportBlue!35,fill=ReportBlue!7,rounded corners=2mm]
+  (-2.3,-1.18) rectangle (7.8,1.18);
+\path[draw=ReportAccent!45,fill=ReportAccent!9,rounded corners=2mm]
+  (9.8,-1.18) rectangle (14.4,1.18);
+\node[grouplabel] at (2.75,1.55) {Lato cliente};
+\node[grouplabel,text=ReportAccent!80!black] at (12.1,1.55) {Lato produzione};
+\node[entity] (odv) at (0,0) {\textbf{ODV}\\Ordine commerciale};
+\node[entity] (position) at (5.5,0) {\textbf{Posizione ODV}\\Singola fornitura};
+\node[entity] (odp) at (12.1,0) {\textbf{ODP}\\Ordine di produzione};
+\draw[relation] (odv.east) -- node[cardinality,fill=ReportBlue!7] {$1:N$} (position.west);
+\draw[relation] (position.east) -- node[cardinality] {$1:N$} (odp.west);
+\end{tikzpicture}

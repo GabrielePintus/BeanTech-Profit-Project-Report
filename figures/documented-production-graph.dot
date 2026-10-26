@@ -1,0 +1,77 @@
+// Grafo di sintesi dei percorsi documentati in ABS_Flussi_Luna.pptx.
+// Le condizioni dei singoli flussi restano descritte nel testo della sezione 2.3.
+// Ogni arco collega due macrofasi visibili. Posizioni fisse per seguire la struttura del PPTX.
+// Rendering: neato -n2; il riquadro Lavorazioni non aggiunge nodi o transizioni.
+// Trattamenti accorpati per macrofase; condizioni e ricette restano descritte nel testo.
+digraph production {
+ graph [rankdir=LR, layout=neato, overlap=true, bgcolor="transparent", pad=0.12, nodesep=0.42,
+        ranksep=0.64, splines=ortho, concentrate=false, notranslate=true];
+ node [shape=box, style="rounded,filled", color="#A6BDE8", fillcolor="#F6F8FD",
+       fontname="Latin Modern Mono", fontsize=11, penwidth=0.7,
+       margin="0.10,0.06", height=0.34];
+ edge [color="#245CC5", penwidth=0.8, arrowsize=0.60, arrowhead=normal];
+ treno [pos="0.0,448.0!",pin=true,label="TRENOLUNA"];
+ conf [pos="720.0,448.0!",pin=true,label="CONF"];
+ ready [pos="832.0,185.6!",pin=true,label="PRONTO*", color="#79BDB6",fillcolor="#F0F8F6"];
+ banchi [pos="137.6,317.0!",pin=true,label="BANCHI"];
+ tag [pos="256.0,349.0!",pin=true,label="TAG"];
+ raddr [pos="256.0,285.0!",pin=true,label="RADDR"];
+ mol [pos="256.0,253.0!",pin=true,label="MOL"];
+ banchi2 [pos="352.0,253.0!",pin=true,label="BANCHI"];
+ amrework [pos="460.8,317.0!",pin=true,label="ANTIMIX"];
+ scrap [pos="256.0,381.0!",pin=true,label="ROTTAME",color="#B8C0C8",fillcolor="#F4F5F6"];
+ hptfirst [pos="86.4,185.6!",pin=true,label="HPT"];
+ lunaqt [pos="224.0,121.6!",pin=true,width=1.25,label="TRATT_LUNA"];
+ hptqt [pos="355.2,89.6!",pin=true,label="HPT"];
+ raddrqt [pos="454.4,89.6!",pin=true,label="RADDR"];
+ circoqt [pos="553.6,89.6!",pin=true,label="CIRCO"];
+ amqt [pos="652.8,89.6!",pin=true,label="ANTIMIX"];
+ lfcd [pos="224.0,57.6!",pin=true,width=1.25,label="TRATT_LFC"];
+
+ // Coda condivisa anche per i trattamenti correttivi ONA: salti condizionati al flusso originale.
+ // HPT -> ANTIMIX: rinvenimento; RADDR -> ANTIMIX: DFO (salto CIRCO).
+ // Il ramo Q+T conserva RADDR e CIRCO obbligatori.
+ // Ordinamento visivo: avvio e confezionamento in alto, recupero sotto.
+ // Processo iniziale. CONF: naturale senza recupero o bordioni.
+ treno -> conf;
+ treno -> banchi ;
+ treno -> hptfirst ; // ONA, ONA+R, ONA+Q+T; controllo in linea conforme.
+ treno -> lunaqt ;   // PLA+induzione; controllo in linea conforme.
+ treno -> lfcd ;     // PLA+DFO; controllo in linea conforme.
+ conf -> ready ;
+
+ // Recupero: collegamenti diretti e salto di tutte le lavorazioni opzionali.
+ banchi -> amrework;
+ banchi -> tag;
+ banchi -> raddr;
+ banchi -> mol;
+ banchi -> scrap;
+ tag -> amrework;
+ raddr -> amrework;
+ mol -> banchi2;
+ banchi2 -> amrework;
+ amrework -> ready;    // Naturale dopo recupero.
+ amrework -> hptfirst; // Flussi ONA dopo recupero.
+ amrework -> lunaqt;   // PLA+induzione dopo recupero.
+ amrework -> lfcd;     // PLA+DFO dopo recupero.
+
+ // Primo HPT: uscita ONA conforme, correzioni ONA o trattamento assegnato.
+ hptfirst -> ready;       // ONA conforme.
+ hptfirst -> lfcd;  // ONA non conforme: DFO.
+ hptfirst -> lunaqt; // ONA non conforme: induzione R o Q+T.
+ lfcd -> hptqt;
+ lunaqt -> hptqt;
+ hptqt -> raddrqt;
+ hptqt -> amqt; // Skip RADDR nel ramo correttivo ONA.
+ raddrqt -> amqt;
+ amqt -> ready;
+ raddrqt -> circoqt;
+ circoqt -> amqt;
+ subgraph cluster_lavorazioni {
+   label="Lavorazioni"; labelloc=t; labeljust=r; bb="94,220,508,414"; lp="466,402";
+   fontname="TeX Gyre Pagella"; fontsize=13; fontcolor="#56677A";
+   color="#B8C6D7"; penwidth=0.8; style="rounded,filled"; fillcolor="#FAFBFD";
+   margin=16;
+   banchi; tag; raddr; mol; scrap; banchi2; amrework;
+ }
+}
