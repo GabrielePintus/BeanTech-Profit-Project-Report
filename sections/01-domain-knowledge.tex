@@ -57,10 +57,10 @@ Nei consuntivi, ogni registrazione riferita a una macrofase ne descrive una spec
 % - notes/Email Correspondence August 24-26 2026.md;
 % - notes/Meeting August 27 2026 Summary.md;
 % - notes/Meeting September 29 2026 Decisions.md.
-% Earlier interpretations and unresolved mappings were cross-checked with
+% Earlier interpretations were cross-checked with
 % docs/entity_model_specification.md and
 % notebooks/process understanding/03 - phase ontology.ipynb.
-Nei consuntivi dell'estrazione ricevuta il 24 settembre 2026 sono presenti 14 etichette distinte. Il loro significato è ricostruito a partire dal documento aziendale \emph{ABS\_Flussi\_Luna} e dalle note di progetto. 
+Nei consuntivi dell'estrazione ricevuta il 24 settembre 2026 sono presenti 14 macrofasi distinte. Il loro significato è ricostruito a partire dal documento aziendale \emph{ABS\_Flussi\_Luna} e dalle note di progetto.
 
 \subsubsection{Processo iniziale aggregato}
 
@@ -79,9 +79,9 @@ Nei consuntivi dell'estrazione ricevuta il 24 settembre 2026 sono presenti 14 et
 
 \item[\texttt{RADDR}.] Indica la raddrizzatura, ossia la lavorazione destinata a correggere la rettilineità del materiale. Nel diagramma compare sia nei percorsi di recupero sia dopo i trattamenti termici.
 
-\item[\texttt{CIRCO}.] È interpretata come il controllo mediante \emph{CIRCOGRAPH}, descritto nel PowerPoint come controllo qualità finale per le rilavorazioni. La corrispondenza tra il codice abbreviato del dataset e questa voce del diagramma resta da confermare.
+\item[\texttt{CIRCO}.] È interpretata come il controllo mediante \emph{CIRCOGRAPH}, descritto nel PowerPoint come controllo qualità finale per le rilavorazioni.
 
-\item[\texttt{CONF}.] È interpretata come confezionamento, coerentemente con la voce \emph{Confez} presente nei diagrammi in prossimità dell'uscita del materiale. La documentazione disponibile non esplicita la corrispondenza con il codice \texttt{CONF}, che resta da confermare.
+\item[\texttt{CONF}.] È interpretata come confezionamento, coerentemente con la voce \emph{Confez} presente nei diagrammi in prossimità dell'uscita del materiale.
 \end{description}
 
 Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di una macrofase non basta a qualificarla come rilavorazione. La raddrizzatura, per esempio, può essere un passaggio previsto dopo un trattamento termico oppure un intervento di recupero.
@@ -89,9 +89,9 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 \subsubsection{Trattamenti}
 
 \begin{description}
-\item[\texttt{TRATT\_LUNA}.] Identifica una macrofase di trattamento riferita a Luna. Il documento aziendale descrive trattamenti termici a induzione, ma non fornisce una mappatura esplicita tra queste attività e il codice del dataset. Il tipo di trattamento e la risorsa utilizzata non possono quindi essere dedotti dalla sola etichetta.
+\item[\texttt{TRATT\_LUNA}.] Identifica una macrofase di trattamento riferita a Luna.
 
-\item[\texttt{TRATT\_LFC}.] Identifica un'ulteriore macrofase di trattamento, distinta nei dati da \texttt{TRATT\_LUNA}. Il diagramma comprende anche trattamenti termici esterni a Luna, ma non ne stabilisce la corrispondenza con questo codice. Il significato esteso di \texttt{LFC} e la natura interna o esterna del trattamento restano da chiarire.
+\item[\texttt{TRATT\_LFC}.] Identifica un'ulteriore macrofase di trattamento, distinta nei dati da \texttt{TRATT\_LUNA}.
 \end{description}
 
 \subsubsection{Controlli di rilascio e stati di avanzamento}
@@ -105,7 +105,7 @@ Il ruolo di una lavorazione dipende dal percorso del prodotto: la presenza di un
 
 \item[\texttt{PRONTO\_QS}.] È una variante dello stato terminale di approntamento. Il significato specifico del suffisso \texttt{QS} non è definito nelle fonti disponibili e viene mantenuto senza attribuirgli una lavorazione aggiuntiva.
 
-\item[\texttt{PRONTO\_QWR}.] È un'ulteriore variante dello stato terminale di approntamento. Anche il significato del suffisso \texttt{QWR} richiede un chiarimento aziendale; nei consuntivi resta distinto dalle altre due etichette terminali.
+\item[\texttt{PRONTO\_QWR}.] È un'ulteriore variante dello stato terminale di approntamento. Anche il significato del suffisso \texttt{QWR} richiede un chiarimento aziendale; nei consuntivi resta distinta dalle altre due macrofasi terminali.
 \end{description}
 
 % Real example: September Consuntivi_260915.csv, ODP=000010858580,
@@ -121,4 +121,104 @@ L'ODP \texttt{000010858580} presenta nei consuntivi il percorso
 \texttt{ANTIMIX}\;\rightarrow\;\texttt{PRONTO}.
 \]
 Al processo iniziale aggregato seguono il controllo ai banchi, il controllo antimix e lo stato finale di approntamento. Per \texttt{ANTIMIX} sono registrati 18 minuti di durata, mentre \texttt{PRONTO} ha durata nulla.
+\end{examplebox}
+
+\subsection{Cicli di base e varianti del percorso produttivo}
+\label{sec:base-production-cycles}
+
+Il \textbf{ciclo di base} descrive il percorso tecnologico previsto per ottenere un prodotto con le caratteristiche richieste, quando le lavorazioni e i controlli hanno esito regolare. Durante la produzione, il percorso può essere modificato dall'esito dei controlli: una parte del materiale può richiedere verifiche aggiuntive, lavorazioni di recupero o ulteriori trattamenti. Questi passaggi danno origine alle \textbf{varianti} del ciclo.
+
+% Primary source: StrategicPlannerBeanTech/data/raw/2026-09-24/
+% ABS_Flussi_Luna.pptx, slide 1 (legend), slides 2--8 (seven flows).
+% Markdown sources: notes/Email Correspondence August 24-26 2026.md,
+% section "Ciclo base e varianti consuntive"; notes/Meeting August 27
+% 2026 Summary.md, sections 5.3 and 6; notes/Meeting September 29 2026
+% Decisions.md, section "Sequential process abstraction".
+% Table rows describe the main successful path in each slide. Conditional
+% recovery paths and the alternative Q+T branch of slide 4 are described below.
+La presentazione aziendale \emph{ABS\_Flussi\_Luna} distingue sette flussi, riportati nella \cref{tab:documented-base-cycles}. Per descriverne i passaggi si mantiene la terminologia dei diagrammi: \texttt{LAM} indica la laminazione, \texttt{PLA} la placca di raffreddamento e \texttt{CTR} il controllo in linea. Il forno \texttt{ONA} costituisce un percorso alternativo alla placca di raffreddamento. Le voci \texttt{INDUZIONE R}, \texttt{INDUZIONE N} e \texttt{INDUZIONE Q+T} indicano rispettivamente rinvenimento, normalizzazione e ciclo completo di tempra e rinvenimento. \texttt{DFO} indica un trattamento termico esterno a Luna; \texttt{BORDIONI} identifica gli avvolgitori dell'omonima linea.
+
+\begin{table}[htbp]
+\centering
+\caption{Flussi descritti nella presentazione aziendale e relativi percorsi principali.}
+\label{tab:documented-base-cycles}
+\small
+\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Flusso} & \textbf{Percorso principale} \\
+\midrule
+Naturale &
+LAM $\rightarrow$ PLA $\rightarrow$ CTR $\rightarrow$ confezionamento $\rightarrow$ uscita. \\
+\addlinespace
+ONA &
+LAM $\rightarrow$ ONA $\rightarrow$ CTR $\rightarrow$ HPT $\rightarrow$ uscita. \\
+\addlinespace
+ONA + rinvenimento &
+LAM $\rightarrow$ ONA $\rightarrow$ CTR $\rightarrow$ HPT $\rightarrow$ INDUZIONE R $\rightarrow$ HPT $\rightarrow$ ANTIMIX $\rightarrow$ uscita. \\
+\addlinespace
+ONA + induzione &
+LAM $\rightarrow$ ONA $\rightarrow$ CTR $\rightarrow$ HPT $\rightarrow$ INDUZIONE Q+T $\rightarrow$ HPT $\rightarrow$ RADDR $\rightarrow$ CIRCOGRAPH $\rightarrow$ ANTIMIX $\rightarrow$ uscita. \\
+\addlinespace
+PLA + induzione &
+LAM $\rightarrow$ PLA $\rightarrow$ CTR $\rightarrow$ INDUZIONE Q+T o N $\rightarrow$ HPT $\rightarrow$ RADDR $\rightarrow$ CIRCOGRAPH $\rightarrow$ ANTIMIX $\rightarrow$ uscita. \\
+\addlinespace
+PLA + ricottura DFO &
+LAM $\rightarrow$ PLA $\rightarrow$ CTR $\rightarrow$ DFO $\rightarrow$ HPT $\rightarrow$ RADDR $\rightarrow$ CIRCOGRAPH opzionale $\rightarrow$ ANTIMIX $\rightarrow$ uscita. \\
+\addlinespace
+Bordioni &
+LAM $\rightarrow$ BORDIONI $\rightarrow$ confezionamento $\rightarrow$ uscita. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Percorsi principali}
+
+Nel \textbf{flusso naturale}, il materiale attraversa la laminazione, il raffreddamento sulla placca e il controllo in linea. Queste tre fasi sono aggregate nei dati nella macrofase \texttt{TRENOLUNA}. Se il materiale è conforme, prosegue verso il confezionamento e l'approntamento: al livello delle macrofasi, il ciclo di base è quindi \texttt{TRENOLUNA} $\rightarrow$ \texttt{PRONTO}.
+
+Nel \textbf{flusso ONA}, il passaggio nel forno ONA sostituisce il raffreddamento sulla placca. Anche in questo caso, laminazione, passaggio nel forno e controllo in linea sono aggregati nella macrofase \texttt{TRENOLUNA}. Segue il controllo di laboratorio, rappresentato da \texttt{HPT}: se l'esito è favorevole, il materiale raggiunge lo stato \texttt{PRONTO}. Il percorso di base è quindi \texttt{TRENOLUNA} $\rightarrow$ \texttt{HPT} $\rightarrow$ \texttt{PRONTO}.
+
+I quattro flussi con \textbf{trattamenti fuori linea} aggiungono al percorso iniziale il trattamento necessario a ottenere le caratteristiche richieste. Nel percorso ONA con rinvenimento, dopo il primo \texttt{HPT} sono previsti il rinvenimento a induzione, un nuovo \texttt{HPT} e il controllo antimix. Lo stesso diagramma ammette anche un ramo con ciclo completo a induzione, seguito da \texttt{HPT}, raddrizzatura, controllo CIRCOGRAPH e antimix. Il flusso ONA con induzione adotta quest'ultima successione come percorso principale.
+
+Nel percorso PLA con induzione, al raffreddamento e al controllo in linea seguono il trattamento a induzione, completo oppure di normalizzazione, e la successione di controllo di laboratorio, raddrizzatura, CIRCOGRAPH e antimix. Nel percorso PLA con ricottura DFO, il trattamento avviene all'esterno di Luna; al rientro sono previsti \texttt{HPT}, raddrizzatura e antimix, con CIRCOGRAPH indicato come opzionale.
+
+Il \textbf{flusso bordioni} segue una struttura distinta: dopo la laminazione, il materiale passa agli avvolgitori, quindi al confezionamento e all'uscita.
+
+\subsubsection{Diramazioni di controllo e recupero}
+
+Nei diagrammi dei flussi naturale, ONA e con trattamenti fuori linea, un esito non conforme del controllo in linea indirizza il materiale ai banchi di controllo, indicati come \texttt{BNC/MET}. Da questo punto il materiale può essere destinato a rottame, proseguire verso il controllo antimix oppure essere sottoposto a taglio, raddrizzatura o molatura. Queste lavorazioni costituiscono rami alternativi del percorso di recupero. Dopo la molatura è previsto un nuovo passaggio ai banchi, seguito dal controllo antimix. Il materiale recuperato si ricongiunge quindi al percorso successivo previsto per il flusso di appartenenza.
+
+Nel flusso ONA, anche il controllo di laboratorio può determinare una diramazione. Se l'esito è favorevole, il materiale procede verso l'uscita; altrimenti il diagramma prevede un trattamento DFO, un rinvenimento a induzione oppure un ciclo completo a induzione. Seguono un nuovo \texttt{HPT} e il controllo antimix, con la possibilità di un passaggio intermedio di raddrizzatura.
+
+I percorsi possono riguardare soltanto una parte del materiale dello stesso ODP. Secondo le indicazioni di progetto, il materiale già conforme attende il completamento del percorso della parte da recuperare: l'approntamento dell'ordine avviene quando le parti si sono ricongiunte.
+
+\subsubsection{Rappresentazione attraverso le macrofasi}
+
+Il dettaglio dei diagrammi e quello dei consuntivi descrivono lo stesso processo a livelli diversi. Le attività iniziali in continuo sono riunite nella macrofase \texttt{TRENOLUNA}. Per il prodotto laminato grezzo allo stato naturale, le note aziendali individuano quindi il ciclo di base nella successione \texttt{TRENOLUNA} $\rightarrow$ \texttt{PRONTO}. Le verifiche e le lavorazioni aggiuntive compaiono come passaggi intermedi quando si realizzano le corrispondenti varianti.
+
+Il ciclo di base è un riferimento tecnologico. Il ciclo osservato per un ODP documenta invece il percorso registrato per quello specifico ordine, che può comprendere controlli aggiuntivi e recuperi. La frequenza di una variante nei dati non modifica, da sola, la definizione del ciclo di base.
+
+% Example verified against both September raw CSVs:
+% Consuntivi_260915.csv and ordini_di_produzione_260915.csv.
+% ODP 000010859984: TRENOLUNA > PRONTO;
+% ODV=0007001624, POSIZIONE_ODV=000010.
+% ODP 000010858580: TRENOLUNA > BANCHI > ANTIMIX > PRONTO;
+% ODV=0001117836, POSIZIONE_ODV=000020.
+% Both master records: PRODOTTO=LAMINATO BARRE, FINITURA=GREZZO,
+% STATO_FISICO=NATURALE. No cause of the extra checks is inferred from rows.
+\begin{examplebox}[ex:base-cycle-and-variant]{Ciclo di base e variante nei dati}
+Gli ODP \texttt{000010859984} e \texttt{000010858580} appartengono entrambi alla tipologia \emph{laminato barre, grezzo, naturale}. I consuntivi riportano i seguenti percorsi:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{ODP} & \textbf{Percorso registrato} \\
+\midrule
+\texttt{000010859984} & TRENOLUNA $\rightarrow$ PRONTO. \\
+\addlinespace
+\texttt{000010858580} & TRENOLUNA $\rightarrow$ BANCHI $\rightarrow$ ANTIMIX $\rightarrow$ PRONTO. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Il primo ordine presenta la successione del ciclo di base; il secondo include i controlli aggiuntivi ai banchi e all'antimix prima dell'approntamento.
 \end{examplebox}
