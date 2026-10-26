@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt]{article}
+\documentclass[a4paper,11pt,oneside]{report}
 \usepackage{beantechreport}
 
 % Report metadata
@@ -16,43 +16,44 @@
 % General rule: support claims with meaningful examples verified against the
 % actual dataset. Use the shared examplebox environment, without discussing why
 % the example was selected. Preserve source references in LaTeX comments.
+% Editorial convention: describe the final methodology and results, not the
+% development chronology. "Data" always means the latest supplied dataset.
+% Do not repeat delivery dates or compare successive deliveries in the prose.
+% Keep dated paths and source provenance in comments for traceability.
 
-% Scaletta del report: un file per sezione, numerato nell'ordine di lettura.
-% Attivare gli input delle sezioni successive quando verranno scritte.
+% Scaletta del report: un file per capitolo, numerato nell'ordine di lettura.
+% Attivare gli input dei capitoli successivi quando verranno scritte.
 
 % 1. Introduzione
 \input{sections/01-introduction}
 
-% 2. Modus operandi
-\input{sections/02-modus-operandi}
-
-% 3. Conoscenza di dominio
-\input{sections/03-domain-knowledge}
+% 2. Conoscenza di dominio
+\input{sections/02-domain-knowledge}
 % Definizioni di ODV, posizione ODV e ODP.
 % Macrofasi, cicli di base e varianti secondo la documentazione aziendale.
 
-% 4. Dati e trattamento
-\input{sections/04-data-and-treatment}
+% 3. Dati e trattamento
+\input{sections/03-data-and-treatment}
 % Regole logiche che governano i dati.
 % Errori riscontrati nei dati (con riferimento alle regole).
 % Correzioni e imposizioni.
 
-% 5. Pulizia statistica e imputazione
-% \input{sections/05-statistical-cleaning-and-imputation}
+% 4. Pulizia statistica e imputazione
+% \input{sections/04-statistical-cleaning-and-imputation}
 % - Trattamento degli outlier.
 % - Imputazione.
 
-% 6. Modelli ed esperimenti
-% \input{sections/06-modelling-framework-and-experiments}
+% 5. Modelli ed esperimenti
+% \input{sections/05-modelling-framework-and-experiments}
 
-% 7. Scheduling
-% \input{sections/07-scheduling}
+% 6. Scheduling
+% \input{sections/06-scheduling}
 
-% 8. Implementazione dell'applicazione web e deployment
-% \input{sections/08-web-app-implementation-and-deployment}
+% 7. Implementazione dell'applicazione web e deployment
+% \input{sections/07-web-app-implementation-and-deployment}
 
-% 9. Conclusioni
-% \input{sections/09-conclusions}
+% 8. Conclusioni
+% \input{sections/08-conclusions}
 
 % Enable when the report has content and citations:
 % \printbibliography[heading=bibintoc,title={References}]

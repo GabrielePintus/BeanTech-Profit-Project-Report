@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beantechreport}[2026/10/26 BeanTech article report style]
+\ProvidesPackage{beantechreport}[2026/10/26 BeanTech report style]
 
 % Portable pdfLaTeX setup: no system fonts or shell escape required.
 \RequirePackage[T1]{fontenc}
@@ -9,13 +9,19 @@
 \RequirePackage{mathpazo}
 \RequirePackage{microtype}
 \RequirePackage{amsmath,amssymb}
+\RequirePackage{siunitx}
+\sisetup{output-decimal-marker={.},group-separator={\,},group-minimum-digits=4}
 \RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage{pdflscape}
+\RequirePackage{rotating}
 \graphicspath{{figures/}}
 \RequirePackage{booktabs,tabularx,array}
 \RequirePackage{longtable}
 \RequirePackage{xcolor}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
+\usetikzlibrary{arrows.meta,babel,fit}
 \RequirePackage{titlesec}
 \RequirePackage{fancyhdr}
 \RequirePackage{enumitem}
@@ -23,11 +29,13 @@
 \RequirePackage{csquotes}
 \RequirePackage[backend=biber,style=authoryear,sorting=nyt,giveninits=true,uniquename=init,maxcitenames=2,maxbibnames=99]{biblatex}
 \RequirePackage{hyperref}
-\RequirePackage[capitalise,nameinlink,noabbrev]{cleveref}
+\RequirePackage[italian,capitalise,nameinlink,noabbrev]{cleveref}
 
-\definecolor{ReportBlue}{HTML}{285A73}
-\definecolor{ReportMuted}{HTML}{62727C}
-\definecolor{ReportRule}{HTML}{D9E2E7}
+\definecolor{ReportBlue}{HTML}{245CC5}
+\definecolor{ReportAccent}{HTML}{008577}
+\definecolor{ReportExample}{HTML}{E6AD16}
+\definecolor{ReportMuted}{HTML}{56677A}
+\definecolor{ReportRule}{HTML}{D9E5F4}
 \hypersetup{colorlinks=true,linkcolor=ReportBlue,citecolor=ReportBlue,urlcolor=ReportBlue,
   pdfdisplaydoctitle=true,bookmarksnumbered=true}
 \pdfstringdefDisableCommands{\def\qquad{ and }}
@@ -37,17 +45,25 @@
 \setlength{\parskip}{5pt plus 1pt minus 1pt}
 \setlength{\emergencystretch}{2em}
 \setlist{topsep=4pt,itemsep=2pt,parsep=0pt,leftmargin=*}
+\setlist[description]{style=multiline,leftmargin=28mm,labelwidth=25mm,labelsep=3mm,align=left}
 \renewcommand{\arraystretch}{1.15}
+% Independent counters per chapter: Figure 2.1, Table 2.1, Example 2.1.
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+
 \captionsetup{font=small,labelfont=bf,labelsep=period,skip=8pt}
 \captionsetup[table]{position=bottom}
 \captionsetup[figure]{position=bottom}
+\titleformat{\chapter}[display]{\bfseries\color{ReportBlue}}
+  {\large\chaptertitlename~\thechapter}{8pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{0pt}{22pt}
 \titleformat{\section}{\Large\bfseries\color{ReportBlue}}{\thesection}{0.7em}{}
 \titleformat{\subsection}{\large\bfseries\color{ReportBlue}}{\thesubsection}{0.7em}{}
 \titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.7em}{}
 \titlespacing*{\section}{0pt}{20pt plus 3pt minus 2pt}{8pt}
 \titlespacing*{\subsection}{0pt}{14pt plus 2pt minus 2pt}{6pt}
 \titlespacing*{\subsubsection}{0pt}{10pt plus 2pt minus 1pt}{4pt}
-\setcounter{secnumdepth}{3}
+\setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
 
 % Project metadata lives in main.tex, independently of the design.
@@ -67,7 +83,9 @@
 \renewcommand{\headrule}{\hbox to\headwidth{\color{ReportRule}\leaders\hrule height\headrulewidth\hfill}}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\color{ReportMuted}\thepage}\renewcommand{\headrulewidth}{0pt}}
 \renewcommand{\maketitle}{%
-  \thispagestyle{plain}%
+  \begin{titlepage}
+  \thispagestyle{empty}%
+  \vspace*{0.18\textheight}
   {\centering
     {\LARGE\bfseries\color{ReportBlue}\@title\par}
     \vspace{12pt}
@@ -81,6 +99,7 @@
   {\color{ReportRule}\hrule height 0.5pt}
   \vspace{12pt}
   \hypersetup{pdftitle={\@title},pdfauthor={\@author}}%
+  \end{titlepage}
 }
 \makeatother
 
@@ -95,18 +114,21 @@
 % Usage: \begin{examplebox}[ex:identifier]{Descriptive title} ... \end{examplebox}
 \newcommand{\reportexamplename}{Esempio}
 \newcommand{\reportexamplecontinued}{continua}
-\newtcolorbox[auto counter,number within=section,crefname={esempio}{esempi},Crefname={Esempio}{Esempi}]{examplebox}[2][]{%
+\newtcolorbox[auto counter,number within=chapter,crefname={esempio}{esempi},Crefname={Esempio}{Esempi}]{examplebox}[2][]{%
   enhanced,
   breakable,
   IfBlankF={#1}{label={#1}},
   nameref={#2},
-  colback=ReportBlue!3!white,
-  colframe=ReportBlue!22!white,
-  colbacktitle=ReportBlue!8!white,
-  coltitle=ReportBlue,
+  colback=ReportExample!7!white,
+  colframe=ReportExample!45!white,
+  colbacktitle=ReportExample!24!white,
+  coltitle=ReportExample!40!black,
   boxrule=0.45pt,
-  borderline west={2pt}{0pt}{ReportBlue},
   arc=2mm,
+  % Accent strip clipped to the rounded frame, so it follows the corners.
+  overlay={\begin{tcbclipframe}
+    \fill[ReportExample] (frame.south west) rectangle ([xshift=3pt]frame.north west);
+  \end{tcbclipframe}},
   boxsep=0pt,
   left=12pt,right=12pt,top=9pt,bottom=10pt,
   lefttitle=12pt,righttitle=12pt,toptitle=8pt,bottomtitle=8pt,

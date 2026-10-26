@@ -1,0 +1,282 @@
+\chapter{Dati e trattamento}
+\label{sec:data-and-treatment}
+
+I dati aziendali collegano la domanda commerciale alle attività produttive registrate e costituiscono la base per la costruzione dei modelli. Il loro utilizzo richiede di comprenderne il contenuto e verificarne la coerenza. Questo capitolo presenta i dataset e il trattamento adottato per ricostruire cicli plausibili rispetto alle relazioni tra ordini, ai bilanci di massa e alle informazioni temporali. La documentazione aziendale costituisce un riferimento per l'interpretazione, pur non descrivendo tutti i percorsi ricostruiti.
+
+\section{I tre dataset}
+\label{sec:updated-datasets}
+
+I dati disponibili sono organizzati in tre dataset collegati: le posizioni degli ordini di vendita descrivono la domanda commerciale, gli ordini di produzione riportano le specifiche produttive e i consuntivi documentano le attività registrate.
+
+% Sources in StrategicPlannerBeanTech:
+% - data/README.md, current snapshot received on 2026-09-24;
+% - data/raw/2026-09-24/ordini_di_vendita_260915.csv;
+% - data/raw/2026-09-24/ordini_di_produzione_260915.csv;
+% - data/raw/2026-09-24/Consuntivi_260915.csv;
+% - src/strategic_planner/data/snapshot_20260924.py;
+% Counts and complete column coverage verified directly against the three raw
+% CSVs, using Python csv.DictReader with UTF-8 BOM handling and default CSV
+% quoting. Counts precede deduplication and physical-consistency filtering.
+% Rechecked directly against the current raw files: all 92 field names,
+% row/entity counts, join coverage, duplicate-customer variants, constants,
+% finish codes and the Chapter 2 examples agree with this snapshot.
+% Empirical timing checks: calculated end = start + floor(total minutes)
+% for all 35893 rows; SFASAMENTO_MIN = start - previous calculated end
+% for all 27839 rows with both reference fields populated.
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\linewidth}{@{}lXrc@{}}
+\toprule
+\textbf{Dataset} & \textbf{Contenuto di una riga} & \textbf{Righe} & \textbf{Campi} \\
+\midrule
+Ordini di vendita & Una posizione ODV & \num{6998} & 38 \\
+Ordini di produzione & Un ODP & \num{8059} & 35 \\
+Consuntivi & Una registrazione di macrofase per un ODP & \num{35893} & 19 \\
+\bottomrule
+\end{tabularx}
+\caption{Struttura dei tre dataset prima del trattamento.}
+\label{tab:updated-datasets}
+\end{table}
+
+Le posizioni ODV appartengono a \num{3147} ordini di vendita distinti. Il dataset degli ordini di produzione contiene \num{8054} ODP distinti, ai quali si riferiscono anche i consuntivi. La differenza rispetto alle \num{8059} righe deriva da cinque registrazioni ripetute con una diversa denominazione del cliente. Tutti i conteggi precedono il trattamento dei dati.
+
+\section{Collegamenti e convenzioni di lettura}
+\label{sec:dataset-links}
+
+I tre dataset sono collegati attraverso gli identificativi degli ordini. La coppia numero ODV e numero di posizione associa ciascun ODP alla corrispondente fornitura, mentre l'identificativo ODP collega le registrazioni dei consuntivi all'ordine di produzione. Nei dati disponibili, tutte le posizioni ODV sono associate ad almeno un ODP e tutti gli ODP hanno registrazioni nei consuntivi.
+
+Gli identificativi sono trattati come valori testuali, preservando gli zeri iniziali. Il valore \texttt{NULL} indica un'informazione mancante ed è distinto dallo zero numerico. Le quantità sono espresse in chilogrammi e le durate in minuti; le altre unità di misura sono indicate nelle descrizioni dei campi dove disponibili.
+
+\section{Ordini di vendita}
+\label{sec:sales-order-data}
+
+Il dataset degli ordini di vendita contiene una riga per ciascuna posizione ODV. Riporta i riferimenti commerciali, le caratteristiche del prodotto richiesto, le quantità e le date di consegna e approntamento. Le date confermate rappresentano impegni di pianificazione e non indicano necessariamente quando siano avvenuti gli eventi effettivi. La tabella seguente descrive i campi disponibili.
+
+\begingroup
+\small
+\begin{longtable}{@{}p{0.43\linewidth}p{\dimexpr0.57\linewidth-2\tabcolsep\relax}@{}}
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\textit{Ordini di vendita: continuazione}}\\
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\textit{Continua nella pagina successiva}}\\
+\endfoot
+\bottomrule
+\caption{Campi del dataset degli ordini di vendita.}\label{tab:sales-order-features}\\
+\endlastfoot
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e riferimenti commerciali}\\*
+\addlinespace[2pt]
+\texttt{Numero\_OdV} & Numero dell'ordine di vendita cui appartiene la posizione. \\
+\texttt{Posizione\_OdV} & Numero della posizione all'interno dell'ODV. Insieme a \texttt{Numero\_OdV} identifica la fornitura. \\
+\texttt{Concatenato\_Odv} & Riferimento composto ottenuto concatenando il numero ODV e la posizione nella codifica del file. \\
+\texttt{Id\_Cliente} & Identificativo del cliente. \\
+\texttt{Ragione\_Sociale} & Denominazione del cliente riportata nell'estrazione. \\
+\texttt{Stato\_Ordine\_Pos\_Cod} & Codice dello stato della posizione ODV. La corrispondenza tra valori numerici e stati commerciali richiede la relativa tabella di decodifica aziendale. \\
+\texttt{Materiale} & Codice del materiale associato alla fornitura. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Caratteristiche del prodotto}\\*
+\addlinespace[2pt]
+\texttt{Impianto} & Impianto o linea cui è riferita la fornitura. \\
+\texttt{Macrociclo\_Descr} & Descrizione sintetica del prodotto richiesto. Riassume caratteristiche del materiale e non costituisce la sequenza delle lavorazioni consuntivate. \\
+\texttt{Cod\_Montaggio} & Codice del montaggio associato alla posizione. Il dettaglio tecnico della codifica non è esplicitato nelle fonti disponibili. \\
+\texttt{Forma} & Forma del prodotto richiesta, nella codifica commerciale. \\
+\texttt{Finitura} & Finitura richiesta, nella codifica commerciale. \\
+\texttt{Stato\_Fisico} & Stato fisico richiesto, nella codifica commerciale. \\
+\texttt{Marca\_Cliente} & Denominazione della marca dell'acciaio utilizzata dal cliente. \\
+\texttt{Descr\_Marca\_Acciaio} & Denominazione della marca dell'acciaio riportata nel riferimento aziendale. \\
+\texttt{Vers\_Tecnica} & Identificativo della versione tecnica associata alla fornitura. \\
+\texttt{Modello\_PP} & Riferimento descrittivo del modello PP associato alla posizione. \\
+\texttt{NFA} & Riferimento tecnico NFA associato alla fornitura. \\
+\texttt{NFA\_Revisione} & Revisione del riferimento NFA. \\
+\texttt{Difetto\_Superficiale\_Max} & Valore limite riportato per il difetto superficiale ammesso. L'unità e i valori convenzionali richiedono la specifica tecnica aziendale. \\
+\texttt{Indice\_Di\_Criticità} & Rapporto tra la prima dimensione del grezzo e il difetto superficiale massimo ammesso, secondo la relazione riportata dopo la tabella. \\
+\texttt{Classe\_Carbonio} & Classe di carbonio assegnata all'acciaio, riportata come categoria. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Dimensioni e tolleranze}\\*
+\addlinespace[2pt]
+\texttt{Desc\_Tipo\_Lungh} & Codice descrittivo del tipo di lunghezza richiesto. Le sigle sono conservate nella forma presente nel file. \\
+\texttt{Lungh\_Rich\_PF} & Lunghezza richiesta del prodotto finito. \\
+\texttt{Toll\_Min} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{Toll\_Max} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{Lungh\_Min} & Campo relativo alla lunghezza minima. Nel dataset è sempre pari a zero. \\
+\texttt{Lungh\_Max} & Campo relativo alla lunghezza massima. Nel dataset è sempre pari a zero. \\
+\texttt{Val\_Dim\_1} & Valore della prima dimensione richiesta, da interpretare in relazione alla forma del prodotto. \\
+\texttt{Val\_Dim\_2} & Valore della seconda dimensione richiesta. Nel dataset è sempre pari a zero. \\
+\texttt{Dim\_1\_Grezzo} & Prima dimensione del grezzo associato alla fornitura. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Quantità}\\*
+\addlinespace[2pt]
+\texttt{Qta\_OdV} & Quantità richiesta per la posizione ODV, in kg. \\
+\texttt{Qta\_evasa} & Quantità registrata come evasa per la posizione, in kg. \\
+\texttt{Qta\_sped} & Quantità registrata come spedita per la posizione, in kg. È distinta dalla quantità evasa. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Date}\\*
+\addlinespace[2pt]
+\texttt{Data\_Consegna\_Richiesta} & Data di consegna richiesta dal cliente. \\
+\texttt{Data\_Consegna\_Confermata\_ATP} & Data di consegna confermata, riportata nel campo aziendale ATP. \\
+\texttt{Data\_Approntamento\_Confermata} & Data confermata per l'approntamento del materiale. \\
+\texttt{Data\_Uscita\_Merci\_Confermata} & Data confermata per l'uscita delle merci. \\
+\end{longtable}
+\endgroup
+
+% Verified directly on all 6998 rows of the current raw sales-order file:
+% 6409 nonzero denominators match the ratio within 0.005 (two decimals);
+% all 589 zero denominators have a zero criticality index.
+Nei dati, l'indice di criticità è una variabile derivata. Per un valore non nullo del difetto superficiale massimo, vale la relazione
+\[
+\texttt{Indice\_Di\_Criticità}
+=\frac{\texttt{Dim\_1\_Grezzo}}{\texttt{Difetto\_Superficiale\_Max}},
+\]
+con arrotondamento a due decimali. La relazione è verificata su tutte le \num{6409} posizioni con denominatore diverso da zero. Nelle restanti \num{589}, il difetto superficiale massimo è zero e l'indice è registrato come zero, anziché come rapporto non definito. L'indice non aggiunge quindi informazione indipendente rispetto alle due variabili da cui è calcolato.
+
+\section{Ordini di produzione}
+\label{sec:production-order-data}
+
+Il dataset degli ordini di produzione raccoglie le informazioni anagrafiche e tecniche degli ODP e collega ciascun ordine alla posizione ODV di origine. Descrive il materiale da produrre e le relative specifiche dimensionali. La quantità richiesta è riportata nella posizione ODV, mentre le quantità associate ai singoli passaggi produttivi si trovano nei consuntivi.
+
+Le caratteristiche comuni ai dataset degli ordini di vendita e di produzione possono essere espresse con codifiche differenti. Per esempio, la finitura \texttt{GRE} negli ODV è riportata come \texttt{GREZZO} negli ODP. Anche il modello PP compare come riferimento descrittivo negli ODV e come coppia codice--descrizione negli ODP.
+
+\begingroup
+\small
+\begin{longtable}{@{}p{0.43\linewidth}p{\dimexpr0.57\linewidth-2\tabcolsep\relax}@{}}
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\textit{Ordini di produzione: continuazione}}\\
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\textit{Continua nella pagina successiva}}\\
+\endfoot
+\bottomrule
+\caption{Campi del dataset degli ordini di produzione.}\label{tab:production-order-features}\\
+\endlastfoot
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e riferimenti commerciali}\\*
+\addlinespace[2pt]
+\texttt{ODP} & Identificativo dell'ordine di produzione. \\
+\texttt{ODV} & Numero dell'ordine di vendita di origine. \\
+\texttt{POSIZIONE\_ODV} & Posizione dell'ODV alla quale è associato l'ODP. \\
+\texttt{COD\_CLIENTE} & Identificativo del cliente. \\
+\texttt{NOME\_CLIENTE} & Denominazione del cliente riportata nel file. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Caratteristiche del prodotto e del materiale}\\*
+\addlinespace[2pt]
+\texttt{COLATA} & Riferimento alla colata associata all'ODP. \\
+\texttt{AREA\_PRODOTTO} & Area merceologica del prodotto. \\
+\texttt{COD\_MATERIALE} & Codice del materiale da produrre. \\
+\texttt{DESCR\_MATERIALE} & Descrizione sintetica del materiale. \\
+\texttt{MARCA\_ACCIAIO} & Marca dell'acciaio associata all'ODP. \\
+\texttt{NFA} & Riferimento tecnico NFA associato all'ODP. \\
+\texttt{REVISIONE\_NFA} & Revisione del riferimento NFA. \\
+\texttt{PRODOTTO} & Tipologia di prodotto, come laminato barre, vergella o barre per sfere macinanti. \\
+\texttt{FINITURA} & Finitura prevista per il prodotto. \\
+\texttt{FORMA} & Forma del prodotto nella codifica produttiva. \\
+\texttt{STATO\_FISICO} & Stato fisico previsto per il prodotto. \\
+\texttt{AUTOMOTIVE} & Campo relativo alla destinazione automotive, interamente non valorizzato nel dataset. \\
+\texttt{COLORE\_ROTTAME} & Categoria di colore associata al materiale: rosso, blu o verde. Il campo è una classificazione tecnica e non misura una quantità di scarto. \\
+\texttt{MODELLO\_PP} & Codice del modello PP. \\
+\texttt{DESCR\_MODELLO\_PP} & Descrizione del modello PP. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Dimensioni e tolleranze}\\*
+\addlinespace[2pt]
+\texttt{DIMENSIONE\_1} & Descrizione testuale della prima dimensione. \\
+\texttt{DIMENSIONE\_2} & Descrizione testuale della seconda dimensione. Nel dataset è sempre riportato il simbolo \texttt{-}. \\
+\texttt{SEZIONE\_GREZZA\_PP} & Dimensione caratteristica della sezione grezza associata al modello PP. \\
+\texttt{DIMENSIONE\_1\_MM} & Valore numerico della prima dimensione, in mm. \\
+\texttt{TOLL\_MIN\_DIM\_1} & Scostamento inferiore ammesso rispetto alla prima dimensione nominale, in mm. \\
+\texttt{TOLL\_MAX\_DIM\_1} & Scostamento superiore ammesso rispetto alla prima dimensione nominale, in mm. \\
+\texttt{DIMENSIONE\_2\_MM} & Valore numerico della seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{TOLL\_MIN\_DIM\_2} & Scostamento inferiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{TOLL\_MAX\_DIM\_2} & Scostamento superiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{LUNGHEZZA\_RICHIESTA} & Lunghezza richiesta per il prodotto dell'ODP. \\
+\texttt{TOLL\_MIN\_LUNGH} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{TOLL\_MAX\_LUNGH} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{SPESSORE\_GREZZO\_PP} & Spessore del grezzo associato al modello PP. Nel dataset il campo è sempre pari a zero. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Motivo dell'ordine}\\*
+\addlinespace[2pt]
+\texttt{COD\_MOTIVO\_ORDINE} & Codice del motivo specifico associato all'ordine, quando valorizzato. \\
+\texttt{DESCR\_MOTIVO\_ORDINE} & Descrizione del motivo specifico dell'ordine. \\
+\end{longtable}
+\endgroup
+
+\section{Consuntivi di produzione}
+\label{sec:production-records-data}
+
+Il dataset dei consuntivi di produzione descrive i passaggi registrati per ciascun ODP. Ogni riga identifica una singola occorrenza di macrofase e riporta tempi, durate, quantità e riferimenti al passaggio precedente. La stessa macrofase può comparire più volte all'interno di un ordine.
+
+\begingroup
+\small
+\begin{longtable}{@{}p{0.43\linewidth}p{\dimexpr0.57\linewidth-2\tabcolsep\relax}@{}}
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{@{}l}{\textit{Consuntivi di produzione: continuazione}}\\
+\toprule
+\textbf{Campo} & \textbf{Significato} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\textit{Continua nella pagina successiva}}\\
+\endfoot
+\bottomrule
+\caption{Campi del dataset dei consuntivi di produzione.}\label{tab:production-record-features}\\
+\endlastfoot
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e passaggio produttivo}\\*
+\addlinespace[2pt]
+\texttt{ODP} & Ordine di produzione cui appartiene la registrazione. \\
+\texttt{ODV} & Ordine di vendita cui è collegato l'ODP. \\
+\texttt{POSIZIONE\_ODV} & Posizione ODV cui è collegato l'ODP. \\
+\texttt{MACHINE\_AGGREGATION\_CODE} & Macrofase della registrazione, tra quelle descritte nella \cref{sec:production-phases}. \\
+\texttt{FASE} & Codice della fase nel percorso dell'ODP. È riferito al singolo ordine e non identifica una macchina. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Date e durate}\\*
+\addlinespace[2pt]
+\texttt{DATAORA\_INIZIO\_ORIGINALE} & Data e ora di inizio registrate per il passaggio produttivo. \\
+\texttt{DATAORA\_FINE} & Data e ora di fine registrate nel sistema sorgente. \\
+\texttt{DATAORA\_FINE\_CALCOLATA} & Data e ora di fine calcolate sommando all'inizio la durata totale troncata al minuto intero. Sono distinte dalla fine registrata. \\
+\texttt{DURATA\_TOT\_MIN} & Durata totale dichiarata del passaggio, in minuti. \\
+\texttt{DURATA\_SETUP\_MIN} & Durata dichiarata per la preparazione, in minuti. \\
+\texttt{DURATA\_LAV\_MIN} & Durata dichiarata per la lavorazione, in minuti. \\
+\texttt{DURATA\_FERMO\_MIN} & Durata dichiarata per i fermi, in minuti. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Quantità e produttività}\\*
+\addlinespace[2pt]
+\texttt{QTY\_KG} & Quantità associata alla singola occorrenza della macrofase, in kg. \\
+\texttt{QTY\_SCRAP\_KG} & Quantità di scarto associata alla singola occorrenza, in kg. \\
+\texttt{PRODUCTIVITY} & Produttività del passaggio, espressa in tonnellate al giorno per le registrazioni con durata positiva. \\
+\addlinespace[5pt]
+\multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Riferimenti al passaggio precedente}\\*
+\addlinespace[2pt]
+\texttt{FASE\_PRECEDENTE} & Codice della fase precedente nello stesso ODP. \\
+\texttt{MACHINE\_AGGREGATION\_CODE\_PRECEDENTE} & Macrofase del passaggio precedente nello stesso ODP. \\
+\texttt{DATAORA\_FINE\_PRECEDENTE} & Fine calcolata del passaggio precedente, utilizzata come riferimento per lo sfasamento. \\
+\texttt{SFASAMENTO\_MIN} & Differenza, in minuti, tra l'inizio corrente e la fine calcolata precedente. Un valore negativo indica sovrapposizione temporale. \\
+\end{longtable}
+\endgroup
+
+Le quantità dei consuntivi si riferiscono al materiale registrato in ciascun passaggio. Non vanno sommate lungo il ciclo per ottenere la quantità dell'ordine: lo stesso materiale può comparire in più lavorazioni. La quantità commerciale richiesta rimane quella della posizione ODV.
+
+% Current-snapshot empirical check: for all 19814 records with positive
+% DURATA_TOT_MIN, PRODUCTIVITY matches QTY_KG / 1000 * 1440 / DURATA_TOT_MIN
+% within 1e-4.
+Per \texttt{PRODUCTIVITY}, la verifica dei dati restituisce, per tutte le registrazioni con durata positiva, la relazione
+\[
+\texttt{PRODUCTIVITY}
+=\frac{\texttt{QTY\_KG}/1000}{\texttt{DURATA\_TOT\_MIN}/1440},
+\]
+che esprime tonnellate al giorno.
+
