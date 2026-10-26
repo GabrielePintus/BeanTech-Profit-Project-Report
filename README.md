@@ -104,10 +104,16 @@ required. Run **LaTeX Workshop: View LaTeX PDF file** to open the PDF in VS Code
 
 ## Editorial scope
 
+Use *macrofase* for a type of process step and *occorrenza di macrofase*
+for an individual recorded instance within an ODP. In cycle reconstruction,
+each node represents an occurrence; avoid using *operazione* as a synonym.
+
 Describe the final methodology, modelling choices and results rather than the
 chronology of development. References to data always mean the latest supplied
 dataset; delivery dates and earlier versions need not be repeated in the prose.
-Retain dated source paths and provenance in LaTeX comments for traceability.
+Retain dated source paths and provenance in LaTeX comments for traceability. When giving
+renaming examples, state both the original name or abbreviation and its normalized
+form, so the transformation is explicit.
 
 ## Production graph
 
@@ -128,3 +134,6 @@ Overleaf does not need Graphviz or shell escape.
 Use `\num{12345.67}` for quantities and statistics. The shared style displays
 a thin space for thousands and a point for decimals: `12 345.67`.
 Identifiers remain literal text and retain leading zeros.
+Use `\cdot` for explicit multiplication in mathematical expressions.
+Use numbered `equation` or `align` environments for displayed equations, with
+stable labels for cross-references. Do not use `\[ ... \]` or `$$ ... $$`.

@@ -3,10 +3,11 @@
 
 I dati aziendali collegano la domanda commerciale alle attività produttive registrate e costituiscono la base per la costruzione dei modelli. Il loro utilizzo richiede di comprenderne il contenuto e verificarne la coerenza. Questo capitolo presenta i dataset e il trattamento adottato per ricostruire cicli plausibili rispetto alle relazioni tra ordini, ai bilanci di massa e alle informazioni temporali. La documentazione aziendale costituisce un riferimento per l'interpretazione, pur non descrivendo tutti i percorsi ricostruiti.
 
-\section{I tre dataset}
+\section{Dati disponibili}
 \label{sec:updated-datasets}
+\label{sec:dataset-links}
 
-I dati disponibili sono organizzati in tre dataset collegati: le posizioni degli ordini di vendita descrivono la domanda commerciale, gli ordini di produzione riportano le specifiche produttive e i consuntivi documentano le attività registrate.
+I dati disponibili sono organizzati in tre dataset collegati: le posizioni degli ordini di vendita descrivono la domanda commerciale, gli ordini di produzione riportano le specifiche produttive e i consuntivi documentano le attività registrate. Per uniformità, i campi dei dataset sono indicati con i nomi normalizzati adottati nel progetto. La rinomina non ne modifica il contenuto né le unità di misura. La procedura è descritta nella \cref{sec:feature-name-normalization}.
 
 % Sources in StrategicPlannerBeanTech:
 % - data/README.md, current snapshot received on 2026-09-24;
@@ -40,14 +41,11 @@ Consuntivi & Una registrazione di macrofase per un ODP & \num{35893} & 19 \\
 
 Le posizioni ODV appartengono a \num{3147} ordini di vendita distinti. Il dataset degli ordini di produzione contiene \num{8054} ODP distinti, ai quali si riferiscono anche i consuntivi. La differenza rispetto alle \num{8059} righe deriva da cinque registrazioni ripetute con una diversa denominazione del cliente. Tutti i conteggi precedono il trattamento dei dati.
 
-\section{Collegamenti e convenzioni di lettura}
-\label{sec:dataset-links}
-
 I tre dataset sono collegati attraverso gli identificativi degli ordini. La coppia numero ODV e numero di posizione associa ciascun ODP alla corrispondente fornitura, mentre l'identificativo ODP collega le registrazioni dei consuntivi all'ordine di produzione. Nei dati disponibili, tutte le posizioni ODV sono associate ad almeno un ODP e tutti gli ODP hanno registrazioni nei consuntivi.
 
 Gli identificativi sono trattati come valori testuali, preservando gli zeri iniziali. Il valore \texttt{NULL} indica un'informazione mancante ed è distinto dallo zero numerico. Le quantità sono espresse in chilogrammi e le durate in minuti; le altre unità di misura sono indicate nelle descrizioni dei campi dove disponibili.
 
-\section{Ordini di vendita}
+\subsection{Ordini di vendita}
 \label{sec:sales-order-data}
 
 Il dataset degli ordini di vendita contiene una riga per ciascuna posizione ODV. Riporta i riferimenti commerciali, le caratteristiche del prodotto richiesto, le quantità e le date di consegna e approntamento. Le date confermate rappresentano impegni di pianificazione e non indicano necessariamente quando siano avvenuti gli eventi effettivi. La tabella seguente descrive i campi disponibili.
@@ -73,56 +71,56 @@ Il dataset degli ordini di vendita contiene una riga per ciascuna posizione ODV.
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e riferimenti commerciali}\\*
 \addlinespace[2pt]
-\texttt{Numero\_OdV} & Numero dell'ordine di vendita cui appartiene la posizione. \\
-\texttt{Posizione\_OdV} & Numero della posizione all'interno dell'ODV. Insieme a \texttt{Numero\_OdV} identifica la fornitura. \\
-\texttt{Concatenato\_Odv} & Riferimento composto ottenuto concatenando il numero ODV e la posizione nella codifica del file. \\
-\texttt{Id\_Cliente} & Identificativo del cliente. \\
-\texttt{Ragione\_Sociale} & Denominazione del cliente riportata nell'estrazione. \\
-\texttt{Stato\_Ordine\_Pos\_Cod} & Codice dello stato della posizione ODV. La corrispondenza tra valori numerici e stati commerciali richiede la relativa tabella di decodifica aziendale. \\
-\texttt{Materiale} & Codice del materiale associato alla fornitura. \\
+\texttt{odv} & Numero dell'ordine di vendita cui appartiene la posizione. \\
+\texttt{posizione\_odv} & Numero della posizione all'interno dell'ODV. Insieme a \texttt{odv} identifica la fornitura. \\
+\texttt{concatenato\_odv} & Riferimento composto ottenuto concatenando il numero ODV e la posizione nella codifica del file. \\
+\texttt{codice\_cliente} & Identificativo del cliente. \\
+\texttt{nome\_cliente} & Denominazione del cliente riportata nell'estrazione. \\
+\texttt{codice\_stato\_posizione\_ordine} & Codice dello stato della posizione ODV. La corrispondenza tra valori numerici e stati commerciali richiede la relativa tabella di decodifica aziendale. \\
+\texttt{codice\_materiale} & Codice del materiale associato alla fornitura. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Caratteristiche del prodotto}\\*
 \addlinespace[2pt]
-\texttt{Impianto} & Impianto o linea cui è riferita la fornitura. \\
-\texttt{Macrociclo\_Descr} & Descrizione sintetica del prodotto richiesto. Riassume caratteristiche del materiale e non costituisce la sequenza delle lavorazioni consuntivate. \\
-\texttt{Cod\_Montaggio} & Codice del montaggio associato alla posizione. Il dettaglio tecnico della codifica non è esplicitato nelle fonti disponibili. \\
-\texttt{Forma} & Forma del prodotto richiesta, nella codifica commerciale. \\
-\texttt{Finitura} & Finitura richiesta, nella codifica commerciale. \\
-\texttt{Stato\_Fisico} & Stato fisico richiesto, nella codifica commerciale. \\
-\texttt{Marca\_Cliente} & Denominazione della marca dell'acciaio utilizzata dal cliente. \\
-\texttt{Descr\_Marca\_Acciaio} & Denominazione della marca dell'acciaio riportata nel riferimento aziendale. \\
-\texttt{Vers\_Tecnica} & Identificativo della versione tecnica associata alla fornitura. \\
-\texttt{Modello\_PP} & Riferimento descrittivo del modello PP associato alla posizione. \\
-\texttt{NFA} & Riferimento tecnico NFA associato alla fornitura. \\
-\texttt{NFA\_Revisione} & Revisione del riferimento NFA. \\
-\texttt{Difetto\_Superficiale\_Max} & Valore limite riportato per il difetto superficiale ammesso. L'unità e i valori convenzionali richiedono la specifica tecnica aziendale. \\
-\texttt{Indice\_Di\_Criticità} & Rapporto tra la prima dimensione del grezzo e il difetto superficiale massimo ammesso, secondo la relazione riportata dopo la tabella. \\
-\texttt{Classe\_Carbonio} & Classe di carbonio assegnata all'acciaio, riportata come categoria. \\
+\texttt{impianto} & Impianto o linea cui è riferita la fornitura. \\
+\texttt{descrizione\_macrociclo} & Descrizione sintetica del prodotto richiesto. Riassume caratteristiche del materiale e non costituisce la sequenza delle lavorazioni consuntivate. \\
+\texttt{codice\_montaggio} & Codice del montaggio associato alla posizione. Il dettaglio tecnico della codifica non è esplicitato nelle fonti disponibili. \\
+\texttt{forma} & Forma del prodotto richiesta, nella codifica commerciale. \\
+\texttt{finitura} & Finitura richiesta, nella codifica commerciale. \\
+\texttt{stato\_fisico} & Stato fisico richiesto, nella codifica commerciale. \\
+\texttt{marca\_cliente} & Denominazione della marca dell'acciaio utilizzata dal cliente. \\
+\texttt{descrizione\_marca\_acciaio} & Denominazione della marca dell'acciaio riportata nel riferimento aziendale. \\
+\texttt{versione\_tecnica} & Identificativo della versione tecnica associata alla fornitura. \\
+\texttt{modello\_pp\_richiesto} & Riferimento descrittivo del modello PP associato alla posizione. \\
+\texttt{nfa} & Riferimento tecnico NFA associato alla fornitura. \\
+\texttt{revisione\_nfa} & Revisione del riferimento NFA. \\
+\texttt{difetto\_superficiale\_massimo} & Valore limite riportato per il difetto superficiale ammesso. L'unità e i valori convenzionali richiedono la specifica tecnica aziendale. \\
+\texttt{indice\_criticita} & Rapporto tra la prima dimensione del grezzo e il difetto superficiale massimo ammesso, secondo la relazione riportata dopo la tabella. \\
+\texttt{classe\_carbonio} & Classe di carbonio assegnata all'acciaio, riportata come categoria. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Dimensioni e tolleranze}\\*
 \addlinespace[2pt]
-\texttt{Desc\_Tipo\_Lungh} & Codice descrittivo del tipo di lunghezza richiesto. Le sigle sono conservate nella forma presente nel file. \\
-\texttt{Lungh\_Rich\_PF} & Lunghezza richiesta del prodotto finito. \\
-\texttt{Toll\_Min} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
-\texttt{Toll\_Max} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
-\texttt{Lungh\_Min} & Campo relativo alla lunghezza minima. Nel dataset è sempre pari a zero. \\
-\texttt{Lungh\_Max} & Campo relativo alla lunghezza massima. Nel dataset è sempre pari a zero. \\
-\texttt{Val\_Dim\_1} & Valore della prima dimensione richiesta, da interpretare in relazione alla forma del prodotto. \\
-\texttt{Val\_Dim\_2} & Valore della seconda dimensione richiesta. Nel dataset è sempre pari a zero. \\
-\texttt{Dim\_1\_Grezzo} & Prima dimensione del grezzo associato alla fornitura. \\
+\texttt{descrizione\_tipo\_lunghezza} & Codice descrittivo del tipo di lunghezza richiesto. Le sigle sono conservate nella forma presente nel file. \\
+\texttt{lunghezza\_richiesta} & Lunghezza richiesta del prodotto finito. \\
+\texttt{tolleranza\_minima\_lunghezza} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{tolleranza\_massima\_lunghezza} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{lunghezza\_minima} & Campo relativo alla lunghezza minima. Nel dataset è sempre pari a zero. \\
+\texttt{lunghezza\_massima} & Campo relativo alla lunghezza massima. Nel dataset è sempre pari a zero. \\
+\texttt{dimensione\_1\_mm} & Valore della prima dimensione richiesta, da interpretare in relazione alla forma del prodotto. \\
+\texttt{dimensione\_2\_mm} & Valore della seconda dimensione richiesta. Nel dataset è sempre pari a zero. \\
+\texttt{sezione\_grezza\_pp} & Prima dimensione del grezzo associato alla fornitura. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Quantità}\\*
 \addlinespace[2pt]
-\texttt{Qta\_OdV} & Quantità richiesta per la posizione ODV, in kg. \\
-\texttt{Qta\_evasa} & Quantità registrata come evasa per la posizione, in kg. \\
-\texttt{Qta\_sped} & Quantità registrata come spedita per la posizione, in kg. È distinta dalla quantità evasa. \\
+\texttt{quantita\_odv\_kg} & Quantità richiesta per la posizione ODV, in kg. \\
+\texttt{quantita\_evasa\_kg} & Quantità registrata come evasa per la posizione, in kg. \\
+\texttt{quantita\_spedita\_kg} & Quantità registrata come spedita per la posizione, in kg. È distinta dalla quantità evasa. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Date}\\*
 \addlinespace[2pt]
-\texttt{Data\_Consegna\_Richiesta} & Data di consegna richiesta dal cliente. \\
-\texttt{Data\_Consegna\_Confermata\_ATP} & Data di consegna confermata, riportata nel campo aziendale ATP. \\
-\texttt{Data\_Approntamento\_Confermata} & Data confermata per l'approntamento del materiale. \\
-\texttt{Data\_Uscita\_Merci\_Confermata} & Data confermata per l'uscita delle merci. \\
+\texttt{data\_consegna\_richiesta} & Data di consegna richiesta dal cliente. \\
+\texttt{data\_consegna\_confermata} & Data di consegna confermata, riportata nel campo aziendale ATP. \\
+\texttt{data\_approntamento\_confermata} & Data confermata per l'approntamento del materiale. \\
+\texttt{data\_uscita\_merci\_confermata} & Data confermata per l'uscita delle merci. \\
 \end{longtable}
 \endgroup
 
@@ -130,13 +128,14 @@ Il dataset degli ordini di vendita contiene una riga per ciascuna posizione ODV.
 % 6409 nonzero denominators match the ratio within 0.005 (two decimals);
 % all 589 zero denominators have a zero criticality index.
 Nei dati, l'indice di criticità è una variabile derivata. Per un valore non nullo del difetto superficiale massimo, vale la relazione
-\[
-\texttt{Indice\_Di\_Criticità}
-=\frac{\texttt{Dim\_1\_Grezzo}}{\texttt{Difetto\_Superficiale\_Max}},
-\]
+\begin{equation}
+\label{eq:criticality-index}
+\texttt{indice\_criticita}
+=\frac{\texttt{sezione\_grezza\_pp}}{\texttt{difetto\_superficiale\_massimo}},
+\end{equation}
 con arrotondamento a due decimali. La relazione è verificata su tutte le \num{6409} posizioni con denominatore diverso da zero. Nelle restanti \num{589}, il difetto superficiale massimo è zero e l'indice è registrato come zero, anziché come rapporto non definito. L'indice non aggiunge quindi informazione indipendente rispetto alle due variabili da cui è calcolato.
 
-\section{Ordini di produzione}
+\subsection{Ordini di produzione}
 \label{sec:production-order-data}
 
 Il dataset degli ordini di produzione raccoglie le informazioni anagrafiche e tecniche degli ODP e collega ciascun ordine alla posizione ODV di origine. Descrive il materiale da produrre e le relative specifiche dimensionali. La quantità richiesta è riportata nella posizione ODV, mentre le quantità associate ai singoli passaggi produttivi si trovano nei consuntivi.
@@ -164,54 +163,54 @@ Le caratteristiche comuni ai dataset degli ordini di vendita e di produzione pos
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e riferimenti commerciali}\\*
 \addlinespace[2pt]
-\texttt{ODP} & Identificativo dell'ordine di produzione. \\
-\texttt{ODV} & Numero dell'ordine di vendita di origine. \\
-\texttt{POSIZIONE\_ODV} & Posizione dell'ODV alla quale è associato l'ODP. \\
-\texttt{COD\_CLIENTE} & Identificativo del cliente. \\
-\texttt{NOME\_CLIENTE} & Denominazione del cliente riportata nel file. \\
+\texttt{odp} & Identificativo dell'ordine di produzione. \\
+\texttt{odv} & Numero dell'ordine di vendita di origine. \\
+\texttt{posizione\_odv} & Posizione dell'ODV alla quale è associato l'ODP. \\
+\texttt{codice\_cliente} & Identificativo del cliente. \\
+\texttt{nome\_cliente} & Denominazione del cliente riportata nel file. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Caratteristiche del prodotto e del materiale}\\*
 \addlinespace[2pt]
-\texttt{COLATA} & Riferimento alla colata associata all'ODP. \\
-\texttt{AREA\_PRODOTTO} & Area merceologica del prodotto. \\
-\texttt{COD\_MATERIALE} & Codice del materiale da produrre. \\
-\texttt{DESCR\_MATERIALE} & Descrizione sintetica del materiale. \\
-\texttt{MARCA\_ACCIAIO} & Marca dell'acciaio associata all'ODP. \\
-\texttt{NFA} & Riferimento tecnico NFA associato all'ODP. \\
-\texttt{REVISIONE\_NFA} & Revisione del riferimento NFA. \\
-\texttt{PRODOTTO} & Tipologia di prodotto, come laminato barre, vergella o barre per sfere macinanti. \\
-\texttt{FINITURA} & Finitura prevista per il prodotto. \\
-\texttt{FORMA} & Forma del prodotto nella codifica produttiva. \\
-\texttt{STATO\_FISICO} & Stato fisico previsto per il prodotto. \\
-\texttt{AUTOMOTIVE} & Campo relativo alla destinazione automotive, interamente non valorizzato nel dataset. \\
-\texttt{COLORE\_ROTTAME} & Categoria di colore associata al materiale: rosso, blu o verde. Il campo è una classificazione tecnica e non misura una quantità di scarto. \\
-\texttt{MODELLO\_PP} & Codice del modello PP. \\
-\texttt{DESCR\_MODELLO\_PP} & Descrizione del modello PP. \\
+\texttt{colata} & Riferimento alla colata associata all'ODP. \\
+\texttt{area\_prodotto} & Area merceologica del prodotto. \\
+\texttt{codice\_materiale} & Codice del materiale da produrre. \\
+\texttt{descrizione\_materiale} & Descrizione sintetica del materiale. \\
+\texttt{marca\_acciaio} & Marca dell'acciaio associata all'ODP. \\
+\texttt{nfa} & Riferimento tecnico NFA associato all'ODP. \\
+\texttt{revisione\_nfa} & Revisione del riferimento NFA. \\
+\texttt{prodotto} & Tipologia di prodotto, come laminato barre, vergella o barre per sfere macinanti. \\
+\texttt{finitura} & Finitura prevista per il prodotto. \\
+\texttt{forma} & Forma del prodotto nella codifica produttiva. \\
+\texttt{stato\_fisico} & Stato fisico previsto per il prodotto. \\
+\texttt{automotive} & Campo relativo alla destinazione automotive, interamente non valorizzato nel dataset. \\
+\texttt{colore\_rottame} & Categoria di colore associata al materiale: rosso, blu o verde. Il campo è una classificazione tecnica e non misura una quantità di scarto. \\
+\texttt{codice\_modello\_pp} & Codice del modello PP. \\
+\texttt{descrizione\_modello\_pp} & Descrizione del modello PP. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Dimensioni e tolleranze}\\*
 \addlinespace[2pt]
-\texttt{DIMENSIONE\_1} & Descrizione testuale della prima dimensione. \\
-\texttt{DIMENSIONE\_2} & Descrizione testuale della seconda dimensione. Nel dataset è sempre riportato il simbolo \texttt{-}. \\
-\texttt{SEZIONE\_GREZZA\_PP} & Dimensione caratteristica della sezione grezza associata al modello PP. \\
-\texttt{DIMENSIONE\_1\_MM} & Valore numerico della prima dimensione, in mm. \\
-\texttt{TOLL\_MIN\_DIM\_1} & Scostamento inferiore ammesso rispetto alla prima dimensione nominale, in mm. \\
-\texttt{TOLL\_MAX\_DIM\_1} & Scostamento superiore ammesso rispetto alla prima dimensione nominale, in mm. \\
-\texttt{DIMENSIONE\_2\_MM} & Valore numerico della seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
-\texttt{TOLL\_MIN\_DIM\_2} & Scostamento inferiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
-\texttt{TOLL\_MAX\_DIM\_2} & Scostamento superiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
-\texttt{LUNGHEZZA\_RICHIESTA} & Lunghezza richiesta per il prodotto dell'ODP. \\
-\texttt{TOLL\_MIN\_LUNGH} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
-\texttt{TOLL\_MAX\_LUNGH} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
-\texttt{SPESSORE\_GREZZO\_PP} & Spessore del grezzo associato al modello PP. Nel dataset il campo è sempre pari a zero. \\
+\texttt{dimensione\_1\_testo} & Descrizione testuale della prima dimensione. \\
+\texttt{dimensione\_2\_testo} & Descrizione testuale della seconda dimensione. Nel dataset è sempre riportato il simbolo \texttt{-}. \\
+\texttt{sezione\_grezza\_pp} & Dimensione caratteristica della sezione grezza associata al modello PP. \\
+\texttt{dimensione\_1\_mm} & Valore numerico della prima dimensione, in mm. \\
+\texttt{tolleranza\_minima\_dimensione\_1\_mm} & Scostamento inferiore ammesso rispetto alla prima dimensione nominale, in mm. \\
+\texttt{tolleranza\_massima\_dimensione\_1\_mm} & Scostamento superiore ammesso rispetto alla prima dimensione nominale, in mm. \\
+\texttt{dimensione\_2\_mm} & Valore numerico della seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{tolleranza\_minima\_dimensione\_2\_mm} & Scostamento inferiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{tolleranza\_massima\_dimensione\_2\_mm} & Scostamento superiore ammesso sulla seconda dimensione, in mm. Nel dataset è sempre pari a zero. \\
+\texttt{lunghezza\_richiesta} & Lunghezza richiesta per il prodotto dell'ODP. \\
+\texttt{tolleranza\_minima\_lunghezza} & Scostamento inferiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{tolleranza\_massima\_lunghezza} & Scostamento superiore ammesso rispetto alla lunghezza richiesta. \\
+\texttt{spessore\_grezzo\_pp} & Spessore del grezzo associato al modello PP. Nel dataset il campo è sempre pari a zero. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Motivo dell'ordine}\\*
 \addlinespace[2pt]
-\texttt{COD\_MOTIVO\_ORDINE} & Codice del motivo specifico associato all'ordine, quando valorizzato. \\
-\texttt{DESCR\_MOTIVO\_ORDINE} & Descrizione del motivo specifico dell'ordine. \\
+\texttt{codice\_motivo\_ordine} & Codice del motivo specifico associato all'ordine, quando valorizzato. \\
+\texttt{descrizione\_motivo\_ordine} & Descrizione del motivo specifico dell'ordine. \\
 \end{longtable}
 \endgroup
 
-\section{Consuntivi di produzione}
+\subsection{Consuntivi di produzione}
 \label{sec:production-records-data}
 
 Il dataset dei consuntivi di produzione descrive i passaggi registrati per ciascun ODP. Ogni riga identifica una singola occorrenza di macrofase e riporta tempi, durate, quantità e riferimenti al passaggio precedente. La stessa macrofase può comparire più volte all'interno di un ordine.
@@ -237,34 +236,34 @@ Il dataset dei consuntivi di produzione descrive i passaggi registrati per ciasc
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Identificativi e passaggio produttivo}\\*
 \addlinespace[2pt]
-\texttt{ODP} & Ordine di produzione cui appartiene la registrazione. \\
-\texttt{ODV} & Ordine di vendita cui è collegato l'ODP. \\
-\texttt{POSIZIONE\_ODV} & Posizione ODV cui è collegato l'ODP. \\
-\texttt{MACHINE\_AGGREGATION\_CODE} & Macrofase della registrazione, tra quelle descritte nella \cref{sec:production-phases}. \\
-\texttt{FASE} & Codice della fase nel percorso dell'ODP. È riferito al singolo ordine e non identifica una macchina. \\
+\texttt{odp} & Ordine di produzione cui appartiene la registrazione. \\
+\texttt{odv} & Ordine di vendita cui è collegato l'ODP. \\
+\texttt{posizione\_odv} & Posizione ODV cui è collegato l'ODP. \\
+\texttt{macro\_fase} & Macrofase della registrazione, tra quelle descritte nella \cref{sec:production-phases}. \\
+\texttt{codice\_fase} & Codice della fase nel percorso dell'ODP. È riferito al singolo ordine e non identifica una macchina. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Date e durate}\\*
 \addlinespace[2pt]
-\texttt{DATAORA\_INIZIO\_ORIGINALE} & Data e ora di inizio registrate per il passaggio produttivo. \\
-\texttt{DATAORA\_FINE} & Data e ora di fine registrate nel sistema sorgente. \\
-\texttt{DATAORA\_FINE\_CALCOLATA} & Data e ora di fine calcolate sommando all'inizio la durata totale troncata al minuto intero. Sono distinte dalla fine registrata. \\
-\texttt{DURATA\_TOT\_MIN} & Durata totale dichiarata del passaggio, in minuti. \\
-\texttt{DURATA\_SETUP\_MIN} & Durata dichiarata per la preparazione, in minuti. \\
-\texttt{DURATA\_LAV\_MIN} & Durata dichiarata per la lavorazione, in minuti. \\
-\texttt{DURATA\_FERMO\_MIN} & Durata dichiarata per i fermi, in minuti. \\
+\texttt{data\_ora\_inizio\_registrata} & Data e ora di inizio registrate per il passaggio produttivo. \\
+\texttt{data\_ora\_fine\_registrata} & Data e ora di fine registrate nel sistema sorgente. \\
+\texttt{data\_ora\_fine\_calcolata} & Data e ora di fine calcolate sommando all'inizio la durata totale troncata al minuto intero. Sono distinte dalla fine registrata. \\
+\texttt{durata\_totale\_minuti} & Durata totale dichiarata del passaggio, in minuti. \\
+\texttt{durata\_setup\_minuti} & Durata dichiarata per la preparazione, in minuti. \\
+\texttt{durata\_lavorazione\_minuti} & Durata dichiarata per la lavorazione, in minuti. \\
+\texttt{durata\_fermo\_minuti} & Durata dichiarata per i fermi, in minuti. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Quantità e produttività}\\*
 \addlinespace[2pt]
-\texttt{QTY\_KG} & Quantità associata alla singola occorrenza della macrofase, in kg. \\
-\texttt{QTY\_SCRAP\_KG} & Quantità di scarto associata alla singola occorrenza, in kg. \\
-\texttt{PRODUCTIVITY} & Produttività del passaggio, espressa in tonnellate al giorno per le registrazioni con durata positiva. \\
+\texttt{quantita\_kg} & Quantità associata alla singola occorrenza della macrofase, in kg. \\
+\texttt{quantita\_scarto\_kg} & Quantità di scarto associata alla singola occorrenza, in kg. \\
+\texttt{produttivita} & Produttività del passaggio, espressa in tonnellate al giorno per le registrazioni con durata positiva. \\
 \addlinespace[5pt]
 \multicolumn{2}{@{}l}{\small\bfseries\color{ReportBlue} Riferimenti al passaggio precedente}\\*
 \addlinespace[2pt]
-\texttt{FASE\_PRECEDENTE} & Codice della fase precedente nello stesso ODP. \\
-\texttt{MACHINE\_AGGREGATION\_CODE\_PRECEDENTE} & Macrofase del passaggio precedente nello stesso ODP. \\
-\texttt{DATAORA\_FINE\_PRECEDENTE} & Fine calcolata del passaggio precedente, utilizzata come riferimento per lo sfasamento. \\
-\texttt{SFASAMENTO\_MIN} & Differenza, in minuti, tra l'inizio corrente e la fine calcolata precedente. Un valore negativo indica sovrapposizione temporale. \\
+\texttt{codice\_fase\_precedente} & Codice della fase precedente nello stesso ODP. \\
+\texttt{macro\_fase\_precedente} & Macrofase del passaggio precedente nello stesso ODP. \\
+\texttt{data\_ora\_fine\_calcolata\_precedente} & Fine calcolata del passaggio precedente, utilizzata come riferimento per lo sfasamento. \\
+\texttt{sfasamento\_minuti} & Differenza, in minuti, tra l'inizio corrente e la fine calcolata precedente. Un valore negativo indica sovrapposizione temporale. \\
 \end{longtable}
 \endgroup
 
@@ -273,10 +272,285 @@ Le quantità dei consuntivi si riferiscono al materiale registrato in ciascun pa
 % Current-snapshot empirical check: for all 19814 records with positive
 % DURATA_TOT_MIN, PRODUCTIVITY matches QTY_KG / 1000 * 1440 / DURATA_TOT_MIN
 % within 1e-4.
-Per \texttt{PRODUCTIVITY}, la verifica dei dati restituisce, per tutte le registrazioni con durata positiva, la relazione
-\[
-\texttt{PRODUCTIVITY}
-=\frac{\texttt{QTY\_KG}/1000}{\texttt{DURATA\_TOT\_MIN}/1440},
-\]
+Per \texttt{produttivita}, la verifica dei dati restituisce, per tutte le registrazioni con durata positiva, la relazione
+\begin{equation}
+\label{eq:productivity}
+\texttt{produttivita}
+=\frac{\texttt{quantita\_kg}/1000}{\texttt{durata\_totale\_minuti}/1440},
+\end{equation}
 che esprime tonnellate al giorno.
 
+\section{Preparazione e controlli preliminari}
+\label{sec:preliminary-data-preparation}
+
+La preparazione dei dati rinomina i campi secondo una convenzione comune, definisce i tipi delle variabili e verifica identificativi, duplicati e collegamenti tra i dataset. Questi passaggi precedono la ricostruzione dei cicli produttivi e le verifiche di coerenza delle quantità e delle informazioni temporali.
+
+\subsection{Normalizzazione dei nomi dei campi}
+\label{sec:feature-name-normalization}
+
+% Implementation in StrategicPlannerBeanTech/src/strategic_planner/data/:
+% snapshot_20260924.py: read_raw_csv;
+% feature_names.json: raw_to_legacy, common, tables, semantic_notes;
+% feature_names.py: rename_raw_columns, column_mapping, converted_columns,
+% rename_features. Naming is distinct from type conversion and data cleaning.
+Le intestazioni vengono ripulite dagli spazi iniziali e finali e dalle parentesi quadre, quindi convertite in minuscolo. Un registro centralizzato definisce le rinomine specifiche dei tre dataset e assegna nomi uniformi alle grandezze corrispondenti. Per esempio, \texttt{Qta\_OdV} diventa \texttt{quantita\_odv\_kg} e \texttt{QTY\_KG} diventa \texttt{quantita\_kg}, distinguendo la quantità richiesta dalla posizione ODV da quella registrata nel passaggio produttivo. Le abbreviazioni originali sono esplicitate secondo il significato del campo: \texttt{min} diventa \texttt{minuti} nelle durate e \texttt{minima} nelle tolleranze, mentre \texttt{max} diventa \texttt{massima} nelle tolleranze. Le unità di misura sono riportate nei nomi quando verificate, senza attribuirle ai campi per cui non sono documentate.
+
+Le corrispondenze sono definite per ciascun dataset e sono reversibili. La procedura verifica che due colonne non confluiscano nello stesso nome. La sola rinomina conserva valori, tipi e ordine delle colonne e non comporta conversioni di unità, ricodifiche delle categorie o imputazioni. Un nome comune non implica che i valori abbiano la stessa codifica nei diversi dataset, come nel caso delle finiture descritto nella \cref{sec:production-order-data}.
+
+\subsection{Tipi delle variabili e valori mancanti}
+\label{sec:data-types-and-missing-values}
+
+% Implementation: snapshot_20260924.py, read_raw_csv, _as_numeric,
+% _as_datetime, prepare_sales_orders, prepare_production_orders,
+% prepare_consuntivi. Types checked on the current raw files.
+Gli identificativi rimangono testuali per preservare gli zeri iniziali. Quantità, dimensioni e indicatori sono convertiti in valori numerici, con quantità in chilogrammi intere e durate anche decimali. Le date commerciali non includono l'orario, mentre i riferimenti temporali dei consuntivi conservano data e ora con precisione al millisecondo.
+
+Il valore sorgente \texttt{NULL} viene riconosciuto come mancante e resta distinto dallo zero numerico. La conversione dei tipi non sostituisce i valori mancanti e non corregge gli zeri, che devono essere interpretati in relazione al campo e alla macrofase. Valori non interpretabili nel tipo previsto generano un errore di conversione, senza essere trasformati automaticamente in valori mancanti.
+
+\subsection{Duplicati e integrità dei collegamenti}
+\label{sec:duplicates-and-data-links}
+
+% Implementation: snapshot_20260924.py, customer_name_conflicts,
+% prepare_production_orders, deduplicate_operations, prepare_sales_orders,
+% build_cycles, validate_snapshot. Entry point: prepare_20260924_snapshot.py.
+% Direct current-source check: 8059 -> 8054 production rows;
+% 35893 -> 35890 operations (1 identical, 2 zero-quantity duplicates),
+% affecting 3 distinct ODP. All preliminary relational checks pass.
+Negli ordini di produzione, le righe che coincidono in tutti i campi tranne \texttt{nome\_cliente} sono accorpate, utilizzando \texttt{codice\_cliente} come riferimento del cliente. La denominazione viene esclusa dalla tabella ODP preparata e le varianti sono conservate separatamente per la tracciabilità. Nei dati, questo trattamento elimina cinque righe ripetute e porta da \num{8059} a \num{8054} registrazioni. Eventuali ulteriori righe riferite allo stesso ODP ma con attributi discordanti interrompono la preparazione.
+
+Nei consuntivi si confrontano soltanto registrazioni adiacenti dello stesso ODP, seguendo l'ordine del file sorgente. Due righe possono essere considerate duplicate se coincidono la posizione ODV, la macrofase, i tre riferimenti temporali e le quattro durate. Se uno di questi valori manca, entrambe vengono conservate. Quando coincidono anche quantità e scarto, si mantiene la prima riga. Quando invece una riga ha quantità e scarto pari a zero e l'altra ha quantità positiva, si conserva quest'ultima. Il codice della fase, i riferimenti al predecessore e la produttività non sono usati nel confronto. La sola ripetizione di una macrofase non basta quindi a identificare un duplicato.
+
+Queste regole rimuovono tre registrazioni: una duplicazione con quantità e scarto coincidenti e due con quantità pari a zero, distribuite su tre ODP. I consuntivi passano da \num{35893} a \num{35890} righe, senza sommare quantità né eliminare ordini. Sulla sequenza risultante vengono aggiornati i riferimenti al passaggio precedente e ricalcolato lo sfasamento; la prima registrazione di ciascun ODP resta priva di predecessore.
+
+Infine, si verifica che ogni posizione ODV sia identificata univocamente dalla coppia \texttt{odv} e \texttt{posizione\_odv}, che ogni ODP compaia una sola volta nella relativa anagrafica e che i consuntivi ne riportino la stessa associazione commerciale. L'insieme degli ODP deve coincidere nelle tabelle anagrafiche e nei consuntivi, e tutte le posizioni ODV devono essere rappresentate da almeno un ODP. Si richiede inoltre una sola registrazione \texttt{TRENOLUNA} per ciascun ODP. Le tabelle preparate soddisfano questi controlli, che costituiscono le condizioni di ingresso alla successiva ricostruzione dei cicli.
+
+\section{Ricostruzione e coerenza dei cicli produttivi}
+\label{sec:cycle-reconstruction}
+
+I consuntivi descrivono le singole occorrenze di macrofase, ma non specificano completamente come il materiale passi dall'una all'altra. L'ordine delle registrazioni e i riferimenti al predecessore non bastano a distinguere una sequenza di lavorazioni da percorsi che interessano porzioni diverse dell'ODP. La ricostruzione cerca quindi collegamenti compatibili con le quantità, gli scarti e i tempi registrati. Il risultato è un ciclo plausibile rispetto alle informazioni disponibili, senza assumere che coincida necessariamente con il percorso fisico effettivo.
+
+\subsection{Rappresentazione delle occorrenze e dei flussi}
+\label{sec:material-flow-representation}
+
+% Implementation in StrategicPlannerBeanTech/src/strategic_planner/data/:
+% general_flows.py, _solve_order and infer_general_material_flows;
+% operation_graphs.py, READY_PHASES.
+% General material-flow inference is independent of intermediate phase names.
+% HPT is excluded from material flow. Root/readiness boundary conventions,
+% timing constraints and implicit completion need separate explanations below.
+Per ciascun ODP, le occorrenze di macrofase sono rappresentate mediante un grafo orientato. Ogni nodo identifica un'occorrenza, mentre un arco indica il trasferimento di una quantità di materiale da un'occorrenza alla successiva. Due registrazioni della stessa macrofase costituiscono quindi nodi distinti. Un nodo può avere più archi uscenti, quando il materiale si divide tra percorsi diversi, oppure più archi entranti, quando più porzioni si ricongiungono. L'esistenza degli archi e le quantità trasferite devono essere ricostruite dai dati.
+
+Il campo \texttt{quantita\_kg} è interpretato come massa in ingresso all'occorrenza. Lo scarto, riportato in \texttt{quantita\_scarto\_kg}, è incluso in tale massa. La differenza rappresenta il materiale disponibile in uscita per i passaggi successivi. La ricostruzione considera \texttt{TRENOLUNA} come origine del flusso e gli stati \texttt{PRONTO}, \texttt{PRONTO\_QS} e \texttt{PRONTO\_QWR} come riferimenti per l'approntamento. Le registrazioni \texttt{HPT}, che rappresentano stati di attesa, non partecipano al bilancio dei flussi di materiale. Queste convenzioni definiscono il modello di ricostruzione e vanno distinte dai collegamenti effettivamente dedotti per ciascun ordine.
+
+\subsection{Compatibilità temporale dei collegamenti}
+\label{sec:flow-temporal-compatibility}
+
+% Open methodological issue raised by the author on 2026-10-26:
+% timestamps are not guaranteed to represent physical precedence exactly.
+% See StrategicPlannerBeanTech/notes/Pipeline - stato della ricostruzione dei cicli.md,
+% section "Punto aperto: timestamp e trattamento dei dati".
+% Keep documenting the current pipeline for now. Revisit temporal constraints,
+% reconstruction, corrections and selection together when this issue is addressed.
+
+% Implementation: general_flows.py, _solve_order, availability and arc generation.
+% Default strict policy, without explicitly authorized collector/handoff roles.
+% Boundary exceptions and composite phases are described separately later.
+Due occorrenze di macrofase possono essere collegate se il materiale in uscita dalla prima è disponibile entro l'inizio della seconda. Nella ricostruzione ordinaria, questo significa che la prima occorrenza deve terminare prima o nello stesso istante in cui inizia la seconda. Come riferimento per la fine si utilizza \texttt{data\_ora\_fine\_calcolata}. Si richiede inoltre che gli inizi e le disponibilità siano strettamente crescenti lungo il collegamento. Occorrenze con lo stesso istante di inizio non vengono ordinate sulla base della posizione nel file. I riferimenti temporali devono essere presenti e le date di fine non possono precedere l'inizio della rispettiva occorrenza.
+
+Per le registrazioni di materiale pronto si adotta una condizione diversa: il materiale può arrivare fino a \texttt{data\_ora\_fine\_registrata} della registrazione \texttt{PRONTO}, \texttt{PRONTO\_QS} o \texttt{PRONTO\_QWR}, anziché dover essere disponibile al suo inizio. Un ramo che termina con lo scarto dell'intera quantità non deve invece ricongiungersi al materiale approntato. Queste condizioni delimitano i collegamenti possibili, ma non impongono una catena unica. Occorrenze temporalmente sovrapposte possono appartenere a rami distinti, purché le quantità consentano tale ricostruzione.
+
+\subsection{Bilanci di massa}
+\label{sec:flow-mass-balances}
+
+% Implementation: general_flows.py, _solve_order, quantity validation,
+% output/input equalities, input residual bounds and final mass check.
+% operation_graphs.py: _mass_close, MASS_RELATIVE_TOLERANCE_DENOMINATOR=1000.
+% Current production policy: relative tolerance only, no absolute kg cap.
+Per verificare i bilanci di massa, rappresentiamo i flussi tra le $n$ occorrenze di macrofase di un ODP mediante la matrice dei flussi di materiale $M$. Ogni elemento $M_{ij}=f_{ij}$ indica i chilogrammi trasferiti dall'occorrenza $i$ all'occorrenza $j$ ed è un numero intero non negativo. Le righe identificano quindi le occorrenze di provenienza e le colonne quelle di destinazione. La riga $i$, evidenziata in giallo, descrive i flussi uscenti dall'occorrenza $i$, mentre la colonna $i$, contornata in blu, ne descrive i flussi entranti:
+\begin{equation}
+\label{eq:matrix-material-flows}
+\vcenter{\hbox{\input{figures/general-material-flow-matrix}}}
+\end{equation}
+La somma della riga $i$ è la massa uscente $u_i$ e la somma della colonna $i$ è la massa entrante $F_i$. Gli elementi sulla diagonale sono zero perché un'occorrenza non trasferisce materiale a sé stessa. Sono zero anche gli elementi corrispondenti a collegamenti assenti.
+
+Queste somme devono essere coerenti con le quantità registrate nei consuntivi. Per ogni occorrenza $i$, indichiamo con $q_i$ la massa riportata in \texttt{quantita\_kg} e con $s_i$ lo scarto riportato in \texttt{quantita\_scarto\_kg}. Entrambi i valori devono essere presenti e interi, con $q_i>0$ e $0\leq s_i\leq q_i$. Le registrazioni di materiale pronto devono avere scarto pari a zero.
+
+Per ogni occorrenza diversa dal nodo finale, la massa uscente deve coincidere esattamente con quella registrata meno lo scarto:
+\begin{equation}
+\label{eq:outgoing-mass-balance}
+u_i=q_i-s_i.
+\end{equation}
+La somma della riga vincola quindi la ripartizione del materiale tra le occorrenze successive, senza duplicarlo. Se tutta la massa ricevuta viene scartata, la riga è nulla perché non resta materiale da trasferire.
+
+Per ogni occorrenza diversa da \texttt{TRENOLUNA}, la massa entrante $F_i$ viene invece confrontata con $q_i$, ammettendo uno scostamento non superiore allo $0.1\%$ della minore tra le due quantità:
+\begin{equation}
+\label{eq:incoming-mass-tolerance}
+\lvert F_i-q_i\rvert\leq \num{0.001}\cdot\min(F_i,q_i).
+\end{equation}
+La tolleranza riguarda il confronto tra la somma della colonna e il dato registrato, mentre il bilancio in uscita rimane esatto. Non viene applicato un limite assoluto aggiuntivo in chilogrammi. Il nodo iniziale è escluso da questo confronto perché riceve materiale dall'esterno del grafo, mentre il nodo finale è escluso dal bilancio in uscita perché non trasferisce materiale ad altre occorrenze.
+
+Anche il bilancio complessivo dell'ODP deve rispettare la stessa tolleranza. La quantità in ingresso a \texttt{TRENOLUNA}, meno tutti gli scarti registrati lungo il ciclo, deve corrispondere alla quantità della registrazione di materiale pronto. Questo controllo globale si affianca ai bilanci delle singole occorrenze. Tutti devono essere soddisfatti dalla stessa matrice dei flussi di materiale $M$, utilizzando soltanto collegamenti compatibili con i vincoli temporali.
+
+% Real example: ODP 000010887181, ODV 0001123859, position 000010.
+% Current raw Consuntivi_260915.csv: q=(18846,3590,17235), s=(1611,0,0).
+% Current general-flow export: unique solution, zero input-mass residuals,
+% edges 1->2=3590, 1->3=13645, 2->3=3590 kg. No statistical imputations.
+\begin{examplebox}[ex:material-flow-matrix]{Dai flussi di materiale alla matrice}
+Nell'ODP \texttt{000010887181}, \texttt{TRENOLUNA} registra \num{18846} kg in ingresso e \num{1611} kg di scarto. Dei \num{17235} kg rimanenti, \num{3590} passano ai \texttt{BANCHI} e \num{13645} raggiungono direttamente \texttt{PRONTO}. I \texttt{BANCHI} non registrano scarto e trasferiscono a \texttt{PRONTO} tutta la quantità ricevuta. I numeri da 1 a 3 identificano le stesse occorrenze nel grafo e nella matrice.
+
+\begin{center}
+\input{figures/material-flow-matrix-example}
+\end{center}
+
+La prima riga, evidenziata in giallo, mostra la ripartizione della massa in uscita da \texttt{TRENOLUNA}: $u_1=\num{3590}+\num{13645}=\num{17235}$ kg. La terza colonna, contornata in blu, mostra il ricongiungimento in \texttt{PRONTO}: $F_3=\num{13645}+\num{3590}=\num{17235}$ kg. La prima colonna è nulla perché l'ingresso a \texttt{TRENOLUNA} proviene dall'esterno del grafo. La terza riga è nulla perché \texttt{PRONTO} è il nodo finale e non trasferisce materiale ad altre occorrenze.
+\end{examplebox}
+
+\subsection{Scelta dei flussi e ambiguità della ricostruzione}
+\label{sec:flow-selection-and-ambiguity}
+
+% Implementation: general_flows.py, _solve_order, objective, optimal_error,
+% MinimumBranchSolver invocation, ranges and ambiguity classification;
+% branch_selection.py, MinimumBranchSolver.
+% Two production objectives only: input L1 mass error, then active links.
+% No transition-support or minimum-parallelism research policy is included.
+I vincoli temporali e i bilanci di massa possono ammettere più configurazioni della matrice dei flussi di materiale $M$ per lo stesso ODP. La ricostruzione le confronta applicando due criteri in ordine di priorità. Il primo minimizza gli scostamenti tra le masse entranti ricostruite e quelle registrate. Il secondo, applicato soltanto alle soluzioni con lo stesso scostamento minimo, cerca il minor numero di collegamenti attivi.
+
+Indichiamo con $\mathcal{A}$ l'insieme delle matrici che rispettano i vincoli descritti nelle sottosezioni precedenti e con $r$ l'indice dell'occorrenza \texttt{TRENOLUNA}. L'errore complessivo di una matrice $M$ è la somma degli scostamenti assoluti in ingresso, espressi in chilogrammi. Il primo criterio individua il suo valore minimo:
+\begin{equation}
+\label{eq:minimum-mass-discrepancy}
+\begin{aligned}
+E(M) &= \sum_{i\neq r}\lvert F_i-q_i\rvert, \\
+E^{\star} &= \min_{M\in\mathcal{A}} E(M).
+\end{aligned}
+\end{equation}
+Se esiste una ricostruzione che rispetta esattamente tutte le masse registrate, $E^{\star}=0$. Altrimenti vengono considerate soltanto le matrici che raggiungono il minor scostamento possibile, sempre entro le tolleranze ammesse.
+
+Un collegamento è attivo quando trasferisce una quantità positiva di materiale. A parità di errore minimo, il secondo criterio minimizza il numero di questi collegamenti:
+\begin{equation}
+\label{eq:minimum-active-links}
+\begin{aligned}
+C(M) &= \sum_{i,j}\mathbf{1}_{\{f_{ij}>0\}}, \\
+C^{\star} &= \min_{\substack{M\in\mathcal{A}\\E(M)=E^{\star}}} C(M).
+\end{aligned}
+\end{equation}
+Il termine $\mathbf{1}_{\{f_{ij}>0\}}$ vale uno se il collegamento è attivo e zero altrimenti. A parità di occorrenze, ridurre il numero di collegamenti equivale a ridurre le diramazioni e i ricongiungimenti aggiuntivi. Questa preferenza seleziona ricostruzioni più semplici senza peggiorare l'accordo con le masse registrate. Non elimina occorrenze e non modifica quantità, scarti o tempi.
+
+I due criteri possono lasciare più configurazioni della matrice dei flussi di materiale $M$ con lo stesso errore minimo $E^{\star}$ e lo stesso numero minimo di collegamenti $C^{\star}$. Queste ricostruzioni possono differire nei collegamenti presenti oppure nelle quantità trasferite. Per descrivere tali differenze, si considera un collegamento alla volta e si calcolano la minima e la massima quantità che può trasportare nelle ricostruzioni rimaste. Se il minimo è zero e il massimo è positivo, il collegamento compare soltanto in alcune ricostruzioni. Se il minimo è positivo, il collegamento è presente in tutte, ma la quantità può cambiare. Quando i due estremi coincidono, la quantità è fissata. Se sono entrambi zero, il collegamento è sempre assente. L'intera ricostruzione è univoca soltanto quando ogni elemento di $M$ ha lo stesso valore in tutte le soluzioni rimaste, come chiarisce il confronto nell'\cref{ex:ambiguous-material-flows}.
+
+% Real current-source example: Consuntivi_260915.csv, ODP 000010871161.
+% Raw source sequence: TRENOLUNA, BANCHI, ANTIMIX, PRONTO.
+% Display order is chronological/material order: TRENOLUNA, ANTIMIX, BANCHI, PRONTO.
+% q=(94085,710,1070,90735), s=(2990,0,360,0) in display order.
+% Direct replay of current general_flows.infer_general_material_flows on typed,
+% deduplicated raw rows (no mass/duration imputation, no implicit completion):
+% E*=0, C*=5. Flow bounds: 1->2=710, 1->3=[360,1070],
+% 1->4=[89315,90025], 2->3=[0,710], 2->4=[0,710], 3->4=710.
+% Both displayed matrices independently checked for all masses, timing and C=5.
+\begin{examplebox}[ex:ambiguous-material-flows]{Due ricostruzioni con gli stessi valori ottimi}
+L'ODP \texttt{000010871161} comprende quattro occorrenze, ordinate qui come \texttt{TRENOLUNA}, \texttt{ANTIMIX}, \texttt{BANCHI} e \texttt{PRONTO}. Da \texttt{TRENOLUNA} escono \num{91095} kg, dopo uno scarto di \num{2990} kg. \texttt{ANTIMIX} registra 710 kg senza scarto, mentre \texttt{BANCHI} registra \num{1070} kg in ingresso e 360 kg di scarto. La quantità finale è \num{90735} kg. Questi dati ammettono le due matrici seguenti, espresse in chilogrammi e con le righe e le colonne nello stesso ordine:
+\begin{equation}
+\label{eq:ambiguous-flow-example}
+\begin{aligned}
+M_A&=\begin{pmatrix}
+0&710&\textcolor{ReportBlue}{\num{1070}}&\textcolor{ReportBlue}{\num{89315}}\\
+0&0&\textcolor{ReportBlue}{0}&\textcolor{ReportBlue}{710}\\
+0&0&0&710\\
+0&0&0&0
+\end{pmatrix},
+&\quad
+M_B&=\begin{pmatrix}
+0&710&\textcolor{ReportBlue}{360}&\textcolor{ReportBlue}{\num{90025}}\\
+0&0&\textcolor{ReportBlue}{710}&\textcolor{ReportBlue}{0}\\
+0&0&0&710\\
+0&0&0&0
+\end{pmatrix}.
+\end{aligned}
+\end{equation}
+Entrambe rispettano esattamente le masse registrate, hanno cinque collegamenti attivi e sono compatibili con i tempi. Nella configurazione $M_A$, i 710 kg di \texttt{ANTIMIX} vanno direttamente a \texttt{PRONTO}. Nella configurazione $M_B$, passano invece ai \texttt{BANCHI}, che ricevono soltanto i restanti 360 kg direttamente da \texttt{TRENOLUNA}. Gli elementi in blu evidenziano le differenze.
+
+Il collegamento \texttt{ANTIMIX} $\rightarrow$ \texttt{BANCHI} ha quindi minimo 0 e massimo 710 kg, perché è assente in $M_A$ e presente in $M_B$. Il collegamento \texttt{TRENOLUNA} $\rightarrow$ \texttt{BANCHI} è invece necessario, ma la sua quantità varia tra 360 e \num{1070} kg. Il trasferimento \texttt{BANCHI} $\rightarrow$ \texttt{PRONTO} resta fissato a 710 kg in entrambe.
+\end{examplebox}
+
+L'ampiezza dell'ambiguità viene valutata confrontando, per ogni collegamento da $i$ a $j$, la differenza tra massimo e minimo con lo $0.1\%$ della minore tra la massa disponibile in uscita da $i$ e quella registrata in ingresso a $j$. Si segnala se l'ampiezza supera questa soglia, mantenendo distinta tale valutazione dall'unicità matematica della ricostruzione.
+
+\subsection{Ricostruzione delle quantità pari a zero}
+\label{sec:zero-material-quantities}
+
+% Implementation: zero_quantities.py, impute_zero_operation_quantities.
+% One zero across the whole ODP, excluding root/HPT/READY as candidates.
+% Proposed quantity comes from the unique next chronological material activity.
+% Acceptance uses operation_graphs.mine_operation_graphs and its supported motifs,
+% before the general material-flow reconstruction. No statistical predictor.
+Una quantità pari a zero impedisce di applicare direttamente i bilanci descritti sopra. In alcuni casi è possibile ricostruirla usando le altre registrazioni dello stesso ODP. La procedura considera soltanto ordini con una sola occorrenza a quantità zero e senza altri valori quantitativi mancanti o non validi. L'occorrenza deve avere scarto pari a zero e un intervallo positivo tra inizio e fine calcolata. Sono escluse da questa regola \texttt{TRENOLUNA}, \texttt{HPT} e le registrazioni di materiale pronto.
+
+La quantità proposta è quella della successiva occorrenza materiale in ordine di inizio, escludendo dal confronto \texttt{TRENOLUNA}, \texttt{HPT} e gli stati \texttt{PRONTO}, \texttt{PRONTO\_QS} e \texttt{PRONTO\_QWR}. La scelta richiede inizi distinti e una successiva occorrenza identificabile senza parità di orario. Inoltre, l'occorrenza a quantità zero deve terminare entro l'inizio di quella successiva. Si assume così che, in assenza di scarto, la stessa quantità passi tra le due occorrenze.
+
+La sostituzione viene accettata soltanto se l'intero ODP supera un controllo dei bilanci di massa e dei tempi basato sugli schemi di collegamento riconosciuti dalla procedura, come la catena lineare o i percorsi con rami parziali. Restano applicabili le tolleranze di massa previste. Questa verifica precede la ricostruzione generale dei flussi. Viene modificata soltanto la quantità pari a zero, lasciando invariati gli altri valori e i riferimenti temporali. Se le condizioni non sono soddisfatte, lo zero resta irrisolto.
+
+% Real example from current raw Consuntivi_260915.csv and
+% interim/zero_quantity_imputations_260915.parquet, ODP 000010870511.
+% First TRATT_LUNA: q=0, scrap=0, start 2025-11-23 06:57,
+% calculated end 09:41. Next material activity RADDR: start 17:11, q=22625.
+% Audit confirms inferred q=22625, schema catena_lineare,
+% usa_tolleranza_massa=True and bilancio_massa_esatto=False.
+\begin{examplebox}[ex:zero-material-quantity]{Quantità ricostruita dall'occorrenza successiva}
+Nell'ODP \texttt{000010870511}, la prima occorrenza di \texttt{TRATT\_LUNA} registra quantità e scarto pari a zero, con inizio alle 06:57 e fine calcolata alle 09:41. L'occorrenza materiale successiva è \texttt{RADDR}, che inizia alle 17:11 dello stesso giorno e registra \num{22625} kg. La quantità di \texttt{TRATT\_LUNA} viene quindi sostituita con \num{22625} kg. Con questo valore, l'intero ODP risulta compatibile con una catena di collegamenti, applicando la tolleranza di massa prevista.
+\end{examplebox}
+
+\subsection{Riconciliazione delle quantità di materiale pronto}
+\label{sec:ready-quantity-reconciliation}
+
+% Implementations in StrategicPlannerBeanTech/src/strategic_planner/data/:
+% ready_quantities.py, correct_singleton_ready_quantities;
+% sales_ready_quantities.py, correct_sales_supported_ready_quantities and
+% correct_commercial_contrast_ready_quantities;
+% ready_reconciliation.py, reconcile_expected_supported_ready.
+% Current production rules are documented together, without development history.
+La quantità registrata in \texttt{PRONTO}, \texttt{PRONTO\_QS} o \texttt{PRONTO\_QWR} può risultare incompatibile con la massa iniziale e gli scarti dell'ODP. Per individuare le correzioni ammissibili, il bilancio produttivo viene confrontato con \texttt{quantita\_evasa\_kg}. Questa quantità appartiene alla posizione ODV e, quando vi sono più ODP associati, riguarda la loro produzione complessiva. Non viene quindi attribuita per intero a ciascun ODP.
+
+Indichiamo con $K_p$ l'insieme degli ODP associati alla posizione ODV $p$, con $b_k$ la massa finale attesa per l'ODP $k$ e con $a_k$ la sua quantità registrata di materiale pronto. La massa attesa si ottiene sottraendo alla quantità iniziale di \texttt{TRENOLUNA} tutti gli scarti del ciclo. Le due quantità complessive da confrontare con la quantità evasa $v_p$ sono
+\begin{equation}
+\label{eq:position-ready-mass-totals}
+\begin{aligned}
+B_p &= \sum_{k\in K_p}b_k, \\
+A_p &= \sum_{k\in K_p}a_k.
+\end{aligned}
+\end{equation}
+Le verifiche richiedono che tutti gli ODP della posizione siano presenti nell'anagrafica utilizzata e abbiano i relativi consuntivi. Ogni ODP deve avere una sola occorrenza \texttt{TRENOLUNA} e una sola registrazione di materiale pronto, con quantità e scarti validi. Le registrazioni di materiale pronto e quelle \texttt{HPT} devono avere scarto pari a zero. Le regole seguenti distinguono il riferimento commerciale dalla massa ricostruita per ciascun ODP.
+
+\textbf{Posizione con un solo ODP e bilancio esatto.} Se la quantità evasa coincide esattamente con $b_k$, può sostenere la sostituzione di $a_k$. Per aumentare la quantità registrata, si richiede che essa coincida con la massa netta dell'ultima occorrenza materiale nell'ordine del file sorgente e sia inferiore alla quantità evasa. È richiesta almeno un'occorrenza materiale intermedia. Per ridurla, si richiede invece che il ciclo originale non superi il controllo degli schemi di collegamento e che la sostituzione produca un ciclo compatibile, con bilanci esatti e senza tolleranze locali. Il valore corretto entra poi nelle successive verifiche di ricostruzione.
+
+\textbf{Un solo ODP con bilancio finale incoerente.} Se $B_p$ coincide con $v_p$ entro la tolleranza dello $0.1\%$ e soltanto un ODP $k$ non rispetta il proprio bilancio finale, la quantità proposta è il residuo della quantità evasa dopo aver sottratto il materiale pronto degli altri ODP:
+\begin{equation}
+\label{eq:single-child-ready-residual}
+a_k^{\mathrm{corr}}=v_p-\sum_{\substack{h\in K_p\\h\neq k}}a_h.
+\end{equation}
+Gli altri ODP devono già rispettare i rispettivi bilanci finali. Il valore proposto deve essere coerente con $b_k$ entro la stessa tolleranza e consentire una ricostruzione completa del flusso dell'ODP corretto. Per una posizione con un solo ODP, la somma degli altri contributi è zero e il residuo coincide con la quantità evasa.
+
+\textbf{Quantità ricavata dal bilancio di un ODP grezzo.} Per le posizioni i cui ODP hanno tutti finitura \texttt{GREZZO}, è prevista anche la sostituzione di $a_k$ con $b_k$, senza attribuire all'ODP un residuo commerciale. Si considera un solo ODP con bilancio finale incoerente e si richiede che gli altri abbiano già flussi compatibili. Il confronto tra $B_p$ e $v_p$ deve rispettare sia il limite di 100 kg sia quello dello $0.1\%$. Inoltre, lo scostamento $\lvert B_p-v_p\rvert$ deve essere almeno dieci volte più piccolo di $\lvert A_p-v_p\rvert$, usando un chilogrammo come riferimento minimo nel confronto. La sostituzione viene accettata soltanto se il flusso completo dell'ODP corretto è compatibile.
+
+\textbf{Riconciliazione congiunta della posizione.} Per le posizioni interamente \texttt{GREZZO} si possono correggere anche più ODP insieme. È necessario che $B_p$ sia coerente con $v_p$ entro lo $0.1\%$, mentre $A_p$ non lo è, e che almeno un ODP con bilancio incoerente registri meno materiale pronto di quello atteso. Gli altri ODP devono avere flussi compatibili. Si sostituisce la quantità di ciascun ODP con bilancio incoerente con il suo $b_k$, lasciando invariati quelli già compatibili. La somma risultante deve ancora coincidere con la quantità evasa entro la tolleranza e tutti gli ODP devono superare i controlli locali e la ricostruzione dei flussi. Le correzioni della posizione sono applicate insieme soltanto se tutte le verifiche hanno esito positivo. Questa regola non aggiunge un limite assoluto in chilogrammi né richiede il miglioramento di un fattore dieci previsto dal caso precedente.
+
+Le correzioni interessano soltanto la quantità della registrazione di materiale pronto. Le quantità iniziali e intermedie, gli scarti, le durate, i timestamp e la quantità evasa restano invariati. La compatibilità dei flussi dopo la sostituzione non elimina eventuali ambiguità, che vengono valutate separatamente.
+
+% Real example verified against current raw sales/production/operation files
+% and sales_ready_quantity_corrections_260915.parquet.
+% Position: ODV 0001110586, position 000130; children 000010864914/915/916.
+% Original READY: 85145,85541,85564; evasa=256411; others=171105.
+% Child budget b_k=85255; position budget B_p=256370.
+% Proposed correction 85306, local residual +51 kg; verified flow ambiguous.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:ready-quantity-residual]{Correzione di un ODP usando gli altri della stessa posizione}
+Una posizione ODV ha quantità evasa di \num{256411} kg ed è associata a tre ODP. Due registrano rispettivamente \num{85541} e \num{85564} kg di materiale pronto. Il terzo, \texttt{000010864914}, registra \num{85145} kg, ma il suo bilancio produttivo prevede \num{85255} kg. La quantità proposta per questo ODP è
+\begin{equation}
+\label{eq:ready-residual-example}
+a_k^{\mathrm{corr}}=\num{256411}-\num{85541}-\num{85564}=\num{85306}\ \mathrm{kg}.
+\end{equation}
+Il nuovo valore differisce dalla massa attesa di 51 kg, entro la tolleranza dello $0.1\%$. Anche la massa attesa complessiva, pari a \num{256370} kg, è coerente con la quantità evasa. La sostituzione supera inoltre la verifica del flusso dell'ODP. Le quantità degli altri due ODP rimangono invariate.
+\end{examplebox}
+\endgroup
+
+% Da sviluppare nella 3.3: ulteriori correzioni di massa e durata,
+% completamenti e fasi composite.
+% 3.4 Selezione dei dati utilizzabili.
