@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\small
+\sisetup{group-digits=integer}
+\begin{tabularx}{\linewidth}{@{}Xrrrrr@{}}
+\toprule
+\textbf{Ambito} & $n$ & \textbf{Limite inf. [\%]} & \textbf{Limite sup. [\%]} & \textbf{Segnalati} & \textbf{Repliche} \\
+\midrule
+Resa globale & \num{4859} & \num{84.540} & \num{98.484} & \num{76} & \num{2000} \\
+\texttt{TRENOLUNA} & \num{4860} & \num{1.509} & \num{12.683} & \num{77} & \num{2000} \\
+\texttt{BANCHI} & \num{979} & \num{0.449} & \num{86.109} & \num{4} & \num{2000} \\
+\texttt{CIRCO} & \num{38} & \num{0.01623} & \num{71.089} & \num{0} & \num{1999} \\
+\texttt{CONF} & \num{34} & \num{0.00473} & \num{99.429} & \num{0} & \num{1985} \\
+\texttt{RADDR} & \num{68} & \num{0.01632} & \num{28.155} & \num{0} & \num{2000} \\
+\texttt{TAG} & \num{419} & \num{0.00902} & \num{95.707} & \num{0} & \num{2000} \\
+\texttt{TRATT\_LUNA} & \num{33} & \num{0.00994} & \num{43.106} & \num{0} & \num{1942} \\
+\bottomrule
+\end{tabularx}
+\caption{Limiti MAD + IC95 sulla scala percentuale. $n$ è il numero di osservazioni usate: ODP per la resa, occorrenze con scarto relativo strettamente tra zero e uno per le macrofasi. «Segnalati» conta le osservazioni oltre i limiti. «Repliche» indica quante delle \num{2000} repliche bootstrap hanno fornito soglie valide. Sono mostrati gli ambiti con limiti stimabili.}
+\label{tab:mass-outlier-thresholds}
+\end{table}

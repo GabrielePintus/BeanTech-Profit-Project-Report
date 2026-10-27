@@ -1,0 +1,214 @@
+\chapter{Pulizia statistica e imputazione}
+\label{sec:statistical-cleaning-and-imputation}
+
+Il trattamento statistico descritto in questo capitolo si applica ai dati ottenuti al termine delle procedure del \cref{sec:data-and-treatment}. La coerenza dei bilanci di massa e dei tempi non esclude la presenza di quantità o durate insolitamente alte o basse rispetto ad altre osservazioni confrontabili. Possono inoltre rimanere durate pari a zero nelle macrofasi per cui occorre rappresentare un tempo di lavorazione positivo. Il capitolo descrive come vengono individuati questi casi, come si stimano i valori sostitutivi e quali controlli ne precedono l'applicazione.
+
+\section{Obiettivi e criteri generali}
+\label{sec:statistical-treatment-principles}
+
+% Current implementations in StrategicPlannerBeanTech:
+% data/statistical_mass.py, mass/outlier_uncertainty.py;
+% data/statistical_duration.py, duration/statistical_audit.py;
+% data/zero_duration.py and data/expected_duration.py.
+% General principles only here. Definitions and estimation details follow
+% locally, before the corresponding equations, tables and figures.
+Un'incoerenza logica viola una delle condizioni adottate per ricostruire il ciclo. Un outlier statistico è un valore estremo rispetto alla distribuzione di riferimento, ma non necessariamente errato. La segnalazione individua quindi un caso da esaminare prima di un'eventuale sostituzione. Il confronto avviene con osservazioni della stessa grandezza, raggruppate secondo i criteri specificati nelle sezioni seguenti.
+
+Anche i valori mancanti e gli zeri richiedono interpretazioni distinte. Un valore mancante indica che la misura non è disponibile. Uno zero è invece una misura presente, da interpretare in base alla variabile e alla macrofase. In particolare, le durate pari a zero vengono analizzate separatamente dalle durate positive anomale e imputate soltanto per le macrofasi per cui è assunta una durata di lavorazione positiva.
+
+Il trattamento distingue tre passaggi: individuare i casi da esaminare, stimare i valori sostitutivi e verificarne la compatibilità con il ciclo produttivo. Le procedure descritte correggono i valori senza eliminare ulteriori ODP o occorrenze.
+
+\clearpage
+\section{Trattamento statistico delle masse}
+\label{sec:statistical-mass-treatment}
+
+Il trattamento delle masse analizza le quantità iniziali, gli scarti e le quantità finali degli ODP. Dopo aver individuato i casi da correggere, le quantità vengono aggiornate insieme per mantenere i bilanci coerenti. Restano invariati il materiale pronto registrato e i collegamenti del percorso selezionato.
+
+\subsection{Grandezze analizzate e campione di riferimento}
+\label{sec:mass-statistical-variables}
+
+% Sources: mass/statistical_audit.py, mass_views; current pre-imputation frames.
+% Pre-imputation values restored in memory from current mass/duration audits.
+% Point thresholds verified against the stored audit to relative tolerance 1e-10.
+% Evidence and source hashes: tables/data/statistical-mass-summary.json.
+% Figures: scripts/plot_statistical_mass.py and figures/data/statistical-mass-*.csv.
+Analizziamo due rapporti: la resa di ciascun ODP e lo scarto relativo alla quantità lavorata in ogni occorrenza. La resa è il rapporto tra massa finale e massa iniziale. Lo scarto relativo è il rapporto tra lo scarto e la quantità in ingresso all'occorrenza.
+
+$r(k)$ identifica l'occorrenza di \texttt{TRENOLUNA} dell'ODP $k$, mentre $q_{r(k)}$ è la sua quantità in ingresso. Indichiamo con $m_k^{\mathrm{fin}}$ la massa del nodo finale dell'ODP $k$. Per l'occorrenza $i$, $q_i$ è la quantità in ingresso e $s_i$ lo scarto. Tutte queste quantità sono espresse in chilogrammi. La resa $y_k$ e lo scarto relativo $\rho_i$ sono quindi
+\begin{equation}
+\label{eq:statistical-mass-ratios}
+y_k=\frac{m_k^{\mathrm{fin}}}{q_{r(k)}},
+\qquad
+\rho_i=\frac{s_i}{q_i}.
+\end{equation}
+Negli ODP con completamenti impliciti si usa la massa del nodo finale, che raccoglie il materiale dei diversi rami. Le rese vengono confrontate tra tutti gli ODP. Gli scarti relativi vengono confrontati tra occorrenze della stessa macrofase.
+
+L'analisi riguarda \num{4860} ODP, associati a \num{4455} posizioni ODV e \num{2103} ODV distinti. Per lo scarto si considerano \num{11591} occorrenze materiali, escludendo \texttt{HPT} e gli stati di materiale pronto. Di queste, \num{4812} hanno scarto nullo ($\rho_i=0$), 337 hanno scarto totale ($\rho_i=1$) e \num{6442} hanno scarto parziale ($0<\rho_i<1$). Il confronto statistico degli scarti riguarda i casi parziali. Gli scarti nulli e totali sono trattati come casi distinti.
+
+\subsection{Individuazione dei candidati e incertezza delle soglie}
+\label{sec:mass-outlier-detection}
+
+% Implemented criterion: MAD with outer bootstrap confidence limits.
+% Source: mass/outlier_uncertainty.py and statistical_mass_thresholds audit.
+Per individuare i valori estremi si calcolano una soglia inferiore e una superiore, sia per la resa sia per lo scarto relativo alla quantità lavorata di ciascuna macrofase. Si usa la trasformazione logit per i rapporti $p_j$ compresi tra zero e uno, con $j$ che identifica un'osservazione. La funzione logistica $g$ riporta i valori alla scala originale:
+\begin{equation}
+\label{eq:mass-logit-transform}
+z_j=\log\left(\frac{p_j}{1-p_j}\right),
+\qquad
+p_j=g(z_j)=\frac{1}{1+\exp(-z_j)},
+\qquad 0<p_j<1.
+\end{equation}
+
+Il criterio MAD usa la mediana $m$ dei valori $z_j$ e la deviazione assoluta mediana, $\operatorname{MAD}=\operatorname{mediana}_j(\lvert z_j-m\rvert)$. Le soglie delimitano l'intervallo $B(m,3.5\cdot1.4826\cdot\operatorname{MAD})$, dove $B(m,r)=[m-r,m+r]$.
+Il fattore \num{1.4826} rende la MAD confrontabile con la deviazione standard usando la distribuzione normale come riferimento.
+
+L'incertezza delle soglie viene stimata con \num{2000} ricampionamenti bootstrap per ODV, mantenendo insieme tutte le osservazioni dello stesso ordine di vendita. Per ogni soglia si calcola un intervallo di confidenza al 95\% (IC95). Il criterio MAD + IC95 segnala un valore solo se supera sia la soglia MAD sia l'estremo più esterno del suo IC95. La \cref{tab:mass-outlier-thresholds} riporta i limiti risultanti in percentuale.
+
+\input{tables/statistical-mass-thresholds}
+
+Sono segnalati 76 ODP per resa bassa e 81 per almeno uno scarto relativo anomalo. Poiché 56 ODP compaiono in entrambi gli insiemi, i candidati sono 101, pari al \num{2.08}\% del campione. Le segnalazioni locali riguardano 77 occorrenze \texttt{TRENOLUNA} e quattro \texttt{BANCHI}. La \cref{fig:mass-outlier-distributions} mostra le distribuzioni e le soglie prima dell'imputazione.
+
+\begin{figure}[H]
+\centering
+\reportgraphic[height=0.50\textheight]{statistical-mass-distributions.pdf}
+\caption{Istogrammi prima dell'imputazione. Le classi hanno uguale ampiezza sulla scala logit, mentre le etichette orizzontali riportano percentuali. Le barre gialle identificano le osservazioni segnalate da MAD + IC95. Le linee tratteggiate mostrano le soglie MAD e le bande i rispettivi IC95. Negli istogrammi dello scarto relativo sono esclusi i casi di scarto nullo e totale.}
+\label{fig:mass-outlier-distributions}
+\end{figure}
+
+\clearpage
+\subsection{Stima dei rapporti da usare per l'imputazione}
+\label{sec:mass-ratio-estimation}
+
+% Implementation: mass/imputation_models.py, fit_imputers and RatioImputer.
+% Current cached bundle: outputs/models/statistical_mass/
+% 5b55c4f9adb9bb8324d89ef165684cab80815cde56ffd036380bf1ccd423fada.joblib.
+% Held-out verification computed without retraining; source hashes in summary.
+Una resa o uno scarto relativo anomalo non indicano da soli quale quantità in chilogrammi correggere. Si stimano prima rapporti plausibili, escludendo dai dati di riferimento tutti i 90 ODV contenenti un ODP candidato. I \num{2013} ODV rimanenti sono divisi in \num{1207} per addestrare i modelli, 403 per calibrare gli intervalli e 403 per verificarne il comportamento. Posizioni e ODP dello stesso ODV rimangono nello stesso gruppo.
+
+Si usano due regressioni Ridge sulla scala logit, una per la resa e l'altra per lo scarto relativo parziale. Le variabili esplicative sono quantità richiesta della posizione ODV, prima dimensione, lunghezza richiesta, numero di ODP della posizione, prodotto, forma, finitura, stato fisico e marca dell'acciaio. Il modello dello scarto relativo include anche la macrofase.
+
+Per quantità richiesta, dimensione e lunghezza, ciascun valore $x$ viene trasformato con \mbox{$\log(1+x)$}. I valori numerici mancanti sono sostituiti con la mediana dell'addestramento. Le variabili numeriche sono poi centrate e divise per la loro deviazione standard, sempre calcolate sull'addestramento. Le variabili categoriali sono rappresentate da indicatori zero oppure uno, con una categoria \texttt{MISSING} per i valori mancanti. Una categoria mai vista nell'addestramento azzera gli indicatori della sola variabile interessata, lasciando gli altri contributi alla stima.
+
+Indichiamo con $\bm{x}_j$ il vettore risultante per l'osservazione $j$, con $\bm{\beta}$ i coefficienti e con $\beta_0$ l'intercetta. L'addestramento minimizza
+\begin{equation}
+\label{eq:mass-ridge-objective}
+\min_{\beta_0,\bm{\beta}}\;
+\sum_{j\in\mathcal{T}}\left(z_j-\beta_0-\bm{x}_j^{\mathsf{T}}\bm{\beta}\right)^2
++\lambda\lVert\bm{\beta}\rVert_2^2,
+\qquad \lambda=10,
+\end{equation}
+dove $\mathcal{T}$ è l'insieme delle osservazioni di addestramento. La penalità limita l'ampiezza dei coefficienti, senza penalizzare l'intercetta. Le stime sono
+\begin{equation}
+\label{eq:mass-ridge-estimation}
+\widehat{z}_j=\beta_0+\bm{x}_j^{\mathsf{T}}\bm{\beta},
+\qquad
+\widehat{p}_j=g(\widehat{z}_j),
+\end{equation}
+con $g$ definita nella \cref{eq:mass-logit-transform}.
+
+Nel gruppo di calibrazione si calcolano i residui $\varepsilon_j=z_j-\widehat{z}_j$. Per lo scarto relativo si usano quelli della stessa macrofase se sono almeno 30, altrimenti quelli complessivi del modello. Detti $c_{0.05}$ e $c_{0.95}$ i percentili 5 e 95 dei residui così selezionati, l'intervallo empirico è
+\begin{equation}
+\label{eq:mass-ratio-interval}
+\left[g\left(\widehat{z}_j+c_{0.05}\right),\,
+      g\left(\widehat{z}_j+c_{0.95}\right)\right].
+\end{equation}
+L'intervallo ha livello nominale del 90\%, poiché usa i percentili 5 e 95 dei residui di calibrazione. L'IC95 della sezione precedente riguarda invece l'incertezza delle soglie per gli outlier. La suddivisione circa 60/20/20, $\lambda=10$ e il minimo di 30 residui sono impostazioni fisse della procedura, senza una ricerca dei valori migliori.
+
+La \cref{tab:mass-imputer-validation} riporta i risultati nel gruppo di verifica. Il MAE è l'errore assoluto medio tra rapporti osservati e stimati, espresso in punti percentuali (p.p.). La copertura è la percentuale di osservazioni comprese nel proprio intervallo. Per lo scarto relativo è dell'\num{87.87}\%, inferiore di \num{2.13} punti percentuali al livello nominale. La copertura complessiva non garantisce lo stesso risultato per ogni macrofase.
+
+\input{tables/statistical-mass-validation}
+
+Nella riconciliazione si usano le stime della resa di ogni ODP candidato e dello scarto relativo di tutte le sue occorrenze con scarto parziale, anche se non segnalate. Per le occorrenze con scarto nullo o totale non si usa una stima dello scarto relativo.
+
+\subsection{Riconciliazione delle quantità in chilogrammi}
+\label{sec:mass-constrained-imputation}
+
+% Implementations: mass/constrained_imputation.py, reconcile_family;
+% mass/plausibility.py, MassPlausibility; data/statistical_mass.py.
+% Fraction objectives use scale=max((high-low)/3.29,0.005).
+% joint_upstream weak observation weight=0.01 in original-root-mass units.
+% Integer step minimizes joint L1 displacement under the same constraints.
+La riconciliazione determina insieme quantità lavorate, scarti e flussi in chilogrammi. Per ogni ODP candidato si sceglie una configurazione compatibile con gli intervalli delle quantità trasferite della \cref{sec:flow-selection-and-ambiguity}. Si mantengono i collegamenti scelti, aggiornandone le quantità. Al termine si salva questa sola configurazione: le alternative precedenti non vengono mantenute e l'assenza di ambiguità deriva dalla scelta della procedura.
+
+Per ogni rapporto stimato $\widehat{p}$, con intervallo empirico $[a,b]$, si usa la scala
+\begin{equation}
+\label{eq:mass-imputation-scale}
+\tau_p=\max\left(\frac{b-a}{3.29},\,\num{0.005}\right).
+\end{equation}
+Il fattore $3.29\simeq2\cdot1.645$ è la larghezza dell'intervallo centrale al 90\% di una normale standard. La divisione fornisce una scala approssimata, poiché gli intervalli dei rapporti possono essere asimmetrici. Una scala più piccola dà maggior peso all'accordo con la stima.
+
+Per ogni ODP candidato $k$, indichiamo con $\mathcal{R}_k$ i rapporti stimati descritti nella sezione precedente e con $\mathcal{V}_k$ le quantità, gli scarti e i flussi da riconciliare. Il simbolo $v^0$ indica il valore prima della riconciliazione e $q^0_{r(k)}$ la massa iniziale dell'ODP. L'obiettivo è
+\begin{equation}
+\label{eq:mass-reconciliation-objective}
+\min_{\{v\}}\;
+\sum_k\left[
+\sum_{p\in\mathcal{R}_k}\left(\frac{p-\widehat{p}}{\tau_p}\right)^2
++\num{0.01}\cdot\sum_{v\in\mathcal{V}_k}
+\left(\frac{v-v^0}{q^0_{r(k)}}\right)^2
+\right].
+\end{equation}
+La procedura favorisce l'accordo con le stime, con una penalità debole sugli scostamenti dai valori precedenti. Il peso \num{0.01} è una scelta della procedura, non deriva da una stima dell'errore di misura. Le correzioni tendono quindi verso le previsioni, anziché fermarsi al primo valore entro le soglie.
+
+La soluzione deve rispettare questi vincoli:
+\begin{itemize}
+\item Quantità finale uguale a quella registrata in \texttt{PRONTO}, \texttt{PRONTO\_QS} o \texttt{PRONTO\_QWR}, con bilanci esatti in ingresso e in uscita. Il bilancio terminale della \cref{sec:flow-mass-balances} ammetteva invece una tolleranza dello $0.1\%$.
+\item Resa e scarti relativi valutabili entro i limiti MAD + IC95, mantenendo le modalità di scarto nullo, parziale e totale.
+\item Almeno un chilogrammo su ogni collegamento scelto, con quantità lavorate e ripartizioni tra i rami entro i limiti descritti di seguito.
+\end{itemize}
+
+I riferimenti per questi ultimi limiti escludono i 90 ODV contenenti gli ODP candidati, come per i modelli della sezione precedente. Si applica il criterio MAD con incertezza bootstrap ai logaritmi delle quantità lavorate, dei loro rapporti con la massa iniziale e delle quote di flusso nelle diramazioni. Una quota è il flusso del collegamento diviso per il totale uscente dalla stessa occorrenza.
+
+Per le occorrenze si cercano riferimenti con la stessa macrofase, forma, presenza di altri ODP nella posizione, modalità di scarto e possibilità di evitare il passaggio lungo un altro ramo. I gruppi vengono ampliati fino alla sola macrofase. Per le diramazioni si usano prima origine e destinazione, poi la sola origine. Le fasi composite includono nei riferimenti anche le macrofasi componenti. Servono almeno 20 osservazioni e limiti stimabili. Se mancano anche dopo l'ampliamento, le correzioni della posizione ODV non vengono applicate.
+
+Il calcolo parte da un punto ammissibile che minimizza la somma degli scostamenti assoluti dai valori precedenti. Si ottimizza poi l'obiettivo con SLSQP, senza garanzia di ottimo globale, perché i rapporti dipendono dalle quantità da correggere. Infine, un problema lineare intero cerca quantità intere in chilogrammi quanto più vicine alla proposta, sempre in termini di scostamenti assoluti e rispettando tutti i vincoli. Le correzioni degli ODP candidati della stessa posizione vengono applicate insieme soltanto se il calcolo e una verifica indipendente hanno esito positivo. Altrimenti si conservano i valori precedenti. Gli ODP non candidati, le quantità commerciali, le durate e i timestamp restano invariati.
+
+\subsection{Effetti del trattamento}
+\label{sec:mass-imputation-results}
+
+Il trattamento viene applicato a tutti i 101 ODP candidati, distribuiti su 100 posizioni ODV e 90 ODV distinti. Delle 215 occorrenze materiali coinvolte, 193 cambiano valore e 22 rimangono invariate. La quantità in ingresso cambia in tutte le 193 occorrenze modificate e, in 152, cambia anche lo scarto. Le occorrenze modificate comprendono le 81 segnalate e altre 112 adeguate nella riconciliazione.
+
+\input{tables/statistical-mass-effects}
+
+Sull'intero dataset, lo scarto complessivo passa da \num{8487.24} a \num{8100.19} t, con una riduzione del \num{4.56}\%. Il rapporto tra scarto totale e massa iniziale totale passa dal \num{5.31}\% al \num{5.08}\%, mentre la massa iniziale diminuisce dello \num{0.24}\%.
+
+Massa iniziale e scarto complessivo diminuiscono in 95 ODP e aumentano in sei. Tutti i 76 casi segnalati per resa bassa appartengono al primo gruppo. La procedura considera affidabile il materiale pronto registrato e corregge le quantità a monte. Per esempio, in un ODP segnalato per scarto troppo basso, lo scarto passa da 1 a \num{2199} kg, con un aumento della massa iniziale da \num{41600} a \num{43799} kg.
+% Case 000010884615: yield 100% -> 94.9793%; ready fixed at 41600 kg.
+% Case 000010872293: the only treated ODP below 90% afterwards, at 89.6484%.
+% Exact case values and predictions are in tables/data/statistical-mass-summary.json.
+
+La \cref{fig:mass-imputation-effects} confronta i rapporti prima e dopo il trattamento con quelli dei \num{4759} ODP non trattati. Dopo la correzione, i percentili 5--95 della resa sono \num{93.27}--\num{96.10}\%, contro \num{90.49}--\num{97.03}\% nei non trattati. Per lo scarto relativo di \texttt{TRENOLUNA} sono \num{3.58}--\num{5.79}\%, contro \num{2.78}--\num{7.80}\%. L'imputazione concentra quindi i rapporti intorno alle previsioni e non riproduce tutta la variabilità osservata nei non trattati.
+
+\begin{figure}[H]
+\centering
+\reportgraphic{statistical-mass-imputation.pdf}
+\caption{Boxplot dei rapporti: le scatole vanno dal 25\textdegree{} al 75\textdegree{} percentile, la linea interna indica la mediana e i baffi i percentili 5 e 95. I valori oltre i baffi non sono mostrati. Le prime due righe di ciascun pannello riguardano gli stessi 101 ODP prima e dopo il trattamento, la terza i \num{4759} ODP non trattati.}
+\label{fig:mass-imputation-effects}
+\end{figure}
+
+% Real current-audit example: ODP 000010872769, ODV 0001116757, pos 000160.
+% Statistical mass corrections: root 12518/438 -> 10449/486;
+% fully scrapped BANCHI 2300/2300 -> 183/183; observed READY remains 9780.
+% Trigger: global yield 9780/12518=78.1275%; local root scrap not flagged.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:joint-mass-imputation]{Una resa anomala e due occorrenze riconciliate}
+Nell'ODP \texttt{000010872769}, la resa iniziale è $\num{9780}/\num{12518}\simeq\num{78.13}\%$, inferiore al limite MAD + IC95 di circa \num{84.54}\%. Lo scarto relativo alla quantità lavorata di \texttt{TRENOLUNA} non è segnalato. Un ramo ai \texttt{BANCHI} è interamente scartato e ha quindi $\rho_i=1$, escluso dal confronto statistico sugli scarti parziali. La riconciliazione conserva i \num{9780} kg registrati in \texttt{PRONTO} e i collegamenti della configurazione selezionata, modificando le due occorrenze materiali:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{\textbf{Prima [kg]}} & \multicolumn{2}{c}{\textbf{Dopo [kg]}}\\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+\textbf{Macrofase} & \textbf{Ingresso} & \textbf{Scarto} & \textbf{Ingresso} & \textbf{Scarto}\\
+\midrule
+\texttt{TRENOLUNA} & \num{12518} & 438 & \num{10449} & 486\\
+\texttt{BANCHI} & \num{2300} & \num{2300} & 183 & 183\\
+\texttt{PRONTO} & \num{9780} & 0 & \num{9780} & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Il modello prevede una resa del \num{94.34}\%, con intervallo empirico \num{90.35}--\num{96.48}\%. Dopo la riconciliazione, il bilancio è $\num{10449}-486-183=\num{9780}$ kg e la resa è circa il \num{93.60}\%: il risultato tiene conto sia delle stime sia dei vincoli e delle altre penalità. Il ramo ai \texttt{BANCHI} conserva lo scarto totale, ma cambia la quantità che lo percorre. Si modificano quindi anche dati non segnalati individualmente, perché la proposta deve soddisfare congiuntamente i vincoli statistici e di conservazione della massa.
+\end{examplebox}
+\endgroup

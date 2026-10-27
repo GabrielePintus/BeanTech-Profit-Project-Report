@@ -45,7 +45,7 @@ A4, 11 pt, Palatino-style text and mathematics, vivid blue headings/links and te
 dedicated title page and chapter headings, running header and page numbers. Change the appearance in
 `beantechreport.sty`; edit authors, affiliation, date and version in `main.tex`.
 
-Reading order and filenames (chapters 4–8 are planned and their inputs remain commented):
+Reading order and filenames (chapter 4 has been started; chapters 5–8 are planned and their inputs remain commented):
 
 1. Introduzione, including Approccio metodologico — `sections/01-introduction.tex`.
 2. Conoscenza di dominio — `sections/02-domain-knowledge.tex`.
@@ -62,6 +62,18 @@ captions below tables and figures. Optional inline labels
 `\domainknowledge`, `\datafinding`, and `\workingassumption` distinguish the
 source/interpretation of a statement; they do not substitute for citations.
 
+
+## Figure sizes
+
+Ordinary figures are capped at 60% of the paper width (126 mm on A4), and never
+exceed the local text width. Change `\reportfiguremaxwidth` in
+`beantechreport.sty` to adjust this shared limit.
+Use `\reportgraphic{filename.pdf}` for images, optionally adding a height limit
+such as `\reportgraphic[height=0.50\textheight]{filename.pdf}`.
+Wrap TikZ diagrams in `\reportfigurecontent{\input{figures/diagram}}`.
+Smaller diagrams are not enlarged. Captions retain the text width.
+Full-page diagrams, including the production graph and treatment pipeline,
+are explicit exceptions and keep their dedicated sizing.
 
 ## Numbering
 
@@ -104,9 +116,22 @@ required. Run **LaTeX Workshop: View LaTeX PDF file** to open the PDF in VS Code
 
 ## Editorial scope
 
+Use plain, natural Italian: direct sentences, familiar words and technical terms
+explained when needed. Avoid formal-sounding phrasing that makes the text harder
+to read. Precision should come from explicit definitions, not elaborate wording.
+
+Define quantities, symbols, acronyms and technical methods before using them in
+arguments, equations, tables or figures. Keep chapter introductions and general
+principles free of implementation details that will only be explained later.
+
 Use *macrofase* for a type of process step and *occorrenza di macrofase*
 for an individual recorded instance within an ODP. In cycle reconstruction,
 each node represents an occurrence; avoid using *operazione* as a synonym.
+Refer explicitly to sales positions (*posizioni ODV*) and their associated
+production orders (*ODP*). Avoid *famiglia*/*famiglie* as shorthand for these
+entities, including in headings, tables and diagrams.
+Use *scarto relativo alla quantità lavorata* for the ratio of scrap to processed
+input quantity, rather than *frazione di scarto*.
 
 Describe the final methodology, modelling choices and results rather than the
 chronology of development. References to data always mean the latest supplied
@@ -139,3 +164,23 @@ report, including figures. Scalar components and indices remain unbolded.
 Use `\cdot` for explicit multiplication in mathematical expressions.
 Use numbered `equation` or `align` environments for displayed equations, with
 stable labels for cross-references. Do not use `\[ ... \]` or `$$ ... $$`.
+
+## Statistical mass figures
+
+The plots in section 4.2 are vector PDFs generated from the aggregated evidence
+in `figures/data/statistical-mass-*.csv`. Rebuild them with a Python environment
+containing NumPy and Matplotlib:
+
+```sh
+python scripts/plot_statistical_mass.py
+```
+
+`figures/data/statistical-mass-comparison.csv` contains exact medians and 5th/25th/75th/95th
+percentiles for the 101 treated ODP before/after and the 4759 untreated ODP.
+These groups are defined by the union of yield and local-scrap flags.
+
+`tables/data/statistical-mass-summary.json` records sample sizes, candidate counts,
+model verification metrics, correction totals and SHA-256 hashes of the source
+Parquets. Pre-imputation values were restored in memory from the correction
+audits before computing the descriptive comparisons. The plotting script does
+not train models or modify the source datasets.

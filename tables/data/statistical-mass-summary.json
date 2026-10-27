@@ -1,0 +1,217 @@
+{
+  "orders": 4860,
+  "families": 4455,
+  "odv": 2103,
+  "material_operations": 11591,
+  "yield_outside_open_unit": [
+    {
+      "odp": "000010884615",
+      "initial_kg": 41600.0,
+      "final_kg": 41600.0,
+      "yield_fraction": 1.0
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "MAD + IC95",
+      "global_odp": 76,
+      "global_low_yield_odp": 76,
+      "global_high_yield_odp": 0,
+      "partial_operations": 81,
+      "partial_odp": 81,
+      "overlap_odp": 56,
+      "unique_odp": 101,
+      "percent_odp": 2.078189300411523,
+      "unique_odv": 90
+    }
+  ],
+  "local_candidates": {
+    "BANCHI": 4,
+    "TRENOLUNA": 77
+  },
+  "partial_count": 6442,
+  "zero_count": 4812,
+  "full_count": 337,
+  "reconciled_operations": 215,
+  "changed_operations": 193,
+  "mass_changes": 193,
+  "scrap_changes": 152,
+  "selected_odv": 90,
+  "selected_positions": 100,
+  "model_validation": [
+    {
+      "target": "yield",
+      "train": 2616,
+      "calibration": 884,
+      "validation": 911,
+      "MAE_pp": 1.2904082725521455,
+      "RMSE_pp": 1.8422045347487686,
+      "interval_coverage_pct": 90.12074643249177
+    },
+    {
+      "target": "scrap",
+      "train": 3508,
+      "calibration": 1183,
+      "validation": 1195,
+      "MAE_pp": 2.346264492466532,
+      "RMSE_pp": 4.893410601147902,
+      "interval_coverage_pct": 87.86610878661088
+    }
+  ],
+  "selected_totals": {
+    "before": {
+      "initial_kg": 2357123,
+      "scrap_kg": 486679,
+      "yield_p05_pct": 47.150700996854845,
+      "yield_median_pct": 80.74484522350684,
+      "yield_p95_pct": 95.8946110823298,
+      "max_balance_residual_kg": 34.0
+    },
+    "after": {
+      "initial_kg": 1970216,
+      "scrap_kg": 99629,
+      "yield_p05_pct": 93.2695389405247,
+      "yield_median_pct": 94.71869048231842,
+      "yield_p95_pct": 96.1001902346227,
+      "max_balance_residual_kg": 0.0
+    }
+  },
+  "fixed_observed_ready_total_kg": 1870587,
+  "scope": "complete families, pre-statistical-mass values restored in memory from audits; no retraining or source modification",
+  "source_sha256": {
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "data/interim/statistical_mass_corrections_260915.parquet": "d8a6976f19f1e10f73392e662c4ed8e864f0d253e06f899787d6a0df53cc1049",
+    "data/interim/statistical_mass_decisions_260915.parquet": "a3dd9277ca5590ca128d29687c3f9432a3310d73427b8278a79074fb1f179640",
+    "data/interim/statistical_mass_flows_260915.parquet": "28572999528b96a350c5acc0f5e2ce2865c4a10f71b518d539dc2105b2f9c7a3",
+    "data/interim/statistical_mass_thresholds_260915.parquet": "aa5248421e930347f064fe9242c2b9828bcb9078a591f87265ae486674824ffd",
+    "data/interim/statistical_mass_limits_260915.parquet": "8ca042bbe732c56562348b4f555f70c3e53f50eea59c927ddc9438acffdb4d61",
+    "data/interim/statistical_duration_corrections_260915.parquet": "17afc1ded507f7d46344e4f0d820bdae29279a160e4d9c5e31319ab6dacb589a",
+    "data/interim/statistical_duration_decisions_260915.parquet": "bae8bf2eb3c5e536add5487e2ae65d4925cc37ed66237c742180080ff90f7e2d",
+    "data/interim/statistical_duration_flow_audit_260915.parquet": "541048495b93880cc0562848839951945b3ca9cbb806e240326b8a881a36362a",
+    "data/interim/ricostruzione_flussi_generali_260915.parquet": "999afe63bbdf2438eac59830e2685259c4f2a44fccc0958061dc95535efa9e4b",
+    "data/interim/intervalli_flusso_materiale_260915.parquet": "7e26bf5a209287a17755b56827b532d1e441705932778367d4039f495937fb75",
+    "data/interim/nodi_completamento_flussi_260915.parquet": "b0e9dbf3c1e8d9ea43ca808c51419983490821323900344ecca6612181c7c1e3"
+  },
+  "effect_review": {
+    "example_prediction": {
+      "odp": "000010872769",
+      "median": 94.3439668623622,
+      "low": 90.35473156563893,
+      "high": 96.48232973386091
+    },
+    "whole_dataset": {
+      "before": {
+        "initial_kg": 159878685,
+        "scrap_kg": 8487237,
+        "scrap_percent": 5.308548165754553
+      },
+      "after": {
+        "initial_kg": 159491778,
+        "scrap_kg": 8100187,
+        "scrap_percent": 5.0787489496794
+      }
+    },
+    "comparison": [
+      {
+        "group": "before",
+        "metric": "yield",
+        "n": 101,
+        "p05_pct": 47.150700996854845,
+        "p25_pct": 72.35541324794877,
+        "median_pct": 80.74484522350684,
+        "p75_pct": 84.4792404114438,
+        "p95_pct": 95.8946110823298
+      },
+      {
+        "group": "before",
+        "metric": "root_scrap",
+        "n": 101,
+        "p05_pct": 1.4488138831396273,
+        "p25_pct": 9.380369958556555,
+        "median_pct": 16.295838483724765,
+        "p75_pct": 27.264573991031387,
+        "p95_pct": 51.773021482746294
+      },
+      {
+        "group": "after",
+        "metric": "yield",
+        "n": 101,
+        "p05_pct": 93.2695389405247,
+        "p25_pct": 94.22059422059422,
+        "median_pct": 94.71869048231842,
+        "p75_pct": 95.25109702584106,
+        "p95_pct": 96.1001902346227
+      },
+      {
+        "group": "after",
+        "metric": "root_scrap",
+        "n": 101,
+        "p05_pct": 3.5813694562998704,
+        "p25_pct": 4.313560657804865,
+        "median_pct": 4.679054923559994,
+        "p75_pct": 5.131826741996234,
+        "p95_pct": 5.7915057915057915
+      },
+      {
+        "group": "untreated",
+        "metric": "yield",
+        "n": 4759,
+        "p05_pct": 90.4937796010519,
+        "p25_pct": 93.77831946631711,
+        "median_pct": 94.99297298503134,
+        "p75_pct": 95.92281608193262,
+        "p95_pct": 97.02792888526922
+      },
+      {
+        "group": "untreated",
+        "metric": "root_scrap",
+        "n": 4759,
+        "p05_pct": 2.7766460127962618,
+        "p25_pct": 3.7049398020123676,
+        "median_pct": 4.470673568296463,
+        "p75_pct": 5.462123643345236,
+        "p95_pct": 7.798151688062427
+      }
+    ],
+    "changed_operations": {
+      "flagged": 81,
+      "other": 112
+    },
+    "direction": {
+      "initial_and_scrap_decrease": 95,
+      "initial_and_scrap_increase": 6
+    },
+    "edge_cases": {
+      "000010884615": {
+        "before": {
+          "initial_kg": 41600.0,
+          "scrap_kg": 1.0,
+          "final_kg": 41600.0,
+          "yield_fraction": 1.0
+        },
+        "after": {
+          "initial_kg": 43799.0,
+          "scrap_kg": 2199.0,
+          "final_kg": 41600.0,
+          "yield_fraction": 0.9497933742779515
+        }
+      },
+      "000010872293": {
+        "before": {
+          "initial_kg": 3017.0,
+          "scrap_kg": 722.0,
+          "final_kg": 2295.0,
+          "yield_fraction": 0.760689426582698
+        },
+        "after": {
+          "initial_kg": 2560.0,
+          "scrap_kg": 265.0,
+          "final_kg": 2295.0,
+          "yield_fraction": 0.896484375
+        }
+      }
+    }
+  }
+}

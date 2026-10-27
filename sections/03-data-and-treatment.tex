@@ -750,7 +750,7 @@ Il blocco \texttt{BANCHI+ANTIMIX} ha quindi \num{83626} kg in ingresso, 400 kg d
 \section{Selezione dei dati utilizzabili}
 \label{sec:usable-data-selection}
 
-Le correzioni descritte nella \cref{sec:cycle-reconstruction} recuperano una parte dei cicli inizialmente incoerenti, ma non tutti gli ODP consentono una ricostruzione utilizzabile. La selezione avviene dopo le riconciliazioni delle quantità e dei tempi, così che queste possano ancora utilizzare le informazioni degli ODP associati alla stessa posizione ODV. Si verifica prima l'ammissibilità dei singoli ODP, poi la completezza delle rispettive famiglie.
+Le correzioni descritte nella \cref{sec:cycle-reconstruction} recuperano una parte dei cicli inizialmente incoerenti, ma non tutti gli ODP consentono una ricostruzione utilizzabile. La selezione avviene dopo le riconciliazioni delle quantità e dei tempi, così che queste possano ancora utilizzare le informazioni degli ODP associati alla stessa posizione ODV. Si verifica prima l'ammissibilità dei singoli ODP, poi che ogni posizione ODV possa essere conservata con tutti gli ODP associati.
 
 \subsection{Ammissibilità dei singoli ODP}
 \label{sec:individual-order-selection}
@@ -761,19 +761,19 @@ Le correzioni descritte nella \cref{sec:cycle-reconstruction} recuperano una par
 % Temporary exclusions remain explicit exceptions, not a statistical rule.
 Un ODP è ammissibile se il suo flusso è compatibile e la ricostruzione è univoca oppure presenta un'ambiguità entro la soglia della \cref{sec:flow-selection-and-ambiguity}. La sola presenza di più matrici ottime non comporta quindi l'esclusione. Devono inoltre essere disponibili l'esito del controllo sull'ambiguità e i riferimenti alle regole applicate. Informazioni mancanti o esiti non riconosciuti non vengono interpretati come un controllo superato. Nove ODP restano esclusi in via cautelativa per l'incertezza sui percorsi del materiale, mediante decisioni specifiche distinte dalle regole automatiche.
 
-Dei \num{8050} ODP rimasti dopo il filtro preliminare sulle quantità, \num{5190} superano la selezione individuale. Sono esclusi \num{1983} ODP senza un flusso ammissibile, 851 con ambiguità oltre la soglia, 17 con dati non validi e nove soggetti a esclusione esplicita. I \num{5190} ODP ammissibili appartengono a \num{4721} posizioni ODV e comprendono \num{19726} occorrenze. Questi conteggi precedono il controllo di completezza delle famiglie.
+Dei \num{8050} ODP rimasti dopo il filtro preliminare sulle quantità, \num{5190} superano la selezione individuale. Sono esclusi \num{1983} ODP senza un flusso ammissibile, 851 con ambiguità oltre la soglia, 17 con dati non validi e nove soggetti a esclusione esplicita. I \num{5190} ODP ammissibili appartengono a \num{4721} posizioni ODV e comprendono \num{19726} occorrenze. Questi conteggi precedono la selezione per posizione ODV.
 
-\subsection{Completezza delle famiglie di ODP}
-\label{sec:complete-order-families}
+\subsection{Selezione per posizione ODV}
+\label{sec:sales-position-selection}
 
 % Implementation: export_selection.py, filter_complete_families.
 % Original family membership comes from the pre-selection order registry/audit,
 % not from surviving children. A family is one (odv, posizione_odv) pair.
-Una famiglia comprende tutti gli ODP associati alla stessa posizione ODV nell'anagrafica successiva al filtro preliminare. Viene conservata soltanto se ogni ODP supera la selezione individuale. Se anche uno solo è escluso, vengono rimossi dal dataset utilizzabile anche gli altri ODP della famiglia, pur se individualmente ammissibili. La composizione della famiglia è verificata rispetto all'insieme precedente alla selezione, senza ridefinirla usando soltanto gli ODP sopravvissuti.
+Per ciascuna posizione ODV si considerano tutti gli ODP associati nell'anagrafica successiva al filtro preliminare. La posizione viene conservata soltanto se ciascuno di questi ODP supera la selezione individuale. Se anche uno solo è escluso, vengono rimossi dal dataset utilizzabile anche gli altri ODP della stessa posizione, pur se individualmente ammissibili. L'insieme degli ODP associati viene verificato rispetto all'anagrafica precedente alla selezione, senza ridefinirlo usando soltanto gli ODP sopravvissuti.
 
 Questa scelta mantiene rappresentata l'intera produzione associata alla quantità commerciale della posizione ODV. Non si ridistribuiscono quantità richieste, evase o spedite tra i soli ODP rimasti. Non viene inoltre imposto un limite al numero di ODP per posizione. Delle \num{6994} posizioni considerate, \num{2273} non hanno alcun ODP ammissibile e 266 hanno soltanto una parte degli ODP ammissibili. L'esclusione di queste ultime rimuove altri 330 ODP e \num{1432} occorrenze rispetto alla selezione individuale.
 
-Restano \num{4455} famiglie complete, con \num{4860} ODP e \num{18294} occorrenze. Tra questi ODP, \num{4071} hanno una ricostruzione univoca e 789 un'ambiguità entro la soglia ammessa. Le decisioni individuali e quelle sulla famiglia vengono conservate separatamente, in modo da distinguere un'incoerenza del singolo ciclo da un'esclusione dovuta agli altri ODP della posizione.
+Restano \num{4455} posizioni ODV con tutti gli ODP associati, per un totale di \num{4860} ODP e \num{18294} occorrenze. Tra questi ODP, \num{4071} hanno una ricostruzione univoca e 789 un'ambiguità entro la soglia ammessa. Le decisioni sui singoli ODP e quelle sulle posizioni ODV vengono conservate separatamente, in modo da distinguere un'incoerenza del singolo ciclo da un'esclusione dovuta agli altri ODP della posizione.
 
 \subsection{Riepilogo del trattamento e dataset finale}
 \label{sec:data-treatment-summary}
@@ -798,7 +798,7 @@ Rimozione dei duplicati & \num{6998} & \num{8054} & \num{35890} \\
 Filtro preliminare sulle quantità & \num{6994} & \num{8050} & \num{35875} \\
 Accorpamento delle fasi composite & \num{6994} & \num{8050} & \num{35852} \\
 Selezione individuale degli ODP & \num{4721} & \num{5190} & \num{19726} \\
-Selezione delle famiglie complete & \num{4455} & \num{4860} & \num{18294} \\
+Selezione per posizione ODV & \num{4455} & \num{4860} & \num{18294} \\
 Parquet finali & \num{4455} & \num{4860} & \num{18294} \\
 \bottomrule
 \end{tabularx}
@@ -806,7 +806,7 @@ Parquet finali & \num{4455} & \num{4860} & \num{18294} \\
 \label{tab:data-treatment-counts}
 \end{table}
 
-Dopo la selezione delle famiglie vengono applicati i trattamenti statistici delle masse e delle durate, descritti nel capitolo successivo. Questi passaggi modificano i valori e, dove previsto, la ricostruzione dei flussi, senza rimuovere altre posizioni ODV, ODP o righe dei consuntivi. La selezione finale dei campi conserva la durata totale ed esclude dalla tabella destinata ai modelli le tre durate di setup, lavorazione e fermo, mantenendole negli audit. I conteggi finali rimangono quindi quelli delle famiglie complete.
+Dopo la selezione per posizione ODV vengono applicati i trattamenti statistici delle masse e delle durate, descritti nel capitolo successivo. Questi passaggi modificano i valori e, dove previsto, la ricostruzione dei flussi, senza rimuovere altre posizioni ODV, ODP o righe dei consuntivi. La selezione finale dei campi conserva la durata totale ed esclude dalla tabella destinata ai modelli le tre durate di setup, lavorazione e fermo, mantenendole negli audit. I conteggi finali rimangono quindi quelli delle posizioni selezionate e dei relativi ODP.
 
 La \cref{fig:data-treatment-pipeline} riporta tutti i trattamenti dal CSV al Parquet e i relativi conteggi. Gli audit conservano anche le registrazioni escluse e i valori originali. La scrittura è preceduta dalla verifica degli identificativi tra le tabelle e dei riferimenti nei collegamenti.
 

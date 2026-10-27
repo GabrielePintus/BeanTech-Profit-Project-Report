@@ -17,6 +17,32 @@
 \RequirePackage{pdflscape}
 \RequirePackage{rotating}
 \graphicspath{{figures/}}
+
+% Shared cap for ordinary figures: 60% of A4 width (126 mm).
+% Full-page diagrams deliberately use their own sizing.
+\newlength{\reportfiguremaxwidth}
+\setlength{\reportfiguremaxwidth}{0.60\paperwidth}
+\newlength{\reportfigurelocalwidth}
+\newsavebox{\reportfigurebox}
+\newcommand{\reportfigurecontent}[1]{%
+  \begingroup
+  \setlength{\reportfigurelocalwidth}{\reportfiguremaxwidth}%
+  \ifdim\linewidth<\reportfigurelocalwidth
+    \setlength{\reportfigurelocalwidth}{\linewidth}%
+  \fi
+  \sbox{\reportfigurebox}{#1}%
+  \ifdim\wd\reportfigurebox>\reportfigurelocalwidth
+    \resizebox{\reportfigurelocalwidth}{!}{\usebox{\reportfigurebox}}%
+  \else
+    \usebox{\reportfigurebox}%
+  \fi
+  \endgroup
+}
+\newcommand{\reportgraphic}[2][]{%
+  \reportfigurecontent{%
+    \includegraphics[width=\reportfiguremaxwidth,#1,keepaspectratio]{#2}%
+  }%
+}
 \RequirePackage{booktabs,tabularx,array}
 \RequirePackage{longtable}
 \RequirePackage{xcolor}
