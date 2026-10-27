@@ -1,0 +1,98 @@
+% Counts verified against current raw CSVs and interim audit Parquets.
+% Exact stage order: scripts/prepare_20260924_snapshot.py main/default path.
+% Individual gate counts come from frozen individual eligibility, not final flags.
+% Family gate: 5190 -> 4860 ODP; 19726 -> 18294 rows.
+% Raw registry has 8059 rows but 8054 distinct ODP; dedup removes 5 registry rows.
+% Contractions reduce row count but do not reject orders. Statistical stages
+% retain all IDs and observation rows. No inferred completion nodes count as R.
+\resizebox{0.97\linewidth}{!}{%
+\begin{tikzpicture}[
+  pipelinebox/.style={draw=ReportBlue!40,fill=ReportBlue!3,rounded corners=1.3mm,
+    text width=8.9cm,align=center,inner sep=3pt,minimum height=7.6mm,
+    font=\footnotesize},
+  flow/.style={-{Stealth[length=1.6mm]},draw=ReportBlue,line width=0.7pt},
+  note/.style={anchor=west,text width=4.5cm,align=left,font=\scriptsize,
+    text=ReportMuted,inner sep=0pt}
+]
+\node[pipelinebox,fill=ReportBlue!10,draw=ReportBlue!65] (s0) at (0,0.00) {\textbf{CSV di origine}\\[1pt]
+  $P=\num{6998}\qquad D=\num{8054}\qquad R=\num{35893}$};
+\node[note] at (5.0,0.00) {\num{8059} righe anagrafiche ODP};
+\draw[draw=ReportRule,line width=0.5pt] (s0.east) -- (4.85,0.00);
+\node[pipelinebox] (s1) at (0,-1.02) {\textbf{Normalizzazione dei nomi e conversione dei tipi}\\[1pt]
+  $P=\num{6998}\qquad D=\num{8054}\qquad R=\num{35893}$};
+\node[note] at (5.0,-1.02) {Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s1.east) -- (4.85,-1.02);
+\node[pipelinebox] (s2) at (0,-2.04) {\textbf{Rimozione dei duplicati}\\[1pt]
+  $P=\num{6998}\qquad D=\num{8054}\qquad R=\num{35890}$};
+\node[note,text=ReportExample!40!black] at (5.0,-2.04) {Rimossi: 5 righe ODP\\e 3 righe dei consuntivi};
+\draw[draw=ReportRule,line width=0.5pt] (s2.east) -- (4.85,-2.04);
+\node[pipelinebox] (s3) at (0,-3.06) {\textbf{Quantità pronta: posizione con un solo ODP}\\[1pt]
+  $P=\num{6998}\qquad D=\num{8054}\qquad R=\num{35890}$};
+\node[note] at (5.0,-3.06) {2 quantità corrette\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s3.east) -- (4.85,-3.06);
+\node[pipelinebox] (s4) at (0,-4.08) {\textbf{Filtro preliminare sulle quantità}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35875}$};
+\node[note,text=ReportExample!40!black] at (5.0,-4.08) {Rimossi: $P=4$, $D=4$\\$R=15$};
+\draw[draw=ReportRule,line width=0.5pt] (s4.east) -- (4.85,-4.08);
+\node[pipelinebox] (s5) at (0,-5.10) {\textbf{Ricostruzione delle quantità pari a zero}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35875}$};
+\node[note] at (5.0,-5.10) {6 quantità ricostruite\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s5.east) -- (4.85,-5.10);
+\node[pipelinebox] (s6) at (0,-6.12) {\textbf{Ricostruzione dei flussi e completamenti impliciti}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35875}$};
+\node[note] at (5.0,-6.12) {Rimossi: 0\\Nodi inferiti distinti da $R$};
+\draw[draw=ReportRule,line width=0.5pt] (s6.east) -- (4.85,-6.12);
+\node[pipelinebox] (s7) at (0,-7.14) {\textbf{Quantità pronta: residuo della quantità evasa}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35875}$};
+\node[note] at (5.0,-7.14) {106 quantità corrette\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s7.east) -- (4.85,-7.14);
+\node[pipelinebox] (s8) at (0,-8.16) {\textbf{Correzione delle durate incompatibili}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35875}$};
+\node[note] at (5.0,-8.16) {26 accorciamenti; 6 imputazioni\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s8.east) -- (4.85,-8.16);
+\node[pipelinebox] (s9) at (0,-9.18) {\textbf{Accorpamento delle fasi composite}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35852}$};
+\node[note,text=ReportExample!40!black] at (5.0,-9.18) {46 occorrenze $\to$ 23 blocchi\\Riduzione: 23 righe};
+\draw[draw=ReportRule,line width=0.5pt] (s9.east) -- (4.85,-9.18);
+\node[pipelinebox] (s10) at (0,-10.20) {\textbf{Quantità pronta: confronto commerciale del grezzo}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35852}$};
+\node[note] at (5.0,-10.20) {0 correzioni applicate\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s10.east) -- (4.85,-10.20);
+\node[pipelinebox] (s11) at (0,-11.22) {\textbf{Riconciliazione congiunta del materiale pronto}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35852}$};
+\node[note] at (5.0,-11.22) {17 quantità corrette\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s11.east) -- (4.85,-11.22);
+\node[pipelinebox] (s12) at (0,-12.24) {\textbf{Correzione della quantità o dello scarto di \texttt{TRENOLUNA}}\\[1pt]
+  $P=\num{6994}\qquad D=\num{8050}\qquad R=\num{35852}$};
+\node[note] at (5.0,-12.24) {368 ODP corretti\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s12.east) -- (4.85,-12.24);
+\node[pipelinebox] (s13) at (0,-13.26) {\textbf{Selezione individuale degli ODP}\\[1pt]
+  $P=\num{4721}\qquad D=\num{5190}\qquad R=\num{19726}$};
+\node[note,text=ReportExample!40!black] at (5.0,-13.26) {Rimossi: $P=\num{2273}$\\$D=\num{2860}$, $R=\num{16126}$};
+\draw[draw=ReportRule,line width=0.5pt] (s13.east) -- (4.85,-13.26);
+\node[pipelinebox] (s14) at (0,-14.28) {\textbf{Selezione delle famiglie complete}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note,text=ReportExample!40!black] at (5.0,-14.28) {Rimossi: $P=266$\\$D=330$, $R=\num{1432}$};
+\draw[draw=ReportRule,line width=0.5pt] (s14.east) -- (4.85,-14.28);
+\node[pipelinebox] (s15) at (0,-15.30) {\textbf{Trattamento statistico delle masse}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note] at (5.0,-15.30) {215 occorrenze corrette\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s15.east) -- (4.85,-15.30);
+\node[pipelinebox] (s16) at (0,-16.32) {\textbf{Durate statistiche e archivio delle componenti}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note] at (5.0,-16.32) {13 durate corrette; 3 colonne\\archiviate. Rimossi: 0 righe};
+\draw[draw=ReportRule,line width=0.5pt] (s16.east) -- (4.85,-16.32);
+\node[pipelinebox] (s17) at (0,-17.34) {\textbf{Imputazione delle durate pari a zero}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note] at (5.0,-17.34) {\num{1977} durate imputate\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s17.east) -- (4.85,-17.34);
+\node[pipelinebox] (s18) at (0,-18.36) {\textbf{Imputazione al valore atteso di durate positive}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note] at (5.0,-18.36) {1 durata corretta\\Rimossi: 0};
+\draw[draw=ReportRule,line width=0.5pt] (s18.east) -- (4.85,-18.36);
+\node[pipelinebox,fill=ReportBlue!10,draw=ReportBlue!65] (s19) at (0,-19.38) {\textbf{Controlli finali e scrittura dei Parquet}\\[1pt]
+  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
+\node[note] at (5.0,-19.38) {Rimossi: 0\\Audit conservati a parte};
+\draw[draw=ReportRule,line width=0.5pt] (s19.east) -- (4.85,-19.38);
+\end{tikzpicture}%
+}

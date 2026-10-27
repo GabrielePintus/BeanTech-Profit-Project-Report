@@ -338,7 +338,7 @@ Si escludono inoltre le posizioni la cui quantità spedita supera quella evasa. 
 \section{Ricostruzione e coerenza dei cicli produttivi}
 \label{sec:cycle-reconstruction}
 
-I consuntivi descrivono le singole occorrenze di macrofase, ma non specificano completamente come il materiale passi dall'una all'altra. L'ordine delle registrazioni e i riferimenti al predecessore non bastano a distinguere una sequenza di lavorazioni da percorsi che interessano porzioni diverse dell'ODP. La ricostruzione cerca quindi collegamenti compatibili con le quantità, gli scarti e i tempi registrati. Il risultato è un ciclo plausibile rispetto alle informazioni disponibili, senza assumere che coincida necessariamente con il percorso fisico effettivo. Si definiscono prima i vincoli e i criteri di scelta dei flussi, per poi descrivere le correzioni delle quantità e delle durate incompatibili con la ricostruzione.
+I consuntivi descrivono le singole occorrenze di macrofase, ma non specificano completamente come il materiale passi dall'una all'altra. L'ordine delle registrazioni e i riferimenti al predecessore non bastano a distinguere una sequenza di lavorazioni da percorsi che interessano porzioni diverse dell'ODP. La ricostruzione cerca quindi collegamenti compatibili con le quantità, gli scarti e i tempi registrati. Il risultato è un ciclo plausibile rispetto alle informazioni disponibili, senza assumere che coincida necessariamente con il percorso fisico effettivo. Si definiscono prima i vincoli e i criteri di scelta dei flussi, per poi descrivere le correzioni delle quantità e delle durate incompatibili con la ricostruzione. Le regole sono raggruppate per argomento, mentre il loro ordine di applicazione nella pipeline è riportato nella \cref{fig:data-treatment-pipeline}.
 
 \subsection{Rappresentazione delle occorrenze e dei flussi}
 \label{sec:material-flow-representation}
@@ -634,7 +634,7 @@ Le due proposte sono ridurre la quantità iniziale a \num{89808} kg, mantenendo 
 % No frozen ID cohort is used for production target discovery.
 % Keep documenting the current timestamp policy despite the open issue noted
 % under sec:flow-temporal-compatibility. No new data treatment is adopted here.
-Si considerano gli ODP per cui la ricostruzione resta incompatibile a causa dei tempi e almeno un'occorrenza materiale intermedia ha fine calcolata successiva alla chiusura registrata del materiale pronto. Tutte le occorrenze intermedie devono iniziare entro tale chiusura. La correzione riguarda quindi durate che prolungano il ciclo oltre il completamento registrato. I cicli già compatibili vengono mantenuti, compresi quelli ricostruiti con completamenti successivi a \texttt{PRONTO}, trattati separatamente nel seguito.
+Si considerano gli ODP per cui la ricostruzione resta incompatibile a causa dei tempi e almeno un'occorrenza materiale intermedia ha fine calcolata successiva alla chiusura registrata del materiale pronto. Tutte le occorrenze intermedie devono iniziare entro tale chiusura. La correzione riguarda quindi durate che prolungano il ciclo oltre il completamento registrato. I cicli già compatibili vengono mantenuti, compresi quelli ricostruiti con completamenti successivi a \texttt{PRONTO}, descritti nella \cref{sec:implicit-completions}.
 
 Per ogni occorrenza da correggere, un modello specifico della macrofase fornisce una durata prevista e un intervallo predittivo calibrato al 90\%. La costruzione e la calibrazione dei modelli sono trattate nel capitolo dedicato alla pulizia statistica e all'imputazione. Qui tali risultati delimitano le durate candidate: si richiedono una previsione positiva, estremi finiti e positivi e una copertura completa delle occorrenze che terminano oltre la chiusura.
 
@@ -665,5 +665,154 @@ Nell'ODP \texttt{000010867758}, \texttt{ANTIMIX} inizia alle 21:12 e registra un
 \end{examplebox}
 \endgroup
 
-% Da sviluppare nella 3.3: completamenti e fasi composite.
-% 3.4 Selezione dei dati utilizzabili.
+\subsection{Completamenti impliciti successivi a \texttt{PRONTO}}
+\label{sec:implicit-completions}
+
+% Implementation: general_flows.py, infer_general_material_flows,
+% _solve_order(implicit_completion=True), _expand_completions.
+% Retry only after no feasible strict mass/time flow and at least one
+% intermediate material occurrence available after registered READY closure.
+% The early terminal aggregate must carry >=1 kg on the relaxed minimum-error
+% face, before the minimum-active-links criterion. Observations stay unchanged.
+Una registrazione di \texttt{PRONTO} può precedere la fine di altre occorrenze materiali dello stesso ODP. Quando la ricostruzione ordinaria non ammette flussi compatibili con masse e tempi e almeno un'occorrenza intermedia termina dopo tale registrazione, si verifica se il materiale possa essere stato completato in momenti diversi. In questa ipotesi, l'orario registrato chiude soltanto una parte del materiale. La regola si applica anche a \texttt{PRONTO\_QS} e \texttt{PRONTO\_QWR}.
+
+Si ammettono completamenti successivi alla chiusura osservata, mantenendo i vincoli temporali tra le occorrenze materiali, i bilanci di massa e le tolleranze. Una quantità positiva deve comunque risultare pronta entro l'orario registrato. Si calcola prima l'errore minimo di massa ammettendo i completamenti successivi, poi si verifica che la quota già pronta possa essere positiva senza aumentare tale errore. Se la verifica riesce, si minimizza il numero di collegamenti attivi tra le soluzioni che la rispettano, secondo la \cref{sec:flow-selection-and-ambiguity}.
+
+Occorre distinguere la quantità registrata in \texttt{PRONTO} dall'orario della registrazione. La quantità resta il riferimento per la massa finale dell'intero ODP, mentre la quota completata entro quell'orario viene ricostruita dai flussi. Nel grafo, il completamento implicito è rappresentato da un arco che collega l'occorrenza materiale al completamento complessivo dell'ODP. L'arco riporta la quantità trasferita e l'orario in cui diventa pronta, corrispondente alla fine calcolata dell'occorrenza di provenienza. Anche la porzione già pronta confluisce nel nodo complessivo, al quale si applica il bilancio terminale della \cref{sec:flow-mass-balances}. Nessuna quantità, durata o informazione temporale originale viene modificata. I completamenti impliciti sono identificati come inferiti.
+
+Se la ricostruzione è ambigua, si determinano gli intervalli delle quantità completate e dell'istante di completamento complessivo. Un completamento implicito è necessario quando riceve massa positiva in tutte le ricostruzioni ottime e soltanto possibile quando compare in alcune. Per il tempo complessivo si individuano il primo e l'ultimo istante in cui l'intero materiale può risultare completato tra tali ricostruzioni.
+
+% Real example checked against current raw Consuntivi_260915.csv and
+% interim consuntivi, completion nodes and material-flow intervals.
+% ODP 000010865619: root q=46232, scrap=5832, net=40400;
+% CONF q=4570, scrap=800; ANTIMIX q=3770, scrap=0;
+% observed READY q=39600 at 2025-10-22 18:51;
+% unique observed branch=35830, implicit branch=3770 at 21:59.
+% Direct solver replay: strict incompatible; implicit unique, completion 21:59.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:implicit-completion]{Materiale completato in due momenti}
+Nell'ODP \texttt{000010865619}, \texttt{PRONTO} registra \num{39600} kg alle 18:51, mentre \texttt{ANTIMIX} lavora 3770 kg dalle 21:29 alle 21:59 dello stesso giorno. La ricostruzione ordinaria è quindi incompatibile con la chiusura osservata. Lo schema mostra invece una ricostruzione con due momenti di completamento. Da \texttt{TRENOLUNA} escono \num{40400} kg, dei quali 4570 passano per \texttt{CONF}, con uno scarto di 800 kg, e poi per \texttt{ANTIMIX}.
+
+\begin{center}
+\input{figures/implicit-completion-example}
+\end{center}
+
+Le due quote formano i \num{39600} kg finali. Il flusso è univoco e il completamento complessivo è alle 21:59. La registrazione originale di \texttt{PRONTO} resta invariata.
+\end{examplebox}
+\endgroup
+
+\subsection{Accorpamento delle occorrenze in fasi composite}
+\label{sec:composite-phases}
+
+% Implementation: composite_phases.py, APPROVED_PAIRS,
+% aggregate_uncertain_phase_blocks; prepare_20260924_snapshot.py.
+% Unique isolated adjacent non-HPT pair, exact serial mass balance,
+% strict positive overlap, whole-order general-flow validation.
+% Internal direction is an assumption; the synthetic duration is an envelope.
+Quando due occorrenze hanno intervalli sovrapposti, i vincoli temporali ordinari possono impedire di collegarle anche se le quantità sono coerenti con il passaggio dello stesso materiale. In alcuni di questi casi si sostituiscono le due occorrenze con una fase composita, rappresentata da un solo nodo. La procedura riguarda soltanto ODP ancora privi di flussi compatibili con masse e tempi. I cicli già compatibili e quelli con bilancio finale fuori tolleranza non vengono modificati da questa regola.
+
+Le coppie ammesse sono \texttt{CONF}--\texttt{ANTIMIX}, \texttt{MOL}--\texttt{CONF}, \texttt{TAG}--\texttt{ANTIMIX}, \texttt{RADDR}--\texttt{ANTIMIX}, \texttt{BANCHI}--\texttt{ANTIMIX}, \texttt{CIRCO}--\texttt{ANTIMIX} e \texttt{RADDR}--\texttt{CIRCO}. Le due occorrenze devono essere consecutive nell'ordine del file sorgente, ignorando \texttt{HPT}, e avere quantità positive intere e scarti validi. Entrambi gli intervalli devono avere durata positiva e sovrapporsi per un tempo positivo. Nessun'altra occorrenza materiale intermedia deve sovrapporsi alla finestra complessiva della coppia. Sono escluse le occorrenze già accorpate o coinvolte nei passaggi istantanei autorizzati dalle correzioni delle durate. Per ciascun ODP deve risultare una sola coppia candidata.
+
+Il materiale netto di una componente deve coincidere esattamente con la quantità in ingresso all'altra, senza tolleranza. Questa uguaglianza stabilisce la direzione assunta del passaggio. Se entrambe le direzioni rispettano il bilancio, si segue l'ordine del file sorgente. Il nome della fase composita riporta le due macrofasi in tale direzione, separate da \texttt{+}. Si tratta di una convenzione di ricostruzione, che non stabilisce l'effettivo ordine fisico delle lavorazioni sovrapposte.
+
+Indichiamo con $a$ e $b$ le componenti nell'ordine assunto del flusso, con $t_i$ l'inizio registrato e con $e_i$ la fine calcolata dell'occorrenza $i$. La fase composita $c$ è definita da
+\begin{equation}
+\label{eq:composite-phase-definition}
+\begin{aligned}
+q_b&=q_a-s_a, & q_c&=q_a, & s_c&=s_a+s_b,\\
+t_c&=\min(t_a,t_b), & e_c&=\max(e_a,e_b), & d_c&=e_c-t_c.
+\end{aligned}
+\end{equation}
+La quantità in uscita dal blocco coincide così con quella netta della seconda componente. La durata $d_c$, espressa in minuti, misura la finestra tra il primo inizio e l'ultima fine. Non è una somma delle durate né una misura del tempo effettivo di lavorazione. La fine registrata del blocco è la più tarda tra quelle delle componenti. Il codice della fase, la produttività e le durate di setup, lavorazione e fermo del blocco restano non valorizzati, senza ricavarli artificialmente dalle componenti.
+
+La sostituzione viene applicata soltanto se l'intero ODP risultante ammette una ricostruzione generale compatibile, anche mediante i completamenti impliciti della \cref{sec:implicit-completions}. L'eventuale ambiguità resta soggetta ai criteri di selezione successivi. Si aggiornano i riferimenti alle occorrenze precedenti e gli sfasamenti. Tutte le registrazioni dell'ODP prima dell'accorpamento vengono conservate separatamente, insieme all'identificazione delle componenti e alla direzione assunta, rendendo la trasformazione reversibile. Il blocco ammette la sovrapposizione, senza dedurne il profilo di trasferimento del materiale o il numero di risorse impiegate.
+
+% Real example: current raw Consuntivi_260915.csv, ODP 000010869787;
+% phase_aggregation_audit_260915.parquet and consuntivi_260915.parquet.
+% The later BANCHI/ANTIMIX pair is contracted; earlier occurrences stay distinct.
+% BANCHI: 2025-11-04 03:04 to 2025-11-05 03:55, q=83626, scrap=400.
+% ANTIMIX: 2025-11-05 02:14 to 05:14, q=83226, scrap=0.
+% Composite: q=83626, scrap=400, duration=1570 min; whole-order flow unique.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:composite-phase]{Due occorrenze sovrapposte nello stesso blocco}
+Nell'ODP \texttt{000010869787}, un'occorrenza di \texttt{BANCHI} registra \num{83626} kg e 400 kg di scarto, dalle 03:04 alle 03:55 del giorno successivo. La successiva occorrenza di \texttt{ANTIMIX} registra \num{83226} kg senza scarto, dalle 02:14 alle 05:14 di quel secondo giorno. Gli intervalli si sovrappongono, ma la massa netta dei \texttt{BANCHI} coincide esattamente con l'ingresso di \texttt{ANTIMIX}.
+
+\begin{center}
+\input{figures/composite-phase-example}
+\end{center}
+
+Il blocco \texttt{BANCHI+ANTIMIX} ha quindi \num{83626} kg in ingresso, 400 kg di scarto e una finestra di 26 ore e 10 minuti, pari a \num{1570} minuti. L'accorpamento rende univoca la ricostruzione dell'intero ODP. Le altre occorrenze, comprese quelle delle stesse macrofasi presenti prima nel ciclo, rimangono distinte.
+\end{examplebox}
+\endgroup
+
+\section{Selezione dei dati utilizzabili}
+\label{sec:usable-data-selection}
+
+Le correzioni descritte nella \cref{sec:cycle-reconstruction} recuperano una parte dei cicli inizialmente incoerenti, ma non tutti gli ODP consentono una ricostruzione utilizzabile. La selezione avviene dopo le riconciliazioni delle quantità e dei tempi, così che queste possano ancora utilizzare le informazioni degli ODP associati alla stessa posizione ODV. Si verifica prima l'ammissibilità dei singoli ODP, poi la completezza delle rispettive famiglie.
+
+\subsection{Ammissibilità dei singoli ODP}
+\label{sec:individual-order-selection}
+
+% Implementation: export_selection.py, filter_exportable_orders.
+% Counts: odp_export_selection_audit_260915.parquet, frozen individual decisions
+% in esportabile_individualmente and motivo_esclusione_export_odp.
+% Temporary exclusions remain explicit exceptions, not a statistical rule.
+Un ODP è ammissibile se il suo flusso è compatibile e la ricostruzione è univoca oppure presenta un'ambiguità entro la soglia della \cref{sec:flow-selection-and-ambiguity}. La sola presenza di più matrici ottime non comporta quindi l'esclusione. Devono inoltre essere disponibili l'esito del controllo sull'ambiguità e i riferimenti alle regole applicate. Informazioni mancanti o esiti non riconosciuti non vengono interpretati come un controllo superato. Nove ODP restano esclusi in via cautelativa per l'incertezza sui percorsi del materiale, mediante decisioni specifiche distinte dalle regole automatiche.
+
+Dei \num{8050} ODP rimasti dopo il filtro preliminare sulle quantità, \num{5190} superano la selezione individuale. Sono esclusi \num{1983} ODP senza un flusso ammissibile, 851 con ambiguità oltre la soglia, 17 con dati non validi e nove soggetti a esclusione esplicita. I \num{5190} ODP ammissibili appartengono a \num{4721} posizioni ODV e comprendono \num{19726} occorrenze. Questi conteggi precedono il controllo di completezza delle famiglie.
+
+\subsection{Completezza delle famiglie di ODP}
+\label{sec:complete-order-families}
+
+% Implementation: export_selection.py, filter_complete_families.
+% Original family membership comes from the pre-selection order registry/audit,
+% not from surviving children. A family is one (odv, posizione_odv) pair.
+Una famiglia comprende tutti gli ODP associati alla stessa posizione ODV nell'anagrafica successiva al filtro preliminare. Viene conservata soltanto se ogni ODP supera la selezione individuale. Se anche uno solo è escluso, vengono rimossi dal dataset utilizzabile anche gli altri ODP della famiglia, pur se individualmente ammissibili. La composizione della famiglia è verificata rispetto all'insieme precedente alla selezione, senza ridefinirla usando soltanto gli ODP sopravvissuti.
+
+Questa scelta mantiene rappresentata l'intera produzione associata alla quantità commerciale della posizione ODV. Non si ridistribuiscono quantità richieste, evase o spedite tra i soli ODP rimasti. Non viene inoltre imposto un limite al numero di ODP per posizione. Delle \num{6994} posizioni considerate, \num{2273} non hanno alcun ODP ammissibile e 266 hanno soltanto una parte degli ODP ammissibili. L'esclusione di queste ultime rimuove altri 330 ODP e \num{1432} occorrenze rispetto alla selezione individuale.
+
+Restano \num{4455} famiglie complete, con \num{4860} ODP e \num{18294} occorrenze. Tra questi ODP, \num{4071} hanno una ricostruzione univoca e 789 un'ambiguità entro la soglia ammessa. Le decisioni individuali e quelle sulla famiglia vengono conservate separatamente, in modo da distinguere un'incoerenza del singolo ciclo da un'esclusione dovuta agli altri ODP della posizione.
+
+\subsection{Riepilogo del trattamento e dataset finale}
+\label{sec:data-treatment-summary}
+
+% Counts checked against current raw CSVs and all current interim audit tables.
+% Pre-export operations = sum(numero_operazioni_osservate) = 35852.
+% 35893 - 3 duplicate rows - 15 mass-filter rows - 23 pair contractions
+%       - 16126 individual-gate rows - 1432 family-gate rows = 18294.
+% 8054 distinct original orders - 4 - 2860 - 330 = 4860.
+% 6998 positions - 4 - 2273 - 266 = 4455.
+La \cref{tab:data-treatment-counts} riassume i passaggi che modificano il numero di posizioni, ODP e occorrenze. Le correzioni dei valori non riducono il numero di righe. Gli accorpamenti sostituiscono invece 46 occorrenze con 23 blocchi, riducendo di 23 il numero di righe senza eliminare ODP. I nodi inferiti di completamento non sono conteggiati come nuove registrazioni dei consuntivi.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}Xrrr@{}}
+\toprule
+\textbf{Passaggio} & \textbf{Posizioni ODV} & \textbf{ODP} & \textbf{Occorrenze} \\
+\midrule
+Dati originali & \num{6998} & \num{8054} & \num{35893} \\
+Rimozione dei duplicati & \num{6998} & \num{8054} & \num{35890} \\
+Filtro preliminare sulle quantità & \num{6994} & \num{8050} & \num{35875} \\
+Accorpamento delle fasi composite & \num{6994} & \num{8050} & \num{35852} \\
+Selezione individuale degli ODP & \num{4721} & \num{5190} & \num{19726} \\
+Selezione delle famiglie complete & \num{4455} & \num{4860} & \num{18294} \\
+Parquet finali & \num{4455} & \num{4860} & \num{18294} \\
+\bottomrule
+\end{tabularx}
+\caption{Numerosità dopo i passaggi che cambiano il numero di righe. Gli ODP sono contati come identificativi distinti, quindi le cinque righe anagrafiche duplicate non ne modificano il numero.}
+\label{tab:data-treatment-counts}
+\end{table}
+
+Dopo la selezione delle famiglie vengono applicati i trattamenti statistici delle masse e delle durate, descritti nel capitolo successivo. Questi passaggi modificano i valori e, dove previsto, la ricostruzione dei flussi, senza rimuovere altre posizioni ODV, ODP o righe dei consuntivi. La selezione finale dei campi conserva la durata totale ed esclude dalla tabella destinata ai modelli le tre durate di setup, lavorazione e fermo, mantenendole negli audit. I conteggi finali rimangono quindi quelli delle famiglie complete.
+
+La \cref{fig:data-treatment-pipeline} riporta tutti i trattamenti dal CSV al Parquet e i relativi conteggi. Gli audit conservano anche le registrazioni escluse e i valori originali. La scrittura è preceduta dalla verifica degli identificativi tra le tabelle e dei riferimenti nei collegamenti.
+
+\begin{figure}[p]
+\centering
+\input{figures/data-treatment-pipeline}
+\caption{Dal CSV al Parquet. $P$ indica le posizioni ODV, $D$ gli ODP distinti e $R$ le righe dei consuntivi. Ogni riquadro riporta i dati che proseguono dopo il trattamento. Le correzioni conteggiate in passaggi diversi possono interessare le stesse occorrenze e non vanno sommate come registrazioni distinte.}
+\label{fig:data-treatment-pipeline}
+\end{figure}

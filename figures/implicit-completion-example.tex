@@ -1,0 +1,33 @@
+% Real ODP 000010865619. Quantities and timestamps checked against raw
+% Consuntivi_260915.csv and current general-flow completion nodes/edge ranges.
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  phase/.style={draw=ReportBlue!45,fill=white,rounded corners=2mm,
+    minimum height=8mm,inner sep=5pt,align=center,font=\small},
+  inferred/.style={phase,dashed,fill=ReportBlue!4},
+  flow/.style={-{Stealth[length=2mm]},draw=ReportBlue,line width=0.8pt},
+  mass/.style={font=\small,inner sep=2pt},
+  note/.style={font=\footnotesize,text=ReportMuted,align=center}
+]
+\node[phase] (root) at (0,0) {\texttt{TRENOLUNA}};
+\node[phase] (conf) at (3.2,-1.05) {\texttt{CONF}};
+\node[phase] (antimix) at (6.2,-1.05) {\texttt{ANTIMIX}};
+\node[phase] (observed) at (6.2,1.1) {\texttt{PRONTO}\\18:51};
+\node[inferred] (complete) at (12.7,1.1)
+  {Completamento ODP\\\num{39600} kg $\cdot$ 21:59};
+\draw[draw=ReportBlue,line width=0.8pt] (root.east) -- (1.5,0);
+\draw[flow,rounded corners=2mm] (1.5,0) |- (observed.west);
+\node[mass,above] at (3.3,1.1) {\num{35830}};
+\draw[flow,rounded corners=2mm] (1.5,0) |- (conf.west);
+\node[mass,below] at (1.95,-1.05) {4570};
+\draw[flow] (conf.east) -- node[mass,above] {3770} (antimix.west);
+\node[note,below=3pt] at (conf.south) {Scarto: 800 kg};
+\node[note,below=3pt] at (antimix.south) {21:29--21:59};
+\draw[flow] (observed.east) -- node[mass,above] {\num{35830}} (complete.west);
+\draw[flow,dashed,rounded corners=2mm] (antimix.east) -| (complete.south);
+\node[mass,above,align=center] at (9.4,-1.05)
+  {3770 kg $\cdot$ 21:59\\Pronto implicito};
+\node[note,anchor=north] at (6.1,-2.05)
+  {Quantit\`a sugli archi in kg. Tratteggio: completamento inferito.};
+\end{tikzpicture}%
+}

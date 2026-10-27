@@ -1,0 +1,41 @@
+% ODP 000010869787: later BANCHI and ANTIMIX occurrences.
+% Common linear scale: minutes since first start (03:04, first day).
+% Midnight=1256; ANTIMIX start=1390; BANCHI end=1491; final end=1570.
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  label/.style={font=\small,align=right,anchor=east},
+  time/.style={font=\small,text=ReportMuted},
+  guide/.style={draw=ReportBlue!30,densely dashed,line width=0.5pt},
+  bar/.style={draw=ReportBlue!60,fill=ReportBlue!12,rounded corners=1mm,line width=0.7pt}
+]
+\def\midnight{8.4}
+\def\antistart{9.29618}
+\def\banchiend{9.97166}
+\def\finish{10.5}
+\node[time,anchor=west] at (0,3.1) {Giorno 1};
+\node[time,anchor=west] at (\midnight,3.1) {Giorno 2};
+\draw[guide] (\midnight,2.8) -- (\midnight,-1.35);
+\draw[guide] (0,2.65) -- (0,-1.35);
+\draw[guide] (\finish,2.65) -- (\finish,-1.35);
+\node[label] at (-0.25,2.1) {\texttt{BANCHI}};
+\node[label] at (-0.25,1.0) {\texttt{ANTIMIX}};
+\node[label] at (-0.25,-1.0) {Blocco};
+\path[bar] (0,1.85) rectangle (\banchiend,2.35);
+\path[bar] (\antistart,0.75) rectangle (\finish,1.25);
+% Same highlighted time span in both component intervals.
+\fill[ReportExample!45] (\antistart,1.87) rectangle (\banchiend,2.33);
+\fill[ReportExample!45] (\antistart,0.77) rectangle (\banchiend,1.23);
+\draw[ReportExample!65!black,densely dotted] (\antistart,0.5) -- (\antistart,2.4);
+\draw[ReportExample!65!black,densely dotted] (\banchiend,0.5) -- (\banchiend,2.4);
+\node[time,anchor=south west] at (0,2.4) {03:04};
+\node[time,anchor=south] at (\banchiend,2.4) {03:55};
+\node[time,anchor=south east] at (\antistart,1.3) {02:14};
+\node[time,anchor=south west] at (\finish,1.3) {05:14};
+\node[font=\footnotesize,align=center,text=ReportExample!40!black] at (9.6,0.08)
+  {Sovrapposizione\\1 h 41 min};
+\path[bar,fill=ReportBlue!7] (0,-1.3) rectangle (\finish,-0.7);
+\node[font=\small] at (5.25,-1) {\texttt{BANCHI+ANTIMIX}};
+\node[time,anchor=north west] at (0,-1.4) {03:04};
+\node[time,anchor=north east] at (\finish,-1.4) {05:14};
+\end{tikzpicture}%
+}
