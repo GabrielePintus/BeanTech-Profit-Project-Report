@@ -1,19 +1,19 @@
 \chapter{Conoscenza di dominio}
 \label{sec:domain-knowledge}
 
-La comprensione del processo produttivo richiede di chiarire il rapporto tra la domanda commerciale, gli ordini che ne organizzano la produzione e le attività attraversate dal materiale. Questo capitolo presenta i concetti e la terminologia utilizzati nel report, a partire dalla documentazione aziendale e dai chiarimenti raccolti durante il progetto. Sono descritti gli ordini di vendita e di produzione, le macrofasi e i cicli produttivi documentati, comprese le varianti legate ai controlli e alle rilavorazioni.
+La comprensione del processo produttivo richiede di chiarire il rapporto tra la domanda commerciale, gli ordini che ne organizzano la produzione e le attività attraversate dal materiale. Questo capitolo presenta i concetti e la terminologia utilizzati nel report, a partire dalla documentazione aziendale e dai chiarimenti raccolti durante il progetto.
 
 \section{Ordini di vendita e ordini di produzione}
 \label{sec:odv-odp}
 
-Un \textbf{ordine di vendita (ODV)} formalizza la richiesta di fornitura di un cliente e ne definisce le condizioni commerciali. È il riferimento commerciale complessivo e comprende una o più posizioni.
+Un \textbf{ordine di vendita (ODV)} formalizza la richiesta di fornitura di un cliente e ne definisce le condizioni commerciali. Comprende una o più posizioni.
 
 Una \textbf{posizione ODV} è una singola voce dell'ordine di vendita e descrive una fornitura attraverso le caratteristiche del prodotto, la quantità richiesta e le condizioni di consegna. È identificata dalla coppia numero ODV e numero di posizione e costituisce l'unità di domanda alla quale viene associata la produzione.
 
-Un \textbf{ordine di produzione (ODP)} è la richiesta interna di produrre una determinata quantità di materiale secondo le specifiche assegnate. Costituisce il riferimento per organizzare e registrare le lavorazioni. Ogni ODP appartiene a una sola posizione ODV; la produzione richiesta da una posizione può essere ripartita tra uno o più ODP.
+Un \textbf{ordine di produzione (ODP)} è la richiesta interna di produrre una determinata quantità di materiale secondo le specifiche assegnate. Costituisce il riferimento per organizzare e registrare le lavorazioni. Ogni ODP appartiene a una sola posizione ODV, la cui produzione può essere ripartita tra uno o più ODP.
 
-% Domain sources: StrategicPlannerBeanTech/notes/Email Correspondence
-% August 24-26 2026.md; notes/Meeting September 29 2026 Decisions.md.
+% Cardinalities: notes/Meeting September 29 2026 Decisions.md and current raw data.
+% The August email's one-to-one statement does not support these cardinalities.
 La \cref{fig:order-hierarchy} riassume le relazioni tra le tre entità, distinguendo il lato commerciale da quello produttivo.
 
 \begin{figure}[htbp]
@@ -33,6 +33,8 @@ La \cref{fig:order-hierarchy} riassume le relazioni tra le tre entità, distingu
 % 000030 -> ODP 000010865639 and 000010867470 (COD_MATERIALE=3000022).
 % ODP identifiers deduplicated before counting; all three have records in
 % Consuntivi_260915.csv. Preserve leading zeros in every identifier.
+\begingroup
+\tcbset{lines before break=12}
 \begin{examplebox}[ex:odv-two-odp]{Un ODV con due posizioni e tre ODP}
 L'esempio mostra un ordine di vendita articolato in due posizioni, riferite a materiali diversi. Alla prima è associato un solo ordine di produzione, mentre alla seconda ne sono associati due, come illustrato nello schema seguente.
 
@@ -40,11 +42,12 @@ L'esempio mostra un ordine di vendita articolato in due posizioni, riferite a ma
 \input{figures/order-example-tree}
 \end{center}
 \end{examplebox}
+\endgroup
 
 \section{Macrofasi del processo produttivo}
 \label{sec:production-phases}
 
-Per realizzare il prodotto richiesto da un ODP, il materiale attraversa un percorso di lavorazioni e controlli, fino al suo approntamento. Le registrazioni che documentano quanto avvenuto durante questo percorso sono dette \textbf{consuntivi di produzione}. Esse associano all'ODP le attività e gli stati registrati, con le relative informazioni temporali e quantitative, e permettono di ricostruirne la storia produttiva.
+Per realizzare il prodotto richiesto da un ODP, il materiale attraversa un percorso di lavorazioni e controlli, fino al completamento della produzione. Le registrazioni che documentano quanto avvenuto durante questo percorso sono dette \textbf{consuntivi di produzione}. Esse associano all'ODP le attività e gli stati registrati, con le relative informazioni temporali e quantitative, e permettono di ricostruirne la storia produttiva.
 
 Una \textbf{macrofase} è un passaggio di questo percorso, descritto a un livello che riassume il dettaglio delle singole operazioni. Può riunire più lavorazioni in un'unica fase, identificare un controllo oppure rappresentare uno stato del materiale, come l'attesa di un esito o il completamento della produzione. Il termine indica quindi il ruolo del passaggio nel processo e non implica che esso corrisponda a una sola macchina.
 
@@ -61,7 +64,7 @@ Nei consuntivi, ogni registrazione riferita a una macrofase ne descrive una spec
 % - notes/Meeting September 29 2026 Decisions.md.
 Nei consuntivi sono presenti 14 macrofasi distinte. Il loro significato è ricostruito a partire dal documento aziendale \texttt{ABS\_Flussi\_Luna.pptx} e dalle note di progetto.
 
-Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale aggregato, lavorazioni meccaniche, trattamenti termici, controlli qualità, confezionamento, attesa e rilascio qualitativo, stati di approntamento. Il \textbf{ciclo di base} è il percorso previsto per ottenere il prodotto richiesto in assenza di interventi di recupero. Una stessa lavorazione può essere prevista dal ciclo di base oppure essere una rilavorazione, a seconda del percorso del materiale.
+Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale aggregato, lavorazioni meccaniche, trattamenti termici, controlli qualità, confezionamento, attesa e rilascio qualitativo, stati di approntamento.
 
 \subsection{Processo iniziale aggregato}
 
@@ -72,9 +75,9 @@ Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale
 \subsection{Lavorazioni meccaniche}
 
 \begin{description}
-\item[\texttt{TAG}] Indica il taglio del materiale mediante seghetti, che può essere impiegato nei percorsi di recupero per rimuovere tratti difettosi.
+\item[\texttt{TAG}] Indica il taglio del materiale mediante seghetti, presente nei percorsi di recupero.
 
-\item[\texttt{MOL}] Indica la molatura, utilizzata per rimuovere difetti superficiali mediante asportazione di materiale.
+\item[\texttt{MOL}] Indica la molatura del materiale, presente nei percorsi di recupero prima di un nuovo controllo ai banchi.
 
 \item[\texttt{RADDR}] Indica la raddrizzatura, destinata a correggere la rettilineità del materiale. Può essere prevista dopo un trattamento termico oppure come intervento di recupero.
 \end{description}
@@ -84,7 +87,7 @@ Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale
 \begin{description}
 \item[\texttt{TRATT\_LUNA}] Riunisce i trattamenti a induzione della linea Luna: rinvenimento, normalizzazione e ciclo completo di tempra e rinvenimento. Nella presentazione queste modalità utilizzano la stessa risorsa, mentre nei consuntivi confluiscono in un'unica macrofase.
 
-\item[\texttt{TRATT\_LFC}] Indica il trattamento termico svolto presso un impianto esterno alla linea Luna, rappresentato nella presentazione dalla voce \texttt{DFO}. Il termine esterno si riferisce alla linea produttiva e non implica che il trattamento sia affidato a un'altra azienda.
+\item[\texttt{TRATT\_LFC}] Indica il trattamento termico svolto presso un impianto esterno alla linea Luna. Nel progetto questa macrofase è associata alla voce \texttt{DFO} della presentazione. Il termine esterno si riferisce alla linea produttiva e non implica che il trattamento sia affidato a un'altra azienda.
 \end{description}
 
 \subsection{Controlli qualità}
@@ -92,7 +95,7 @@ Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale
 \begin{description}
 \item[\texttt{BANCHI}] Indica il controllo ai banchi, rappresentati dalla voce banco/metalloscopio. Serve a verificare il materiale e a indirizzare gli eventuali interventi di recupero. È previsto anche un nuovo passaggio ai banchi dopo la molatura.
 
-\item[\texttt{ANTIMIX}] Indica il controllo volto a rilevare mescolamenti qualitativi, ossia la presenza di materiale di qualità diversa da quella attesa. La presentazione lo colloca al termine dei percorsi di recupero che proseguono verso l'approntamento.
+\item[\texttt{ANTIMIX}] Indica il controllo volto a rilevare mescolamenti qualitativi. Chiude il blocco di recupero e compare anche dopo i trattamenti termici. Il materiale prosegue poi verso i controlli, i trattamenti o il completamento previsti dal percorso.
 
 \item[\texttt{CIRCO}] Indica il controllo mediante \emph{CIRCOGRAPH}, descritto nella presentazione come controllo qualità finale per le rilavorazioni. Compare anche nei percorsi successivi ai trattamenti termici.
 \end{description}
@@ -106,7 +109,7 @@ Le macrofasi sono raggruppate per funzione in sette categorie: processo iniziale
 \subsection{Attesa e rilascio qualitativo}
 
 \begin{description}
-\item[\texttt{HPT}] Rappresenta l'attesa dell'esito del controllo qualità fuori linea, svolto in laboratorio dopo un trattamento termico. L'esito determina il rilascio del materiale oppure la necessità di ulteriori trattamenti. Il passaggio descrive quindi un punto di attesa e decisione del percorso produttivo.
+\item[\texttt{HPT}] Rappresenta l'attesa dell'esito del controllo qualità fuori linea, svolto in laboratorio dopo un trattamento termico. In base al percorso, l'esito consente il rilascio del materiale oppure determina il trattamento successivo.
 \end{description}
 
 \subsection{Stati di approntamento}
@@ -116,9 +119,9 @@ Le macrofasi \texttt{PRONTO}, \texttt{PRONTO\_QS} e \texttt{PRONTO\_QWR} indican
 \section{Struttura dei cicli produttivi}
 \label{sec:base-production-cycles}
 
-Un ciclo produttivo descrive le lavorazioni, i controlli e gli stati attraversati dal materiale e le relazioni tra questi passaggi. Può comprendere diramazioni e ricongiungimenti, anche relativi a porzioni diverse del materiale. Il percorso dipende dalle caratteristiche del prodotto e dagli esiti dei controlli, che possono richiedere rilavorazioni o ulteriori trattamenti anche su una parte del materiale. La presentazione \texttt{ABS\_Flussi\_Luna.pptx} illustra alcuni percorsi possibili e le relative diramazioni, senza costituire un elenco necessariamente esaustivo. Di seguito ne descriviamo la struttura usando le macrofasi introdotte nella sezione precedente.
+Un ciclo produttivo descrive le lavorazioni, i controlli e gli stati attraversati dal materiale e le relazioni tra questi passaggi. Può comprendere diramazioni e ricongiungimenti, anche relativi a porzioni diverse del materiale. Il percorso dipende dalle caratteristiche del prodotto e dagli esiti dei controlli, che possono richiedere rilavorazioni o ulteriori trattamenti anche su una parte del materiale. La presentazione \texttt{ABS\_Flussi\_Luna.pptx} illustra alcuni percorsi possibili e le relative diramazioni, senza costituire un elenco necessariamente esaustivo. Il ciclo di base comprende i passaggi previsti per ottenere il prodotto richiesto. Le rilavorazioni sono gli interventi di recupero che possono aggiungersi a questo percorso.
 
-La \cref{fig:documented-production-graph} sintetizza i percorsi documentati in un unico grafo, accorpando i passaggi comuni. Non tutte le combinazioni di collegamenti sono ammesse per ogni prodotto: valgono le condizioni sui flussi e sugli esiti dei controlli descritte nel testo. I collegamenti che saltano un nodo ne indicano l'opzionalità nel solo percorso interessato.
+La \cref{fig:documented-production-graph} sintetizza i percorsi documentati in un unico grafo, accorpando i passaggi comuni. Non tutte le combinazioni di collegamenti sono ammesse per ogni prodotto: valgono le condizioni sui flussi e sugli esiti dei controlli descritte nel testo. I collegamenti che saltano nodi rappresentano sia passaggi opzionali sia differenze tra percorsi. Per esempio, il flusso PLA trattato non include l'\texttt{HPT} iniziale previsto nei flussi ONA trattati.
 
 \begin{sidewaysfigure}[p]
 \centering
@@ -132,7 +135,7 @@ La \cref{fig:documented-production-graph} sintetizza i percorsi documentati in u
 % Le corrispondenze con le macrofasi sono definite nella sezione 2.2.
 \subsection{Percorsi documentati}
 
-Nel \textbf{flusso naturale}, il materiale conforme al controllo in linea prosegue verso il confezionamento e l'approntamento. Il \textbf{flusso bordioni} prevede anch'esso confezionamento e uscita, dopo il passaggio agli avvolgitori. Pur avendo attività iniziali diverse, entrambi sono rappresentati dalla successione \texttt{TRENOLUNA} $\rightarrow$ \texttt{CONF} $\rightarrow$ \texttt{PRONTO*}, dove \texttt{PRONTO*} indica uno dei tre stati di approntamento.
+Nella presentazione, il \textbf{flusso naturale} porta il materiale conforme al controllo in linea verso il confezionamento e l'approntamento. Il \textbf{flusso bordioni} prevede anch'esso confezionamento e uscita, dopo il passaggio agli avvolgitori. Pur avendo attività iniziali diverse, entrambi sono rappresentati dalla successione \texttt{TRENOLUNA} $\rightarrow$ \texttt{CONF} $\rightarrow$ \texttt{PRONTO*}, dove \texttt{PRONTO*} indica uno dei tre stati di approntamento.
 
 Nel \textbf{flusso ONA}, dopo il processo iniziale è previsto il controllo di laboratorio. Se l'esito è favorevole, il percorso prosegue verso l'approntamento secondo la successione \texttt{TRENOLUNA} $\rightarrow$ \texttt{HPT} $\rightarrow$ \texttt{PRONTO*}. Un esito non conforme può richiedere un ulteriore trattamento, seguito da un nuovo controllo e dai passaggi di rilascio previsti.
 
@@ -144,11 +147,11 @@ Nel \textbf{flusso PLA con ricottura esterna}, il trattamento è invece \texttt{
 
 \subsection{Controlli e rilavorazioni}
 
-Un esito non conforme del controllo in linea può indirizzare parte del materiale verso il blocco di rilavorazioni, che inizia con \texttt{BANCHI}. Da qui sono previsti il passaggio diretto ad \texttt{ANTIMIX}, il taglio, la raddrizzatura oppure la molatura. Dopo \texttt{MOL} è obbligatorio un nuovo passaggio a \texttt{BANCHI}, prima di \texttt{ANTIMIX}. Il materiale non recuperabile può invece essere destinato a rottame, che costituisce un'uscita dal flusso utile e non una macrofase presente nei consuntivi.
+Un esito non conforme del controllo in linea può indirizzare parte del materiale verso il blocco di rilavorazioni, che inizia con \texttt{BANCHI}. Da qui sono previsti il passaggio diretto ad \texttt{ANTIMIX} oppure i rami con \texttt{TAG}, \texttt{RADDR} o \texttt{MOL}. Il blocco è indicato come «Lavorazioni» nel grafo. Dopo \texttt{MOL} è obbligatorio un nuovo passaggio a \texttt{BANCHI}, prima di \texttt{ANTIMIX}. Il materiale non recuperabile può invece essere destinato a rottame, che costituisce un'uscita dal flusso utile e non una macrofase presente nei consuntivi.
 
-Le lavorazioni intermedie del blocco sono opzionali e possono riguardare porzioni diverse del materiale, con percorsi che possono svolgersi in parallelo. Non si tratta quindi necessariamente di alternative esclusive per l'intero ODP. I percorsi di recupero che proseguono terminano in \texttt{ANTIMIX}, per poi ricongiungersi alla continuazione prevista dal flusso di appartenenza.
+Nella rappresentazione adottata si ammette che i rami del blocco interessino porzioni diverse del materiale, anche in parallelo. È un'ipotesi di ricostruzione, non una simultaneità attestata dalla presentazione. I percorsi di recupero che proseguono terminano in \texttt{ANTIMIX}, per poi ricongiungersi alla continuazione prevista dal flusso di appartenenza.
 
-Anche l'esito di \texttt{HPT} può modificare il percorso. Nel flusso ONA, il diagramma prevede ulteriori trattamenti mediante \texttt{TRATT\_LFC} o \texttt{TRATT\_LUNA}, che possono interessare porzioni distinte del materiale. Dopo il trattamento è previsto un nuovo \texttt{HPT}, seguito da \texttt{ANTIMIX}, con \texttt{RADDR} opzionale nel ramo indicato.
+Anche l'esito di \texttt{HPT} può modificare il percorso. Nel flusso ONA, il diagramma prevede ulteriori trattamenti mediante \texttt{TRATT\_LFC} o \texttt{TRATT\_LUNA}, ai quali si applica la stessa ipotesi di ripartizione del materiale. Dopo il trattamento è previsto un nuovo \texttt{HPT}, seguito da \texttt{ANTIMIX}, con \texttt{RADDR} opzionale nel ramo indicato.
 
 \subsection{Percorsi documentati e cicli osservati}
 
@@ -185,5 +188,5 @@ Due ODP relativi a laminato barre grezzo allo stato naturale presentano percorsi
 \end{tikzpicture}
 \end{center}
 
-Il primo ODP non riporta \texttt{CONF}, prevista nel percorso naturale senza rilavorazioni. Questa assenza non permette di stabilire se il confezionamento sia stato omesso oppure svolto senza un consuntivo separato. Il secondo ODP presenta invece la successione di controlli prevista dal percorso di recupero diretto.
+Il primo percorso coincide con il ciclo di base descritto nella corrispondenza aziendale per il laminato grezzo naturale. La presentazione include invece \texttt{CONF}, la cui registrazione è indicata come discontinua nei chiarimenti aziendali. La sua assenza non basta quindi a identificare una lacuna del ciclo. Il secondo ODP segue il percorso di recupero diretto attraverso i controlli.
 \end{examplebox}
