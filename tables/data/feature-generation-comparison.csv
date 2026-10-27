@@ -1,0 +1,4 @@
+model,score,accuracy
+Marginali indipendenti,2.7803203944364356,49.70924403448967
+"VAEAC, quantità sempre nota in addestramento",0.7674913453295065,87.92861700057983
+VAEAC selezionato,0.6816509628466527,88.9312207698822

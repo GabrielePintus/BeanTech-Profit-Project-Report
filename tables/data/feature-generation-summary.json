@@ -1,0 +1,109 @@
+{
+  "baseline_accuracy": {
+    "correct": 2479,
+    "targets": 4987,
+    "accuracy": 0.49709244034489675,
+    "rule": "Most frequent training category per feature; lexicographic tie break; same hidden known-category targets as VAEAC"
+  },
+  "sources_sha256": {
+    "configs/odv_feature_distribution_selected.json": "1112ebd408e4543971d8762968400cfaac6bbe47274f5610b3c2bef2b9cb37a2",
+    "outputs/evaluation/vaeac_mass_required_v2/comparison.json": "0887160299188b50acf79745433b302332ed66d316a9d1b186f8addb1a2336d7",
+    "configs/splits/odv_features_complete_families_v2.json": "8a4f331bdf59cb35f6a1f3938cbf22d0ad951486eb5307b83b056733d38c0ad9",
+    "data/processed/feature_distribution/odv_complete_families_v2.parquet": "418be6c3281eefe567ec77562dc87065e87ba80e3ac661878e776d0f361675df",
+    "data/processed/feature_distribution/odv_complete_families_v1.parquet": "ae4d76bb5ced3bbedc362fb9670900538958c503533caa3e9b0a27255af2de62",
+    "outputs/models/odv_feature_distribution_mass_given_v2.spmodel": "b24bd337cededdcae8e556a1156ad0681b9b571c3f491ad91ea2b84dd5d8624f",
+    "outputs/wandb/beantech-feature-distribution/qwk1dtcz/checkpoints/best-810-12165.ckpt": "1e6e45dfb2bf965e5447f4b474f7a7bf7229491dce54994f1cdc5188af282b53",
+    "configs/neural_feature_distribution/odv_complete_families_v1.yaml": "1e60178e2bf33589a6100172b491c3e2905a7a4978195862d1f82067f4b2a851"
+  },
+  "selected_weights_equal_evaluated_checkpoint": true,
+  "physical_data_equal_evaluation_data": true,
+  "train_positions": 3780,
+  "train_odv": 1787,
+  "validation_positions": 675,
+  "validation_odv": 316,
+  "physical_feature_count": 21,
+  "categorical_target_count": 4987,
+  "hidden_target_count": 6707,
+  "protocol": {
+    "split": "validation",
+    "rows": 675,
+    "physical_features": [
+      "classe_carbonio",
+      "codice_cliente",
+      "descrizione_tipo_lunghezza",
+      "descrizione_marca_acciaio",
+      "finitura",
+      "forma",
+      "descrizione_macrociclo",
+      "marca_cliente",
+      "codice_materiale",
+      "modello_pp_richiesto",
+      "nfa",
+      "stato_fisico",
+      "versione_tecnica",
+      "tolleranza_massima_lunghezza",
+      "tolleranza_minima_lunghezza",
+      "quantita_odv_kg",
+      "difetto_superficiale_massimo",
+      "sezione_grezza_pp",
+      "indice_criticita",
+      "lunghezza_richiesta",
+      "dimensione_1_mm"
+    ],
+    "observed_fraction": 0.5,
+    "required_observed_features": [
+      "quantita_odv_kg"
+    ],
+    "latent_samples": 4096,
+    "seed": 20261007,
+    "bootstrap_replicates": 1000,
+    "device": "cpu"
+  },
+  "results": [
+    {
+      "model": "Marginali indipendenti",
+      "score": 2.7803203944364356,
+      "accuracy": 49.70924403448967
+    },
+    {
+      "model": "VAEAC, quantit\u00e0 sempre nota in addestramento",
+      "score": 0.7674913453295065,
+      "accuracy": 87.92861700057983
+    },
+    {
+      "model": "VAEAC selezionato",
+      "score": 0.6816509628466527,
+      "accuracy": 88.9312207698822
+    }
+  ],
+  "score_difference": 0.08584038248285375,
+  "difference_ci95": [
+    0.04983675194368403,
+    0.12658113997204268
+  ],
+  "gain_over_independent": 2.0986694315897827,
+  "gain_ci95": [
+    1.9723871043720291,
+    2.205261214822887
+  ],
+  "example_context": {
+    "quantita_odv_kg": 25000,
+    "forma": "TONDO",
+    "descrizione_marca_acciaio": "15MNCR4+NIS"
+  },
+  "example_source_position": {
+    "odv": "0001113934",
+    "posizione_odv": "000010"
+  },
+  "example_sampling": {
+    "seed": 42,
+    "batch_size": 4,
+    "device": "cpu",
+    "draws": 4
+  },
+  "notes": [
+    "No independent test set. Model selection and evaluation share validation.",
+    "Joint score is not the mean of the per-feature marginal scores in the plot.",
+    "Example values are generated, not observed production records."
+  ]
+}

@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Modello} & \textbf{Punteggio [nat]} & \textbf{Accuratezza [\%]}\\
+\midrule
+Marginali indipendenti & \num{2.780} & \num{49.71} \\
+\shortstack[l]{VAEAC, quantità sempre nota\\in addestramento} & \num{0.767} & \num{87.93} \\
+VAEAC selezionato & \num{0.682} & \num{88.93} \\
+\bottomrule
+\end{tabular}
+\caption{Completamento delle caratteristiche su 675 posizioni di validazione. Il punteggio normalizza il logaritmo negativo della probabilità congiunta per il numero di valori nascosti: valori più bassi sono migliori. L'accuratezza riguarda le variabili categoriali nascoste con categorie presenti nell'addestramento. Per il riferimento indipendente si sceglie la categoria più frequente nell'addestramento.}
+\label{tab:feature-generation-comparison}
+\end{table}

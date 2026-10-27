@@ -45,16 +45,15 @@ A4, 11 pt, Palatino-style text and mathematics, vivid blue headings/links and te
 dedicated title page and chapter headings, running header and page numbers. Change the appearance in
 `beantechreport.sty`; edit authors, affiliation, date and version in `main.tex`.
 
-Reading order and filenames (chapter 4 has been started; chapters 5–8 are planned and their inputs remain commented):
+Reading order and filenames (chapter 5 has been started; chapters 6–7 are planned and their inputs remain commented):
 
 1. Introduzione, including Approccio metodologico — `sections/01-introduction.tex`.
 2. Conoscenza di dominio — `sections/02-domain-knowledge.tex`.
 3. Dati e trattamento — `sections/03-data-and-treatment.tex`.
 4. Pulizia statistica e imputazione — `sections/04-statistical-cleaning-and-imputation.tex`.
-5. Modelli ed esperimenti — `sections/05-modelling-framework-and-experiments.tex`.
+5. Modellazione e generazione degli scenari produttivi — `sections/05-modelling-framework-and-experiments.tex`.
 6. Scheduling — `sections/06-scheduling.tex`.
-7. Implementazione dell'applicazione web e deployment — `sections/07-web-app-implementation-and-deployment.tex`.
-8. Conclusioni — `sections/08-conclusions.tex`.
+7. Conclusioni — `sections/07-conclusions.tex`.
 
 Use `\cref{label}` for cross-references, `\textcite{key}` / `\parencite{key}` for
 citations, and `booktabs` rules for tables without vertical borders. Put table
@@ -218,3 +217,20 @@ windows, and checks every value against the audit and final parquet. It does not
 change the source data or refit models. Source hashes and counts are saved in
 `tables/data/zero-duration-summary.json`. If the source data change, also update
 the rounded values in `tables/zero-duration-results.tex` and the section text.
+
+## Demand-feature generation evidence (section 5.2)
+
+```sh
+OMP_NUM_THREADS=2 MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/collect_feature_generation_evidence.py --project-dir ../StrategicPlannerBeanTech
+MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/plot_feature_generation.py
+```
+
+The collector checks that the selected network weights match the evaluated
+checkpoint, that the physical feature data match the evaluation cohort, and that
+the training and validation ODV groups are disjoint. It also computes the independent
+marginal baseline accuracy using the same hidden categorical targets and the most
+frequent training category for each variable. It generates a reproducible
+example from the selected frozen model, with three inputs from a validation row.
+It does not retrain or modify project data. Counts, source hashes and the sampling
+configuration are in `tables/data/feature-generation-summary.json`. If evidence
+changes, update the rounded LaTeX table and prose too.

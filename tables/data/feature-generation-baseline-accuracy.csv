@@ -1,0 +1,16 @@
+feature,predicted_category,training_mode_count,tied_modes,targets,correct,accuracy
+classe_carbonio,ALTO_CARBONIO,2213,1,340,243,0.7147058823529412
+codice_cliente,0000100674,272,1,329,65,0.19756838905775076
+descrizione_tipo_lunghezza,LF,3614,1,360,351,0.975
+descrizione_marca_acciaio,40CRMOS4,497,1,323,85,0.2631578947368421
+finitura,GRE,3780,1,323,323,1.0
+forma,TONDO,3472,1,354,334,0.943502824858757
+descrizione_macrociclo,LABAK-TONDO-GRE-NAT-80 MM--,121,1,338,12,0.03550295857988166
+marca_cliente,42CrMoS4+HH,238,1,324,37,0.11419753086419752
+codice_materiale,3002721,121,1,328,11,0.03353658536585366
+modello_pp_richiesto,CC270,3727,1,347,346,0.9971181556195965
+nfa,1516,361,1,314,71,0.22611464968152867
+stato_fisico,NAT,2232,1,313,112,0.35782747603833864
+versione_tecnica,7026,168,1,321,37,0.11526479750778816
+tolleranza_massima_lunghezza,100,1283,1,324,156,0.48148148148148145
+tolleranza_minima_lunghezza,0,3002,1,349,296,0.8481375358166189

@@ -1,0 +1,95 @@
+\chapter[Modellazione e generazione degli scenari produttivi]{Modellazione e generazione\\degli scenari produttivi}
+\label{sec:modelling-and-production-scenarios}
+
+% Scope: configs/production_cascade_selected.json and webapp/cascade_simulation.py.
+% Describe the selected approach, not the sequence of development experiments.
+Per valutare scenari di pianificazione strategica occorre modellare le produzioni associate a diverse richieste commerciali. I dati preparati nei capitoli precedenti costituiscono il riferimento per costruire i modelli che generano queste produzioni. Il punto di partenza è una posizione ODV, con una quantità richiesta e le caratteristiche note del prodotto. A partire da queste informazioni si completano le caratteristiche non specificate e si generano gli ODP, i relativi cicli, le quantità lavorate, gli scarti, le durate e le scadenze. La generazione permette di ottenere più produzioni possibili per la stessa richiesta, rappresentando la variabilità presente nei dati.
+
+I modelli sono collegati tra loro: il risultato di ciascun passaggio fornisce informazioni ai successivi. Si valutano quindi i singoli componenti e la procedura completa, confrontando i risultati con i dati di riferimento e verificando il rispetto dei vincoli. Le alternative considerate e i risultati sperimentali motivano le scelte adottate. Gli scenari così ottenuti vengono usati per pianificare quando eseguire le lavorazioni, tenendo conto delle risorse disponibili e dei vincoli produttivi.
+
+\section{Impostazione generale}
+\label{sec:modelling-overview}
+
+% Sources: models/production_cascade.py (_generate, sample, predict),
+% configs/production_cascade_selected.json; webapp/cascade_simulation.py.
+Il punto di partenza della generazione è la posizione ODV. La quantità richiesta deve essere fornita, mentre le altre caratteristiche possono essere specificate in tutto o in parte. Le caratteristiche non specificate vengono generate in base a quelle note, usando le relazioni apprese dai dati. La posizione così definita determina il numero di ODP e la ripartizione della quantità richiesta tra essi. A ciascun ODP vengono poi associate le caratteristiche necessarie per generarne il ciclo.
+
+La quantità assegnata a un ODP rappresenta il materiale da ottenere a fine ciclo. Quando una posizione ODV viene suddivisa tra più ODP, la somma delle loro quantità finali deve coincidere con la quantità richiesta dalla posizione ODV. La massa iniziale viene determinata insieme agli scarti e ai flussi del ciclo, rispettando i bilanci di materiale. A ciascuna occorrenza di macrofase viene inoltre associata una durata. La scadenza è definita per la posizione ODV e condivisa dai suoi ODP: si ottiene aggiungendo alla data di riferimento della pianificazione un margine temporale generato da un modello dedicato.
+
+La \cref{fig:production-generation-overview} riassume questi passaggi. Il risultato comprende gli ODP, i grafi dei cicli con quantità e durate, e la scadenza comune. Una stessa richiesta commerciale può essere soddisfatta attraverso produzioni diverse. I modelli rappresentano questa variabilità generando più scenari, tutti con la quantità richiesta e le caratteristiche specificate dall'utente, ma con possibili differenze nei percorsi produttivi, negli scarti e nelle durate.
+
+\begin{figure}[H]
+\centering
+\reportfigurecontent{\input{figures/production-generation-overview}}
+\caption{Passaggi della generazione per una posizione ODV. I blocchi dei cicli e delle durate si applicano a ciascun ODP. La scadenza segue un ramo separato e non viene calcolata sommando le durate delle lavorazioni.}
+\label{fig:production-generation-overview}
+\end{figure}
+
+% Evaluation scope: scripts/evaluate_production_cascade.py.
+% Graph validation and upstream training cohorts are not identical.
+% The upstream-unseen subset checks the count-training split, not every component.
+La valutazione riguarda sia i singoli modelli sia il loro funzionamento insieme, perché gli errori di un modello possono influenzare i risultati dei successivi. Si confrontano le previsioni e la variabilità degli scenari generati con i dati di riferimento, controllando anche la completezza dei cicli e il rispetto dei bilanci di massa. Per addestrare i modelli e confrontare le alternative si usano gruppi di dati separati. Le posizioni e gli ODP dello stesso ODV rimangono nello stesso gruppo. Poiché le suddivisioni possono cambiare tra i modelli, nelle sezioni successive si chiarisce quali dati vengono usati in ciascun confronto e quali limiti ne derivano.
+
+\section{Generazione delle caratteristiche della domanda}
+\label{sec:demand-feature-generation}
+
+L'utente può conoscere soltanto una parte delle caratteristiche della posizione ODV, per esempio la quantità richiesta, la forma e la marca dell'acciaio. Le altre devono essere generate tenendo conto di queste informazioni e delle relazioni presenti nei dati. A questo scopo si usa un VAEAC, \emph{Variational Autoencoder with Arbitrary Conditioning}, un modello che può completare insiemi diversi di caratteristiche a seconda di quelle disponibili \parencite{ivanov2019vaeac}.
+
+\subsection{Dati utilizzati e rappresentazione delle caratteristiche}
+\label{sec:feature-generation-data}
+
+% Sources: preparation_report_v2.json, odv_complete_families_v2.yaml,
+% odv_features_complete_families_v2.json and selected model preprocessing.
+Il campione contiene le \num{4455} posizioni ODV mantenute dopo la selezione dei dati. Ogni posizione compare una sola volta, anche quando è associata a più ODP. Il modello descrive quindi questa parte della domanda, composta dalle posizioni per cui sono stati conservati tutti gli ODP. Si usano \num{3780} posizioni di \num{1787} ODV per l'addestramento e 675 posizioni di 316 ODV per la validazione, senza un ulteriore gruppo di test.
+
+Le variabili modellate sono 21 e comprendono la quantità richiesta, le caratteristiche geometriche, la qualità dell'acciaio, lo stato fisico e i riferimenti commerciali e tecnici della posizione. Gli identificativi di ODV e posizione, le quantità evase o spedite e i risultati della produzione non entrano nel modello. Il valore di \texttt{quantita\_odv\_kg} deve essere fornito durante la generazione e viene mantenuto esattamente. I campi \texttt{lunghezza\_minima}, \texttt{lunghezza\_massima} e \texttt{dimensione\_2\_mm}, costanti nel campione, vengono restituiti separatamente con valore zero.
+
+Le categorie possibili e i parametri per normalizzare le variabili numeriche vengono ricavati dai dati di addestramento e applicati anche a quelli di validazione. Le tolleranze di lunghezza sono trattate come categorie, perché assumono un insieme discreto di valori. La quantità richiesta viene trasformata con il logaritmo. Per \texttt{difetto\_superficiale\_massimo} e \texttt{lunghezza\_richiesta}, il logaritmo si applica ai valori positivi ordinari, mentre gli zeri sono rappresentati con uno stato separato. Per il difetto superficiale, anche i codici 999 e \num{9999} formano uno stato dedicato. La stessa separazione tra zero e valore numerico viene usata per \texttt{indice\_criticita}.
+
+\subsection{Funzionamento e addestramento del VAEAC}
+\label{sec:vaeac-training}
+
+% Architecture and training: VAEACModule, ArbitraryConditioningMasker,
+% vaeac_complete_families_v2.yaml; selected checkpoint epoch 810.
+Indichiamo con $\bm{x}_O$ le caratteristiche note e con $\bm{x}_U$ quelle da generare. Il modello usa le informazioni note per costruire una distribuzione su un vettore $\bm{z}$ di variabili latenti, cioè variabili interne che riassumono le dipendenze apprese dai dati. Da questa distribuzione viene estratto un valore di $\bm{z}$, che guida la generazione delle caratteristiche mancanti insieme a quelle note:
+\begin{equation}
+\label{eq:vaeac-generation}
+\bm{z}\sim p(\bm{z}\mid\bm{x}_O),
+\qquad
+\bm{x}_U\sim p(\bm{x}_U\mid\bm{z},\bm{x}_O).
+\end{equation}
+Le distribuzioni dipendono anche da quali caratteristiche sono state fornite, indicate dagli insiemi $O$ e $U$. Per le variabili categoriali il modello produce una probabilità per ogni categoria. Per quelle numeriche usa una miscela di distribuzioni normali sulla scala trasformata. I valori generati vengono infine riportati nella rappresentazione originale.
+
+Durante l'addestramento vengono nascoste diverse combinazioni di caratteristiche note nei dati, che il modello deve imparare a ricostruire. Si alternano casi con poche informazioni disponibili e casi quasi completi. Una rete neurale ausiliaria, usata nell'addestramento, vede anche i valori da ricostruire e aiuta ad apprendere la rappresentazione latente. L'obiettivo combina la ricostruzione dei valori nascosti con un termine che avvicina questa rappresentazione a quella ottenibile dalle sole informazioni note.
+
+Si conserva il modello con il valore minimo della funzione obiettivo sulla validazione. Nel modello selezionato, anche la quantità può essere nascosta durante l'addestramento. Il suo uso come dato sempre noto è imposto nella generazione.
+
+\subsection{Confronto dei modelli e risultati}
+\label{sec:feature-generation-results}
+
+% Source: outputs/evaluation/vaeac_mass_required_v2/comparison.json.
+% Collector verifies that selected artifact weights equal the evaluated weights,
+% and that physical feature data agree. No historical cohort metrics are mixed.
+Il confronto usa 675 posizioni di validazione, mantenendo nota la quantità e nascondendo casualmente circa metà delle altre caratteristiche. I modelli vengono valutati sugli stessi valori nascosti e confrontati con un riferimento che usa le distribuzioni delle singole variabili apprese dall'addestramento, senza considerarne le relazioni.
+
+Il punteggio misura quanto il modello considera probabili i valori nascosti: probabilità maggiori danno punteggi più bassi. Per le variabili numeriche si considera la probabilità di un intervallo che contiene il valore osservato, con intervalli definiti sull'addestramento. Si calcola poi il logaritmo negativo della probabilità congiunta e si divide il totale per il numero di valori valutati. Il risultato è espresso in nat, l'unità associata al logaritmo naturale. Non è la funzione obiettivo usata nell'addestramento né una misura dell'errore in millimetri o chilogrammi.
+
+\input{tables/feature-generation-comparison}
+
+La \cref{tab:feature-generation-comparison} mostra che il VAEAC selezionato ottiene un punteggio di \num{0.682}, contro \num{2.780} del riferimento indipendente e \num{0.767} della variante con quantità sempre nota in addestramento. Il miglioramento rispetto a quest'ultima è \num{0.086} nat per valore nascosto, con intervallo al 95\% $[\num{0.050},\num{0.127}]$, ottenuto con \num{1000} ricampionamenti per ODV. L'accuratezza sulle categorie nascoste è \num{88.93}\%, contro \num{49.71}\% del riferimento indipendente. Le categorie mai viste nell'addestramento non entrano in questa misura.
+
+La \cref{fig:feature-generation-gains} mostra il vantaggio rispetto al riferimento indipendente per ciascuna variabile. Il guadagno è maggiore per diversi codici e riferimenti tecnici, mentre è quasi nullo per finitura e modello PP richiesto. Il risultato dipende dalle informazioni fornite: la prova lascia nota circa metà delle caratteristiche e non misura direttamente la qualità della generazione quando si conosce soltanto la quantità.
+
+\begin{figure}[H]
+\centering
+\reportgraphic{feature-generation-gains.pdf}
+\caption{Riduzione del punteggio del VAEAC selezionato rispetto al riferimento indipendente, valutando separatamente ciascuna caratteristica nascosta. Valori positivi indicano un vantaggio del VAEAC. Questi punteggi per variabile non coincidono con il punteggio congiunto della \cref{tab:feature-generation-comparison}. La quantità non compare perché è sempre fornita.}
+\label{fig:feature-generation-gains}
+\end{figure}
+
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:conditional-feature-generation]{Completare una richiesta parzialmente specificata}
+Dalla posizione \texttt{000010} dell'ODV \texttt{0001113934} si prendono tre informazioni: quantità richiesta di \num{25000} kg, forma \texttt{TONDO} e marca dell'acciaio \texttt{15MNCR4+NIS}. Lasciando libere le altre caratteristiche, due estrazioni del modello producono rispettivamente una prima dimensione di \num{103.17} mm con lunghezza di \num{6003.33} mm e una prima dimensione di \num{38.38} mm con lunghezza di \num{7993.53} mm. Quantità, forma e marca rimangono quelle fornite. Questi valori sono generati dalle distribuzioni apprese dai dati, tenendo conto della quantità, della forma e della marca specificate. Rappresentano quindi la variabilità stimata dal modello, senza riprodurre necessariamente le misure della posizione originale.
+\end{examplebox}
+\endgroup
