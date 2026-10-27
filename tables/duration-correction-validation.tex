@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}Xlrrrr@{}}
+\toprule
+\textbf{Macrofase} & \textbf{Modello} & \textbf{Add. / cal.} & \textbf{Verifica} & \textbf{MAE [min]} & \textbf{Cop. [\%]}\\
+\midrule
+\texttt{ANTIMIX} & CatBoost & \num{884} / \num{321} & \num{244} & \num{16.58} & \num{93.03} \\
+\texttt{BANCHI} & CatBoost & \num{2525} / \num{767} & \num{805} & \num{127.40} & \num{93.04} \\
+\texttt{CONF} & Random Forest & \num{180} / \num{66} & \num{41} & \num{22.58} & \num{95.12} \\
+\texttt{RADDR} & CatBoost & \num{550} / \num{206} & \num{151} & \num{91.49} & \num{92.05} \\
+\texttt{TAG} & Ridge & \num{1089} / \num{354} & \num{411} & \num{67.11} & \num{93.67} \\
+\bottomrule
+\end{tabularx}
+\caption{Verifica dei modelli usati nelle correzioni temporali del \cref{sec:data-and-treatment}. Le numerosità contano le occorrenze di addestramento, calibrazione e verifica. Il MAE è espresso in minuti e la copertura riguarda gli intervalli nominali al 90\%. La scelta del modello usa invece l'errore sulla scala logaritmica nelle suddivisioni interne all'addestramento.}
+\label{tab:duration-correction-validation}
+\end{table}

@@ -216,3 +216,154 @@ Nell'ODP \texttt{000010872769}, la resa iniziale è $\num{9780}/\num{12518}\sime
 Il modello prevede una resa del \num{94.34}\%, con intervallo empirico \num{90.35}--\num{96.48}\%. Dopo la riconciliazione, il bilancio è $\num{10449}-486-183=\num{9780}$ kg e la resa è circa il \num{93.60}\%: il risultato tiene conto sia delle stime sia dei vincoli e delle altre penalità. Il ramo ai \texttt{BANCHI} conserva lo scarto totale, ma cambia la quantità che lo percorre. Si modificano quindi anche dati non segnalati individualmente, perché la proposta deve soddisfare congiuntamente i vincoli statistici e di conservazione della massa.
 \end{examplebox}
 \endgroup
+
+\section{Trattamento delle durate positive anomale}
+\label{sec:positive-duration-treatment}
+
+Il trattamento riguarda \texttt{durata\_totale\_minuti} e distingue le durate positive insolite da quelle incompatibili con il completamento del ciclo. Le prime vengono confrontate con altre durate della stessa macrofase. Per le seconde, già introdotte nella \cref{sec:temporal-duration-corrections}, servono anche previsioni e intervalli che delimitino le correzioni plausibili. In entrambi i casi, modificare una durata aggiorna la fine calcolata, senza cambiare l'inizio e la fine registrati.
+
+\subsection{Individuazione delle durate anomale}
+\label{sec:duration-outlier-detection}
+
+% Sources: duration/statistical_audit.py; statistical_duration_imputation.json;
+% expected_duration_imputation.json. Only the active MAD + IC95 criterion is shown.
+% Counts and limits: statistical_duration_thresholds_260915.parquet and
+% expected_duration_thresholds_260915.parquet. Evidence hashes in duration summary.
+Si analizzano le durate positive di \texttt{BANCHI}, \texttt{CIRCO}, \texttt{TRATT\_LUNA} e \texttt{TRATT\_LFC}. Per ciascuna macrofase si applica il criterio MAD + IC95 della \cref{sec:mass-outlier-detection}, usando il logaritmo della durata al posto del logit. Le soglie tornano in minuti attraverso la funzione esponenziale. Restano gli stessi requisiti di numerosità e variabilità e i \num{2000} ricampionamenti per ODV. Le durate nulle non entrano nel confronto.
+
+La \cref{tab:duration-outlier-thresholds} mostra i limiti e le segnalazioni. Sono individuate 12 durate troppo alte ai \texttt{BANCHI} e due troppo basse, una in \texttt{TRATT\_LUNA} e una in \texttt{TRATT\_LFC}. Non vi sono segnalazioni per \texttt{CIRCO}.
+
+\input{tables/statistical-duration-thresholds}
+
+\subsection{Valori sostitutivi e controlli temporali}
+\label{sec:duration-replacement-rules}
+
+% Implementations: data/statistical_duration.py, clean_statistical_durations;
+% data/expected_duration.py, clean_expected_durations; models/phase_duration.py.
+% The mean rule recomputes admissible flows; TRATT_LFC keeps the saved graph.
+% These are distinct from duration/correction_models.py used in Chapter 3.
+Per \texttt{BANCHI}, \texttt{CIRCO} e \texttt{TRATT\_LUNA}, il valore proposto è la media delle durate positive non segnalate della stessa macrofase. Il riferimento è fissato prima delle sostituzioni e non viene aggiornato con i valori imputati. Le medie utilizzate sono \num{97.99} minuti per \texttt{BANCHI} e \num{452.42} per \texttt{TRATT\_LUNA}.
+
+Per \texttt{TRATT\_LFC} si usa invece una regressione Ridge, con penalità $\lambda=10$, sul logaritmo della durata. Le variabili esplicative comprendono la quantità lavorata, la prima dimensione, la lunghezza richiesta, lo scarto relativo, il rapporto tra quantità lavorata e massa iniziale dell'ODP, prodotto, forma, finitura, stato fisico, marca dell'acciaio e classe di carbonio. Quantità lavorata, dimensione e lunghezza sono trasformate con il logaritmo. Il modello è addestrato su 154 occorrenze di 74 ODV, escludendo l'ODV del candidato.
+
+Assumendo residui normali sulla scala logaritmica, si ottiene una durata con distribuzione lognormale. Indicando con $\mu_i$ la previsione del logaritmo e con $\sigma$ la scala dei residui, il valore atteso usato per la sostituzione è
+\begin{equation}
+\label{eq:duration-lfc-expected-value}
+\widehat{d}_i=\exp\left(\mu_i+\frac{\sigma^2}{2}\right).
+\end{equation}
+La scala $\sigma$ è stimata dagli errori di previsione ottenuti con cinque suddivisioni per ODV, prevedendo ogni gruppo con un modello addestrato sugli altri quattro.
+
+Le proposte basate sulla media devono rispettare i tempi di tutti i collegamenti già presenti. Si ricostruiscono poi i flussi e si richiedono un errore minimo di massa non peggiore di quello precedente e un'ambiguità entro la soglia ammessa. La nuova ricostruzione può semplificare il grafo. Le correzioni della stessa posizione ODV vengono applicate insieme solo se tutti i controlli riescono.
+
+Per \texttt{TRATT\_LFC}, il grafo resta invece fissato. La durata prevista viene accettata se non introduce nuovi conflitti temporali sui collegamenti dell'ODP. Non viene accorciata per farla rientrare nel tempo disponibile. In caso di verifica negativa si mantiene il valore precedente. Entrambe le procedure conservano quantità, scarti e tempi registrati, aggiornando la fine calcolata e gli sfasamenti interessati.
+
+\subsection{Modelli per le correzioni temporali}
+\label{sec:duration-correction-models}
+
+% Actual model used by current duration_corrections_260915.parquet:
+% outputs/models/duration_corrections_v3/models.joblib, SHA-256
+% 3d55fe973664ea66507c1bf32f232ea9a6c9cbcd3b1345fdbfa2ff5cfe87b08f.
+% Training and selected metrics: analyze_ready_overrun_predictions.py and
+% outputs/analysis/duration_correction_training_v3/.
+% Training excludes 60 declared target OdV, but runtime target discovery is dynamic.
+% Current applied correction ODP 000010902536 belongs to training OdV 0001126016.
+% Do not claim that every runtime candidate has an out-of-OdV prediction.
+Le correzioni della \cref{sec:temporal-duration-corrections} usano modelli distinti dalle sostituzioni appena descritte. Per ciascuna macrofase si prevede il logaritmo della durata in funzione di quantità lavorata, prima dimensione, lunghezza richiesta, prodotto, forma, finitura, stato fisico e marca dell'acciaio. La quantità è trasformata con \mbox{$\log(1+q_i)$}. I valori numerici mancanti sono sostituiti con le mediane dell'addestramento, mentre quelli categoriali formano una categoria dedicata.
+
+I riferimenti hanno quantità e durate positive e appartengono a ODP senza occorrenze materiali oltre la chiusura del pronto. Esclusi i 60 ODV riservati ai casi da correggere durante la costruzione dei modelli, i riferimenti sono divisi per ODV in \num{1326} ODV di addestramento, 443 di calibrazione e 443 di verifica. Nell'addestramento si eliminano i logaritmi delle durate sotto il primo quartile o sopra il terzo di oltre \num{1.5} volte la distanza tra i due quartili.
+
+Si confrontano Ridge, Random Forest e CatBoost mediante tre suddivisioni interne per ODV. Per ogni macrofase si sceglie il modello con il minore errore assoluto medio sulla scala logaritmica. La \cref{tab:duration-correction-validation} riporta i risultati dei modelli scelti su ODV di verifica separati. Se i riferimenti non bastano a costruire e calibrare un modello, non viene fornita una previsione.
+
+\input{tables/duration-correction-validation}
+
+La calibrazione considera, per ciascun ODV, il maggiore errore assoluto tra logaritmo osservato e previsto. Per la macrofase $h$, con $G_h$ ODV di calibrazione, $c_h$ è il valore di rango $\lceil0.9\cdot(G_h+1)\rceil$ nell'elenco ordinato di questi errori. Indicando con $\widehat{\ell}_i$ il logaritmo previsto, la durata e il suo intervallo nominale al 90\% sono
+\begin{equation}
+\label{eq:duration-correction-interval}
+\widehat{d}_i=\exp(\widehat{\ell}_i),
+\qquad
+I_i^{90}=\left[\exp(\widehat{\ell}_i-c_h),\,\exp(\widehat{\ell}_i+c_h)\right].
+\end{equation}
+Gli intervalli delimitano le durate candidate, mentre i controlli sul ciclo decidono se applicarle. La copertura misurata sui riferimenti non dimostra l'accuratezza delle correzioni. Inoltre, l'esclusione dei 60 ODV è fissata nell'addestramento e non viene ripetuta sui candidati individuati nell'applicazione: un ODV con una correzione applicata appartiene anche al gruppo di addestramento.
+
+\subsection{Effetti del trattamento statistico}
+\label{sec:duration-imputation-results}
+
+% Counts here concern the positive-duration statistical stages only, not the
+% completion-overrun corrections described in Chapter 3 or zero-duration imputation.
+Le 14 durate segnalate dal confronto statistico appartengono a 14 ODP, in altrettante posizioni ODV e ODV distinti. Tutte le proposte superano i controlli. Le 12 durate dei \texttt{BANCHI}, comprese tra \num{2336.72} e \num{7862.10} minuti, diventano \num{97.99} minuti. Quella di \texttt{TRATT\_LUNA} passa da \num{3.32} a \num{452.42} minuti e quella di \texttt{TRATT\_LFC} da \num{12.96} a \num{1294.18} minuti.
+
+La \cref{fig:duration-imputation-effects} confronta queste variazioni con le durate positive non segnalate. La sostituzione con la media assegna lo stesso valore a tutte le occorrenze trattate della macrofase, senza riprodurne la variabilità. Nei 13 ODP trattati con questa regola, la nuova ricostruzione riduce le diramazioni aggiuntive in sette casi e non richiede più il completamento implicito in quattro. Il trattamento di \texttt{TRATT\_LFC} conserva invece il grafo.
+
+\begin{figure}[htbp]
+\centering
+\reportgraphic{statistical-duration-effects.pdf}
+\caption{Durate positive corrette e riferimenti non segnalati della stessa macrofase. Le scatole mostrano primo quartile, mediana e terzo quartile, con baffi ai percentili 5 e 95. I cerchi indicano i valori precedenti e i rombi quelli sostitutivi, riportati anche in minuti. Le 12 sostituzioni dei \texttt{BANCHI} coincidono nello stesso rombo. L'asse orizzontale è logaritmico.}
+\label{fig:duration-imputation-effects}
+\end{figure}
+
+% Current expected_duration_imputations audit, ODP 000010894433.
+% Start 2026-05-01 05:47; next RADDR start 2026-05-03 09:15, cap 3088 min.
+% Prediction 1294.1831536248073; registered end remains 2026-05-01 06:00.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:positive-duration-lfc]{Una durata troppo breve per il trattamento esterno}
+Nell'ODP \texttt{000010894433}, \texttt{TRATT\_LFC} registra \num{12.96} minuti per \num{23375} kg. La durata è inferiore al limite MAD + IC95 di \num{194.63} minuti. Il modello propone \num{1294.18} minuti, circa 21 ore e 34 minuti, che rientrano nei \num{3088} minuti disponibili tra l'inizio del trattamento e l'inizio della successiva \texttt{RADDR}. La proposta supera i controlli sui collegamenti e viene applicata. Cambia la fine calcolata, mentre masse, grafo e tempi registrati restano invariati.
+\end{examplebox}
+\endgroup
+
+\section{Imputazione delle durate nulle}
+\label{sec:zero-duration-imputation}
+
+Per \texttt{ANTIMIX}, \texttt{CONF} e \texttt{MOL} si assume che la lavorazione richieda un tempo positivo. Le durate registrate a zero in queste macrofasi vengono quindi sostituite. La regola riguarda queste tre macrofasi e non si estende agli altri zeri presenti nei consuntivi.
+
+\subsection{Scelta dei valori sostitutivi}
+\label{sec:zero-duration-models}
+
+% Sources: data/zero_duration.py; data/rules/zero_duration_imputation.json;
+% fit_additional_duration_distributions.py and its saved training metadata.
+% Frozen model hashes and regenerated predictions: tables/data/zero-duration-summary.json.
+Per \texttt{ANTIMIX} e \texttt{CONF} si estrae una durata da una distribuzione che dipende dalle caratteristiche dell'occorrenza. Si usano le stesse variabili esplicative del modello di \texttt{TRATT\_LFC} nella \cref{sec:duration-replacement-rules}, comprese quantità lavorata, dimensioni e caratteristiche del prodotto. Il logaritmo della durata è previsto con CatBoost per \texttt{ANTIMIX} e con Ridge, con $\lambda=10$, per \texttt{CONF}. Alla previsione si aggiunge un residuo casuale, normale nel primo caso e logistico nel secondo. Tornando ai minuti con la funzione esponenziale si ottengono, rispettivamente, una distribuzione lognormale e una log-logistica.
+
+L'addestramento usa 663 durate positive di \texttt{ANTIMIX} e 79 di \texttt{CONF}, selezionate con il criterio MAD + IC95 calcolato sul solo gruppo di addestramento. Gli ODV sono separati tra addestramento e validazione. Le distribuzioni dei residui sono stimate dagli errori ottenuti con cinque suddivisioni per ODV, prevedendo ogni gruppo con un modello addestrato sugli altri quattro. I confronti tra modelli e distribuzioni usano la validazione, che quindi non costituisce una verifica indipendente delle scelte. I modelli sono fissati prima dell'imputazione e non vengono riaddestrati sui valori che producono.
+
+Per \texttt{MOL} sono disponibili soltanto tre durate positive, pari a 60, 150 e 90 minuti. Si usa la loro media, 100 minuti, per tutti gli zeri. Questo riferimento limitato non permette di rappresentare la variabilità della lavorazione. Per le altre due macrofasi, invece, l'estrazione conserva una componente di variabilità anche a parità di caratteristiche. Le estrazioni sono riproducibili grazie a un seme casuale e a un ordinamento delle occorrenze fissati.
+
+\subsection{Compatibilità con i tempi registrati}
+\label{sec:zero-duration-time-windows}
+
+Il grafo ricostruito determina il tempo disponibile per ciascuna occorrenza. Si considera il limite più vicino tra quelli imposti dai collegamenti in uscita e dal completamento dell'ODP, misurandolo dall'inizio registrato dell'occorrenza. Per \texttt{ANTIMIX} e \texttt{CONF}, quando questo tempo è positivo, si estrae dalla sola parte della distribuzione che vi rientra.
+
+Indicando con $H_i$ la funzione di ripartizione della durata prevista e con $w_i>0$ il tempo disponibile, il valore estratto è
+\begin{equation}
+\label{eq:zero-duration-conditional-draw}
+d_i^{\mathrm{imp}}=H_i^{-1}\!\left(u_i\cdot H_i(w_i)\right),
+\qquad u_i\sim\mathcal{U}(0,1).
+\end{equation}
+La quantità $H_i(w_i)$ è la probabilità che una durata prevista rientri nel tempo disponibile. Se è inferiore al 5\%, il risultato viene segnalato come fortemente condizionato dai tempi: la sostituzione è applicata, ma proviene da una parte poco probabile della distribuzione. Per \texttt{MOL}, il valore di 100 minuti viene confrontato direttamente con il tempo disponibile.
+
+Se non esiste un tempo positivo utilizzabile, oppure i 100 minuti di \texttt{MOL} non vi rientrano, la durata viene comunque imputata. Per \texttt{ANTIMIX} e \texttt{CONF} si usa un'estrazione senza il limite temporale, per \texttt{MOL} si mantengono 100 minuti. Questi casi sono marcati con \texttt{durata\_timestamp\_non\_vincolanti}: la procedura assume una durata positiva e segnala il conflitto con i tempi registrati, senza risolverlo. Il grafo, le masse e i timestamp registrati restano invariati. Vengono aggiornati la fine calcolata e gli sfasamenti.
+
+\subsection{Risultati}
+\label{sec:zero-duration-results}
+
+% Counts verified against zero_duration_imputations and final consuntivi.
+% All 1977 values regenerated from frozen models, saved windows and seed 42.
+Sono sostituite \num{1977} durate nulle, appartenenti a \num{1901} ODP, \num{1786} posizioni ODV e \num{1169} ODV. La \cref{tab:zero-duration-results} distingue le macrofasi e i casi influenzati dai vincoli temporali. Le eccezioni sono 16: dieci \texttt{ANTIMIX} e tre \texttt{CONF} hanno tempo disponibile nullo, mentre tre \texttt{MOL} hanno soltanto 10, 15 e 37 minuti. Altre 87 estrazioni sono fortemente condizionate dai tempi disponibili.
+
+\input{tables/zero-duration-results}
+
+La \cref{fig:zero-duration-distributions} confronta le durate imputate con quelle già positive prima di questo passaggio. Le mediane imputate di \texttt{ANTIMIX} e \texttt{CONF} sono inferiori a quelle dei rispettivi riferimenti, pari a 18 e 120 minuti. Il confronto descrive gruppi diversi per caratteristiche e vincoli temporali, e non misura l'accuratezza delle imputazioni: per le occorrenze registrate a zero la durata effettiva non è nota.
+
+\begin{figure}[htbp]
+\centering
+\reportgraphic{zero-duration-distributions.pdf}
+\caption{Durate già positive e durate imputate, con scatole dal primo al terzo quartile, mediana e baffi ai percentili 5 e 95. I riferimenti contengono 819 occorrenze di \texttt{ANTIMIX}, 94 di \texttt{CONF} e tre di \texttt{MOL}. Per \texttt{MOL}, le 14 imputazioni coincidono a 100 minuti. L'asse orizzontale è logaritmico.}
+\label{fig:zero-duration-distributions}
+\end{figure}
+
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:zero-duration-window]{Una durata nulla con poco tempo disponibile}
+Nell'ODP \texttt{000010874347}, un'occorrenza di \texttt{ANTIMIX} ha durata nulla e inizio registrato alle 15:49. Il materiale risulta pronto alle 16:02, lasciando 13 minuti disponibili. La distribuzione prevista assegna a questa finestra una probabilità di circa \num{0.55}\%. L'estrazione condizionata produce \num{12.21} minuti e porta la fine calcolata alle 16:01:12. La durata rientra nel tempo disponibile, ma viene segnalata come fortemente condizionata dal vincolo temporale.
+\end{examplebox}
+\endgroup

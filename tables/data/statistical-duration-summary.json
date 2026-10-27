@@ -1,0 +1,116 @@
+{
+  "sources_sha256": {
+    "data/interim/duration_components_audit_260915.parquet": "a64d1818d7b7d3121ebdbb40cfcb1b0dac65bf9f7f52d7fad5a45ae76fb516f4",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "data/interim/statistical_duration_corrections_260915.parquet": "17afc1ded507f7d46344e4f0d820bdae29279a160e4d9c5e31319ab6dacb589a",
+    "data/interim/expected_duration_imputations_260915.parquet": "ba0a3691d2a6b13d57d2576f3f7b704d8eade1e39aef9256e8413c0c31be04b4",
+    "data/interim/statistical_duration_decisions_260915.parquet": "bae8bf2eb3c5e536add5487e2ae65d4925cc37ed66237c742180080ff90f7e2d",
+    "data/interim/statistical_duration_means_260915.parquet": "d74ef0381740ec8a08b8bb8f5f090e361fcd2afa849f6d0ffb9194ea9fba913b",
+    "data/interim/statistical_duration_thresholds_260915.parquet": "e0a20c47ec991b86ae75ef1dd2e16ab2a2ce41a36082b194cd6389f94f0c2367",
+    "data/interim/expected_duration_thresholds_260915.parquet": "4ab939206c304d70f06180ba5d35eeb0c5af4d4ab94cdf023f1df744e576ecb1",
+    "outputs/analysis/duration_correction_training_v3/manifest.json": "7bf2e8c07ca5afa5a445a77ea254e467c756221e3dc307faa8d54b87a534153e",
+    "outputs/models/duration_corrections_v3/manifest.json": "02b3b8dae1af9019d79a954c0a8f89eaab6db21c0e6b2336a06b014fad5c84b7",
+    "data/interim/duration_corrections_260915.parquet": "4540bc64383f8794d48fd096dddb38dd92289b290f2a83dd86506c28136a0fd8",
+    "outputs/models/duration_corrections_v3/models.joblib": "3d55fe973664ea66507c1bf32f232ea9a6c9cbcd3b1345fdbfa2ff5cfe87b08f",
+    "outputs/analysis/duration_correction_training_v3/metriche_controlli.parquet": "a5deba99c72d83fa8d03b1ecf8f939f532ebfbecf0cceba58388780e002db641",
+    "outputs/analysis/duration_correction_training_v3/predizioni_controlli.parquet": "d435d038afe73ff2fad532a5a0acc6507d845b4b8c93fc1a6e402791f2eb36bc",
+    "outputs/analysis/tratt_lfc_outlier_imputation_v1/summary.json": "a6b10b2a7e2a4223002e484a81fe0d87f847b8385429066f89fe4aa9e47aa37c",
+    "outputs/analysis/tratt_lfc_outlier_imputation_v1/imputer.spmodel": "2ac71bed1b83cf4f62d6b75a3aeb2cd02828c8e969a758a445014f3499db9372"
+  },
+  "candidate_occurrences": 14,
+  "candidate_odp": 14,
+  "candidate_positions": 14,
+  "candidate_odv": 14,
+  "before_total_minutes": 56119.97055768967,
+  "after_total_minutes": 2922.4293741967213,
+  "whole_dataset_before_total_minutes": 2269405.024731548,
+  "positive_corrections_only_delta_minutes": -53197.54118349295,
+  "graphs_with_fewer_branches": 7,
+  "graphs_without_previous_implicit_ready": 4,
+  "means": [
+    {
+      "macro_fase": "BANCHI",
+      "media_minuti": 97.98527497736222,
+      "numero_riferimenti": 2356,
+      "numero_candidati": 12,
+      "versione_regola": "positive_total_mean_mad_ci95_v1"
+    },
+    {
+      "macro_fase": "CIRCO",
+      "media_minuti": 341.0886053197524,
+      "numero_riferimenti": 51,
+      "numero_candidati": 0,
+      "versione_regola": "positive_total_mean_mad_ci95_v1"
+    },
+    {
+      "macro_fase": "TRATT_LUNA",
+      "media_minuti": 452.4229208435675,
+      "numero_riferimenti": 99,
+      "numero_candidati": 1,
+      "versione_regola": "positive_total_mean_mad_ci95_v1"
+    }
+  ],
+  "correction_model_split_odv": {
+    "training": 1326,
+    "calibration": 443,
+    "test": 443,
+    "target": 60
+  },
+  "applied_correction_odv_in_reference_groups": {
+    "training": [
+      "0001126016"
+    ],
+    "calibration": [],
+    "test": []
+  },
+  "lfc_example": {
+    "odp": "000010894433",
+    "odv": "0001121409",
+    "operation_id": "2f482ee45fe9410a540045709c4355fad4549eca1fbb679bfa9fe7af221eaf11",
+    "original_minutes": 12.96483325958252,
+    "local_mass_kg": 23375.0,
+    "training_operations": 154,
+    "training_odv": 74,
+    "target_odv_excluded": true,
+    "log_location": 7.120257084989827,
+    "log_scale": 0.30125710190269034,
+    "available_minutes": 3087.9999833333336,
+    "probability_duration_fits": 0.998806640320367,
+    "predictive_interval95_minutes": [
+      685.2638970045739,
+      2232.1268510768614
+    ],
+    "original_precedence_conflicts": 0,
+    "proposals": [
+      {
+        "method": "expected_value",
+        "duration_minutes": 1294.1831536248073,
+        "calculated_end": "2026-05-02 03:21:10.989000",
+        "compatible": true,
+        "new_precedence_conflicts": 0
+      },
+      {
+        "method": "conditional_expected_value",
+        "duration_minutes": 1291.7013666465302,
+        "calculated_end": "2026-05-02 03:18:42.082000",
+        "compatible": true,
+        "new_precedence_conflicts": 0
+      },
+      {
+        "method": "conditional_sample_seed42",
+        "duration_minutes": 1549.7667477163736,
+        "calculated_end": "2026-05-02 07:36:46.005000",
+        "compatible": true,
+        "new_precedence_conflicts": 0
+      }
+    ],
+    "parquet_modified": false,
+    "graph_mass_scrap_registered_clocks_unchanged": true
+  },
+  "notes": [
+    "Before values come from duration_components_audit, preceding positive-duration corrections.",
+    "Only positive-duration correction effects are measured here; zero-duration imputations are a separate stage.",
+    "Model verification uses the stored v3 metrics and the SHA-256 found in the current duration correction audit.",
+    "One ODV with an applied temporal correction also occurs in the recorded training split."
+  ]
+}

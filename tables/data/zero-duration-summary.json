@@ -1,0 +1,96 @@
+{
+  "sources_sha256": {
+    "data/interim/zero_duration_imputations_260915.parquet": "53d8305826496e9c4829c2f3c7ff9299d5c56da75b40665f3c06994285980781",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "data/rules/zero_duration_imputation.json": "4f7f6c03872f6a21a1d8402ac74c9ee154a088d2dbdf69c1ef92c9566e180831",
+    "outputs/models/statistical_zero_duration/antimix.cbm": "4659468c18786ee2a8ce8f61cabcc87dc22aa4fd38a398efb7c5a19660943b63",
+    "outputs/models/statistical_zero_duration/conf.joblib": "01c09fab35ac483e864d8af2617627e0767d68900677e3d3f6d7e0cc97fc4db0",
+    "outputs/models/statistical_zero_duration/residual_parameters.json": "167a50eb05304c9d3eead35d912151521a9c613fdb091cdfc109fd5769849bff",
+    "outputs/analysis/additional_duration_distributions_v1/metadata.json": "ad1b0f6fcd0f22febfed224a3bfced7b1efd49882d2cf7df763792e664ba8839"
+  },
+  "occurrences": 1977,
+  "odp": 1901,
+  "odv": 1169,
+  "positions": 1786,
+  "time_relaxed": 16,
+  "strongly_conditioned": 87,
+  "by_phase": [
+    {
+      "phase": "ANTIMIX",
+      "imputed": 1940,
+      "time_relaxed": 10,
+      "strongly_conditioned": 86,
+      "median": 14.778733333333333
+    },
+    {
+      "phase": "CONF",
+      "imputed": 23,
+      "time_relaxed": 3,
+      "strongly_conditioned": 1,
+      "median": 40.855216666666664
+    },
+    {
+      "phase": "MOL",
+      "imputed": 14,
+      "time_relaxed": 3,
+      "strongly_conditioned": 0,
+      "median": 100.0
+    }
+  ],
+  "training": {
+    "ANTIMIX": {
+      "head": "CatBoost",
+      "sigma_log": 0.46363324828588354,
+      "oof_bias_log": 0.00022436178726014316,
+      "n_train": 663,
+      "n_validation": 156,
+      "folds": 5,
+      "baseline_mu_log": 3.3338113393079714,
+      "baseline_sigma_log": 0.7886650545829575
+    },
+    "CONF": {
+      "head": "Ridge",
+      "sigma_log": 0.36395164325777984,
+      "oof_bias_log": -0.007873585165114914,
+      "n_train": 79,
+      "n_validation": 15,
+      "folds": 5,
+      "baseline_mu_log": 4.387587005712982,
+      "baseline_sigma_log": 0.9712079813092698
+    },
+    "MOL": {
+      "distribution": "deterministic",
+      "minutes": 100.0,
+      "n": 3,
+      "observed_minutes": [
+        60.0,
+        150.0,
+        90.0
+      ],
+      "scope": "all three observed positives, user-approved fallback; no validation or continuous NLL"
+    }
+  },
+  "example": {
+    "odv": "0001119116",
+    "posizione_odv": "000060",
+    "odp": "000010874347",
+    "operazione_id": "14ddbfd4125b5c3ffb38f3c9b6d18a76097f18f93d0ed3cb69a6af7cc5aeefab",
+    "macro_fase": "ANTIMIX",
+    "durata_originale_min": 0.0,
+    "durata_imputata_min": 12.206766666666667,
+    "fine_calcolata_originale": "2025-12-10 15:49:00",
+    "fine_calcolata_imputata": "2025-12-10 16:01:12.406000",
+    "tempo_disponibile_min": 13.0,
+    "probabilita_finestra": 0.0054869490732595595,
+    "durata_timestamp_non_vincolanti": false,
+    "durata_forte_condizionamento_temporale": true,
+    "versione_regola": "zero_duration_conditional_sampling_v1",
+    "model_fingerprint": "4bbdda0da884d0cc2fa6bb9595ee9ecbb02a3b59012f0f1ff0749dc2d425d941"
+  },
+  "notes": [
+    "Reference boxes contain durations already positive before zero imputation, including earlier temporal corrections.",
+    "Regenerated all imputations from frozen models, seed, current mass features and saved time windows; all match the audit and final parquet."
+  ]
+}

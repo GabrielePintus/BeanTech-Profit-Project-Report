@@ -184,3 +184,37 @@ model verification metrics, correction totals and SHA-256 hashes of the source
 Parquets. Pre-imputation values were restored in memory from the correction
 audits before computing the descriptive comparisons. The plotting script does
 not train models or modify the source datasets.
+
+## Positive-duration treatment figures
+
+Section 4.3 uses saved positive-duration correction audits and the verification
+results of the exact duration-correction models loaded by the pipeline. Refresh
+its evidence from the adjacent code repository with:
+
+```sh
+python scripts/collect_duration_evidence.py --project-dir ../StrategicPlannerBeanTech
+python scripts/plot_statistical_duration.py
+```
+
+The collector requires pandas and NumPy; the plotter also requires Matplotlib.
+Neither command trains models or changes source data. Paired before/after values,
+reference quantiles and model verification metrics are in `figures/data/`.
+`tables/data/statistical-duration-summary.json` records source hashes, counts,
+the real TRATT_LFC example and the overlap between applied temporal corrections
+and the saved model-training ODV split. The LaTeX tables contain rounded values
+from these evidence files and must be updated if the evidence changes.
+
+## Zero-duration evidence (section 4.4)
+
+Recreate the aggregate data and figure using the project Python environment:
+
+```sh
+../StrategicPlannerBeanTech/.venv/bin/python scripts/collect_zero_duration_evidence.py --project-dir ../StrategicPlannerBeanTech
+MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/plot_zero_duration.py
+```
+
+The collector regenerates the imputations from the frozen models and saved time
+windows, and checks every value against the audit and final parquet. It does not
+change the source data or refit models. Source hashes and counts are saved in
+`tables/data/zero-duration-summary.json`. If the source data change, also update
+the rounded values in `tables/zero-duration-results.tex` and the section text.
