@@ -1,0 +1,191 @@
+{
+  "sources_sha256": {
+    "configs/production_cascade_selected.json": "8ea75800dd6fd5f8bec850cff71d6c870dcc25cf4987fc0c395c2f8fd9259652",
+    "outputs/models/production_cascade_v6.spmodel": "83fc99e0d9e54776fd26cbf5fce31577dcb69676a8ba2371d8252da824b0378d",
+    "outputs/models/odv_count_mass_logistic_v2.spmodel": "a5ea87637738bc58ad676107bba33f0d3322a83a24e482dd9e80a38fe25625c5",
+    "outputs/models/odv_mass_split_distance_beta_v2.spmodel": "0a019ed18103b793706037cfebf82f1c3fa59a92b82e5b0eec91501cd387c220",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "outputs/analysis/odp_count_classification_20261021/summary.json": "b5456d57a18bba42e4f15d9defe12a039dccbc88b0819b27cf608a8a1f9c14f5",
+    "outputs/analysis/selected_refit_zero_duration_v2/summary.json": "fb4073bfb9da7abf4d5eb7a2d462c00c2800b802d27939d1461e75bb5b25cfdc",
+    "outputs/analysis/first_child_beta_split_20261023/validation_predictions.csv": "f840c2ff0dc3559b56090de17416b6df9376c519355607a5727c13a6e7b7a6ef",
+    "outputs/analysis/first_child_beta_split_20261023/summary.json": "79f3adfd92ca974de3e5f29d96418b61af05300b5cd04a62c8c886d585678d9c"
+  },
+  "positions": 4455,
+  "counts": {
+    "1": 4127,
+    "2": 286,
+    "3": 30,
+    "4": 6,
+    "5": 1,
+    "6": 2,
+    "10": 3
+  },
+  "split_positions": {
+    "train": 3119,
+    "validation": 652,
+    "test": 642
+  },
+  "split_odv": {
+    "train": 1464,
+    "validation": 311,
+    "test": 313
+  },
+  "two_odp_training": 186,
+  "count_results": [
+    {
+      "model": "Sempre un ODP",
+      "accuracy": 90.95092024539878,
+      "balanced_accuracy": 50.0,
+      "recall_two": 0.0,
+      "confusion": [
+        [
+          593,
+          0
+        ],
+        [
+          59,
+          0
+        ]
+      ]
+    },
+    {
+      "model": "Regola dei 93 t",
+      "accuracy": 94.1717791411043,
+      "balanced_accuracy": 70.08603195472605,
+      "recall_two": 40.67796610169492,
+      "confusion": [
+        [
+          590,
+          3
+        ],
+        [
+          35,
+          24
+        ]
+      ]
+    },
+    {
+      "model": "Regressione logistica bilanciata",
+      "accuracy": 75.30674846625767,
+      "balanced_accuracy": 76.50413010546775,
+      "recall_two": 77.96610169491525,
+      "confusion": [
+        [
+          445,
+          148
+        ],
+        [
+          13,
+          46
+        ]
+      ]
+    }
+  ],
+  "split_results": [
+    {
+      "model": "Ripartizione a met\u00e0",
+      "mae_median_pp": 15.314143283374221,
+      "mae_mean_pp": 15.314143283374221,
+      "crps_pp": 15.314143283374221,
+      "coverage90": null
+    },
+    {
+      "model": "Beta costante",
+      "mae_median_pp": 15.351039797877334,
+      "mae_mean_pp": 15.33619552636926,
+      "crps_pp": 11.215241555445907,
+      "coverage90": 88.13559322033898
+    },
+    {
+      "model": "Beta dipendente dalla quantit\u00e0",
+      "mae_median_pp": 15.29531393378853,
+      "mae_mean_pp": 15.295358436812585,
+      "crps_pp": 10.55578948748708,
+      "coverage90": 93.22033898305084
+    }
+  ],
+  "mean_share": 0.5055301927908651,
+  "example": {
+    "odv": "0001118360",
+    "posizione_odv": "000010",
+    "requested_kg": 100000.0,
+    "observed_odp": [
+      "000010865870",
+      "000010867632"
+    ],
+    "observed_ready_kg": [
+      17860.0,
+      86003.0
+    ],
+    "generated_kg": [
+      9556.391392459054,
+      90443.60860754094
+    ],
+    "generated_features": {
+      "codice_cliente": "102171",
+      "prodotto": "LAMINATO BARRE",
+      "finitura": "GREZZO",
+      "stato_fisico": "NATURALE",
+      "forma": "TONDO",
+      "sezione_grezza_pp": 32.0,
+      "dimensione_1_mm": 32.0,
+      "lunghezza_richiesta": 9000,
+      "tolleranza_minima_lunghezza": -100,
+      "tolleranza_massima_lunghezza": 100,
+      "marca_acciaio": "C45S+CR",
+      "tolleranza_massima_dimensione_1_mm": 0.30000001192092896,
+      "tolleranza_minima_dimensione_1_mm": -0.30000001192092896
+    },
+    "seed": 42
+  },
+  "direct_mappings": [
+    [
+      "codice_cliente",
+      "codice_cliente"
+    ],
+    [
+      "prodotto",
+      "descrizione_macrociclo"
+    ],
+    [
+      "finitura",
+      "finitura"
+    ],
+    [
+      "stato_fisico",
+      "stato_fisico"
+    ],
+    [
+      "forma",
+      "forma"
+    ],
+    [
+      "sezione_grezza_pp",
+      "sezione_grezza_pp"
+    ],
+    [
+      "dimensione_1_mm",
+      "dimensione_1_mm"
+    ],
+    [
+      "lunghezza_richiesta",
+      "lunghezza_richiesta"
+    ],
+    [
+      "tolleranza_minima_lunghezza",
+      "tolleranza_minima_lunghezza"
+    ],
+    [
+      "tolleranza_massima_lunghezza",
+      "tolleranza_massima_lunghezza"
+    ]
+  ],
+  "notes": [
+    "Count predictions are argmax of class-balanced, uncalibrated scores.",
+    "Split median is used for the tabulated MAE; deterministic cascade uses the mean.",
+    "Only validation is evaluated; test remains unused.",
+    "Example samples the split then lookups with seed 42, using the observed sales context."
+  ]
+}

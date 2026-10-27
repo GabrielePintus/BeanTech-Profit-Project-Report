@@ -93,3 +93,79 @@ La \cref{fig:feature-generation-gains} mostra il vantaggio rispetto al riferimen
 Dalla posizione \texttt{000010} dell'ODV \texttt{0001113934} si prendono tre informazioni: quantità richiesta di \num{25000} kg, forma \texttt{TONDO} e marca dell'acciaio \texttt{15MNCR4+NIS}. Lasciando libere le altre caratteristiche, due estrazioni del modello producono rispettivamente una prima dimensione di \num{103.17} mm con lunghezza di \num{6003.33} mm e una prima dimensione di \num{38.38} mm con lunghezza di \num{7993.53} mm. Quantità, forma e marca rimangono quelle fornite. Questi valori sono generati dalle distribuzioni apprese dai dati, tenendo conto della quantità, della forma e della marca specificate. Rappresentano quindi la variabilità stimata dal modello, senza riprodurre necessariamente le misure della posizione originale.
 \end{examplebox}
 \endgroup
+
+\section{Generazione degli ODP}
+\label{sec:odp-generation}
+
+Una volta definite le caratteristiche della posizione ODV, si determina quanti ODP generare, come ripartire tra essi la quantità richiesta e quali caratteristiche assegnare ai prodotti. L’analisi del numero di ODP per posizione mostra che \num{4413} delle \num{4455} posizioni, pari al \num{99.06}\%, hanno uno o due ODP: \num{4127} ne hanno uno e 286 ne hanno due. Le altre 42 posizioni costituiscono la coda meno rappresentata della distribuzione, pari allo \num{0.94}\%. Si sceglie quindi di concentrare i modelli del numero di ordini e della ripartizione della quantità sui casi con uno o due ODP, lasciando fuori quelli più rari.
+
+\subsection{Numero di ODP}
+\label{sec:odp-count-generation}
+
+% Selected component: odv_count_mass_logistic_v2.spmodel, embedded in production_cascade_v6.
+% Recomputed on the current snapshot by scripts/collect_odp_generation_evidence.py.
+Il numero di ODP viene scelto da una regressione logistica che usa la quantità richiesta, il suo logaritmo e un indicatore del superamento di 93 t. L'addestramento assegna più peso ai casi con due ODP, meno frequenti, per evitare che la decisione sia dominata dai casi con un solo ordine. Nella generazione si sceglie la classe con il punteggio maggiore. Questi punteggi risentono del bilanciamento e non rappresentano direttamente le frequenze attese dei due casi.
+
+Si usano \num{3119} posizioni per l'addestramento e 652 per la validazione, mantenendo separati gli ODV. Altre 642 posizioni sono riservate al test e non entrano nei risultati qui presentati. Nella validazione, 593 posizioni hanno un ODP e 59 ne hanno due. La \cref{tab:odp-count-comparison} confronta il modello con due regole semplici: generare sempre un ODP oppure generarne due soltanto quando la quantità supera 93 t. L'accuratezza bilanciata è la media delle percentuali di casi riconosciuti correttamente nelle due classi e dà loro lo stesso peso.
+
+\input{tables/odp-count-comparison}
+
+Il modello scelto ottiene la maggiore accuratezza bilanciata tra le alternative confrontate, grazie al migliore riconoscimento delle posizioni con due ODP.
+
+\subsection{Ripartizione della quantità richiesta}
+\label{sec:odp-quantity-allocation}
+
+% Selected component: odv_mass_split_distance_beta_v2.spmodel.
+% Targets: first_child_split_cases, first_by_odp; PRONTO quantities, not input masses.
+Con un solo ODP, tutta la quantità richiesta viene assegnata a quell'ordine. Con due ODP, si genera la quota destinata al primo e si assegna al secondo la parte restante. Nei dati, la quota del primo ODP è calcolata dividendo la sua quantità pronta per il totale pronto dei due ODP.
+
+Indicando con $Q$ la quantità richiesta e con $R$ la quota del primo ODP, il modello usa una distribuzione Beta:
+\begin{align}
+\label{eq:odp-share-distribution}
+R\mid Q &\sim \operatorname{Beta}\bigl(\mu\cdot\phi(Q),\,(1-\mu)\cdot\phi(Q)\bigr),\\
+\label{eq:odp-quantity-allocation}
+q_1 &= R\cdot Q, \qquad q_2=(1-R)\cdot Q.
+\end{align}
+La media $\mu$ è costante, mentre $\phi(Q)$ controlla quanto le quote si concentrano intorno alla media: valori maggiori producono ripartizioni meno variabili. Il parametro $\phi(Q)$ cresce esponenzialmente con la distanza tra la quantità richiesta e 93 t, rendendo le ripartizioni più concentrate intorno alla media. I parametri vengono stimati su 186 posizioni di addestramento con due ODP. La media appresa è \num{50.55}\% e la variabilità diminuisce allontanandosi da 93 t, come mostra la \cref{fig:odp-quantity-split}. Le quantità generate sono positive e sommano a $Q$. La quota appresa dai dati viene quindi applicata alla quantità richiesta, anche quando il totale pronto osservato era diverso.
+
+\begin{figure}[htbp]
+\centering
+\reportgraphic{odp-quantity-split.pdf}
+\caption{Quota del primo ODP in funzione della quantità richiesta. I punti sono le quote osservate nelle 59 posizioni di validazione con due ODP. La fascia rappresenta l'intervallo tra il quinto e il novantacinquesimo percentile della distribuzione generata, non l'incertezza sulla sua media.}
+\label{fig:odp-quantity-split}
+\end{figure}
+
+La valutazione della ripartizione usa i casi con due ODP osservati, indipendentemente dal numero previsto dal classificatore. La \cref{tab:odp-split-comparison} confronta la ripartizione a metà, una Beta uguale per tutte le quantità e il modello selezionato. L'errore medio assoluto riguarda la previsione ottenuta dalla media della distribuzione. Il CRPS, \emph{Continuous Ranked Probability Score}, valuta invece l'intera distribuzione rispetto alla quota osservata, tenendo conto anche della sua dispersione. Per entrambe le misure, valori più bassi sono migliori.
+
+\input{tables/odp-split-comparison}
+
+\begin{samepage}
+Il vantaggio del modello riguarda soprattutto la rappresentazione della variabilità, mentre l'errore della previsione media cambia poco. L'intervallo centrale al 90\% contiene 55 delle 59 quote osservate, pari al \num{93.22}\%.
+\par
+\end{samepage}
+
+\subsection{Caratteristiche dei prodotti generati}
+\label{sec:odp-product-features}
+
+% DirectFeatureMapper in production_cascade_v6; configs/odv_to_odp_lookups_selected.json.
+% Empirical lookups are fitted on all 4455 positions, one observation per position.
+Le caratteristiche geometriche e le tolleranze di lunghezza vengono copiate dalla posizione ODV. Forma, finitura e stato fisico vengono ricodificati nelle diciture usate per gli ODP, per esempio da \texttt{GRE} a \texttt{GREZZO}. Il prodotto deriva dal codice iniziale della descrizione del macrociclo e il codice cliente viene riportato senza gli zeri iniziali.
+
+La marca dell'acciaio e le tolleranze sulla prima dimensione vengono assegnate usando le associazioni osservate nelle \num{4455} posizioni disponibili, contando ogni posizione una sola volta. Per la marca si cerca prima la descrizione dell'acciaio, poi, se non è presente nei riferimenti, il codice \texttt{nfa} e infine la marca cliente. Per le tolleranze si cerca prima la coppia materiale--versione tecnica, poi materiale--cliente, il solo materiale e infine la combinazione di forma, finitura, stato fisico e prima dimensione. Se nessuna corrispondenza è disponibile, si usa la distribuzione complessiva. Quando una chiave corrisponde a più valori, si estrae secondo le frequenze osservate. Le tolleranze minima e massima vengono estratte insieme, preservando le coppie presenti nei dati.
+
+Le caratteristiche vengono assegnate una volta per posizione e condivise dai suoi ODP. A ogni ODP si aggiunge la propria quantità richiesta, ottenuta dalla ripartizione. Queste informazioni saranno usate per generare i cicli produttivi.
+
+% Real validation context; selected split and lookup models, seed 42.
+% Full source identifiers and exact generated values: tables/data/odp-generation-summary.json.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:odp-generation]{Dalla richiesta a due ODP}
+La posizione \texttt{000010} dell'ODV \texttt{0001118360} richiede \num{100000} kg. Il modello sceglie due ODP. Il diagramma mostra una possibile ripartizione della quantità richiesta. Entrambi hanno forma \texttt{TONDO}, prima dimensione di 32 mm, finitura \texttt{GREZZO} e marca \texttt{C45S+CR}.
+
+\begin{center}
+\reportfigurecontent{\input{figures/odp-generation-example}}
+\end{center}
+
+La richiesta proviene dai dati, mentre le quantità dei due ODP sono generate dal modello. Un'altra estrazione può cambiare la ripartizione, mantenendo lo stesso totale.
+\end{examplebox}
+\endgroup

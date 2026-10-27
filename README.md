@@ -234,3 +234,20 @@ example from the selected frozen model, with three inputs from a validation row.
 It does not retrain or modify project data. Counts, source hashes and the sampling
 configuration are in `tables/data/feature-generation-summary.json`. If evidence
 changes, update the rounded LaTeX table and prose too.
+
+## ODP generation evidence (section 5.3)
+
+```sh
+OMP_NUM_THREADS=2 MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/collect_odp_generation_evidence.py --project-dir ../StrategicPlannerBeanTech
+MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/plot_odp_generation.py
+```
+
+The collector checks the selected count and allocation components embedded in the
+cascade, recomputes validation results from current Parquets and the frozen ODV
+splits, and generates an allocation example from a real validation request.
+It does not fit models or evaluate the held-out test set. Source hashes, exact
+values and the example seed are in `tables/data/odp-generation-summary.json`.
+The split table uses the mean for point predictions, matching deterministic
+cascade generation. The plotted band is a prediction interval for the allocation
+share, not a confidence interval for its mean. Update rounded LaTeX values when
+the evidence changes.

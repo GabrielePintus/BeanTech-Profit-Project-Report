@@ -1,0 +1,12 @@
+\begin{tikzpicture}[
+  box/.style={draw=ReportBlue!45,fill=white,rounded corners=1.8mm,
+    align=center,minimum width=3cm,minimum height=1cm,inner sep=5pt,font=\small},
+  link/.style={-{Stealth[length=1.8mm]},draw=ReportBlue,line width=.8pt,rounded corners=2mm}
+]
+\node[box] (position) at (0,0) {Posizione ODV\\\num{100000} kg};
+\node[box] (first) at (5,.8) {Primo ODP\\\num{9556.39} kg};
+\node[box] (second) at (5,-.8) {Secondo ODP\\\num{90443.61} kg};
+\draw[ReportBlue,line width=.8pt] (position.east) -- (2.5,0);
+\draw[link] (2.5,0) |- (first.west);
+\draw[link] (2.5,0) |- (second.west);
+\end{tikzpicture}

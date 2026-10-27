@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Modello} & \textbf{Accuratezza} & \textbf{Accuratezza} & \textbf{Riconoscimento}\\
+& \textbf{[\%]} & \textbf{bilanciata [\%]} & \textbf{dei due ODP [\%]}\\
+\midrule
+Sempre un ODP & \num{90.95} & \num{50.00} & \num{0.00}\\
+Regola dei 93 t & \num{94.17} & \num{70.09} & \num{40.68}\\
+\shortstack[l]{Regressione logistica\\bilanciata} & \num{75.31} & \num{76.50} & \num{77.97}\\
+\bottomrule
+\end{tabular}
+\caption{Previsione del numero di ODP su 652 posizioni di validazione. L'ultima colonna misura la percentuale di posizioni con due ODP riconosciute correttamente.}
+\label{tab:odp-count-comparison}
+\end{table}
