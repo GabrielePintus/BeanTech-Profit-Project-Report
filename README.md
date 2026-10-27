@@ -134,6 +134,8 @@ Overleaf does not need Graphviz or shell escape.
 Use `\num{12345.67}` for quantities and statistics. The shared style displays
 a thin space for thousands and a point for decimals: `12 345.67`.
 Identifiers remain literal text and retain leading zeros.
+Use `\bm{v}` for vectors and uppercase `\bm{M}` for matrices throughout the
+report, including figures. Scalar components and indices remain unbolded.
 Use `\cdot` for explicit multiplication in mathematical expressions.
 Use numbered `equation` or `align` environments for displayed equations, with
 stable labels for cross-references. Do not use `\[ ... \]` or `$$ ... $$`.

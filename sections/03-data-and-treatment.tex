@@ -7,7 +7,7 @@ I dati aziendali collegano la domanda commerciale alle attività produttive regi
 \label{sec:updated-datasets}
 \label{sec:dataset-links}
 
-I dati disponibili sono organizzati in tre dataset collegati: le posizioni degli ordini di vendita descrivono la domanda commerciale, gli ordini di produzione riportano le specifiche produttive e i consuntivi documentano le attività registrate. Per uniformità, i campi dei dataset sono indicati con i nomi normalizzati adottati nel progetto. La rinomina non ne modifica il contenuto né le unità di misura. La procedura è descritta nella \cref{sec:feature-name-normalization}.
+I dati disponibili sono organizzati in tre dataset collegati: le posizioni degli ordini di vendita descrivono la domanda commerciale, gli ordini di produzione riportano le specifiche produttive e i consuntivi documentano le attività registrate. Per uniformità, i campi dei dataset sono indicati con i nomi normalizzati adottati nel progetto. La rinomina non ne modifica il contenuto né le unità di misura. La procedura è descritta nella \cref{sec:feature-name-normalization}. Le descrizioni e le relazioni riportate in questa sezione si riferiscono ai dati ricevuti, prima delle correzioni descritte nel seguito.
 
 % Sources in StrategicPlannerBeanTech:
 % - data/README.md, current snapshot received on 2026-09-24;
@@ -43,7 +43,7 @@ Le posizioni ODV appartengono a \num{3147} ordini di vendita distinti. Il datase
 
 I tre dataset sono collegati attraverso gli identificativi degli ordini. La coppia numero ODV e numero di posizione associa ciascun ODP alla corrispondente fornitura, mentre l'identificativo ODP collega le registrazioni dei consuntivi all'ordine di produzione. Nei dati disponibili, tutte le posizioni ODV sono associate ad almeno un ODP e tutti gli ODP hanno registrazioni nei consuntivi.
 
-Gli identificativi sono trattati come valori testuali, preservando gli zeri iniziali. Il valore \texttt{NULL} indica un'informazione mancante ed è distinto dallo zero numerico. Le quantità sono espresse in chilogrammi e le durate in minuti; le altre unità di misura sono indicate nelle descrizioni dei campi dove disponibili.
+Gli identificativi sono trattati come valori testuali, preservando gli zeri iniziali. Il valore \texttt{NULL} indica un'informazione mancante ed è distinto dallo zero numerico. Le quantità sono espresse in chilogrammi e le durate in minuti. Le altre unità di misura sono indicate nelle descrizioni dei campi dove disponibili.
 
 \subsection{Ordini di vendita}
 \label{sec:sales-order-data}
@@ -320,14 +320,25 @@ Negli ordini di produzione, le righe che coincidono in tutti i campi tranne \tex
 
 Nei consuntivi si confrontano soltanto registrazioni adiacenti dello stesso ODP, seguendo l'ordine del file sorgente. Due righe possono essere considerate duplicate se coincidono la posizione ODV, la macrofase, i tre riferimenti temporali e le quattro durate. Se uno di questi valori manca, entrambe vengono conservate. Quando coincidono anche quantità e scarto, si mantiene la prima riga. Quando invece una riga ha quantità e scarto pari a zero e l'altra ha quantità positiva, si conserva quest'ultima. Il codice della fase, i riferimenti al predecessore e la produttività non sono usati nel confronto. La sola ripetizione di una macrofase non basta quindi a identificare un duplicato.
 
-Queste regole rimuovono tre registrazioni: una duplicazione con quantità e scarto coincidenti e due con quantità pari a zero, distribuite su tre ODP. I consuntivi passano da \num{35893} a \num{35890} righe, senza sommare quantità né eliminare ordini. Sulla sequenza risultante vengono aggiornati i riferimenti al passaggio precedente e ricalcolato lo sfasamento; la prima registrazione di ciascun ODP resta priva di predecessore.
+Queste regole rimuovono tre registrazioni: una duplicazione con quantità e scarto coincidenti e due con quantità pari a zero, distribuite su tre ODP. I consuntivi passano da \num{35893} a \num{35890} righe, senza sommare quantità né eliminare ordini. Sulla sequenza risultante vengono aggiornati i riferimenti al passaggio precedente e ricalcolato lo sfasamento. La prima registrazione di ciascun ODP resta priva di predecessore.
 
 Infine, si verifica che ogni posizione ODV sia identificata univocamente dalla coppia \texttt{odv} e \texttt{posizione\_odv}, che ogni ODP compaia una sola volta nella relativa anagrafica e che i consuntivi ne riportino la stessa associazione commerciale. L'insieme degli ODP deve coincidere nelle tabelle anagrafiche e nei consuntivi, e tutte le posizioni ODV devono essere rappresentate da almeno un ODP. Si richiede inoltre una sola registrazione \texttt{TRENOLUNA} per ciascun ODP. Le tabelle preparate soddisfano questi controlli, che costituiscono le condizioni di ingresso alla successiva ricostruzione dei cicli.
+
+\subsection{Esclusione preliminare delle posizioni con quantità incoerenti}
+\label{sec:preliminary-mass-exclusions}
+
+% Implementation: snapshot_20260924.py, filter_mass_inconsistent_positions.
+% This filter precedes quantity/duration corrections and flow reconstruction.
+% The final quantity is taken from the last source-order record of each ODP,
+% not from a reconstructed terminal node. Relative deficit threshold: 1%.
+Prima della ricostruzione si confrontano le quantità complessive degli ODP associati a ciascuna posizione ODV. Si calcolano due totali separati: la somma delle masse iniziali di \texttt{TRENOLUNA} al netto dei rispettivi scarti e la somma delle quantità dell'ultima registrazione di ciascun ODP nell'ordine del file sorgente. Il secondo totale non deriva ancora dalla ricostruzione dei flussi. La posizione viene esclusa quando la massa netta iniziale è inferiore di oltre l'1\% sia alla quantità finale complessiva sia alla quantità evasa. I due scostamenti sono rapportati rispettivamente alla quantità finale e a quella evasa. Il confronto non sottrae gli scarti delle lavorazioni successive, che ridurrebbero ulteriormente il materiale disponibile.
+
+Si escludono inoltre le posizioni la cui quantità spedita supera quella evasa. In entrambi i casi vengono rimossi tutti gli ODP della posizione e i relativi consuntivi, mantenendo coerenti i collegamenti tra i tre dataset. La soglia dell'1\% appartiene a questo filtro preliminare ed è distinta dalla tolleranza dello $0.1\%$ usata nella successiva ricostruzione dei flussi.
 
 \section{Ricostruzione e coerenza dei cicli produttivi}
 \label{sec:cycle-reconstruction}
 
-I consuntivi descrivono le singole occorrenze di macrofase, ma non specificano completamente come il materiale passi dall'una all'altra. L'ordine delle registrazioni e i riferimenti al predecessore non bastano a distinguere una sequenza di lavorazioni da percorsi che interessano porzioni diverse dell'ODP. La ricostruzione cerca quindi collegamenti compatibili con le quantità, gli scarti e i tempi registrati. Il risultato è un ciclo plausibile rispetto alle informazioni disponibili, senza assumere che coincida necessariamente con il percorso fisico effettivo.
+I consuntivi descrivono le singole occorrenze di macrofase, ma non specificano completamente come il materiale passi dall'una all'altra. L'ordine delle registrazioni e i riferimenti al predecessore non bastano a distinguere una sequenza di lavorazioni da percorsi che interessano porzioni diverse dell'ODP. La ricostruzione cerca quindi collegamenti compatibili con le quantità, gli scarti e i tempi registrati. Il risultato è un ciclo plausibile rispetto alle informazioni disponibili, senza assumere che coincida necessariamente con il percorso fisico effettivo. Si definiscono prima i vincoli e i criteri di scelta dei flussi, per poi descrivere le correzioni delle quantità e delle durate incompatibili con la ricostruzione.
 
 \subsection{Rappresentazione delle occorrenze e dei flussi}
 \label{sec:material-flow-representation}
@@ -366,7 +377,7 @@ Per le registrazioni di materiale pronto si adotta una condizione diversa: il ma
 % output/input equalities, input residual bounds and final mass check.
 % operation_graphs.py: _mass_close, MASS_RELATIVE_TOLERANCE_DENOMINATOR=1000.
 % Current production policy: relative tolerance only, no absolute kg cap.
-Per verificare i bilanci di massa, rappresentiamo i flussi tra le $n$ occorrenze di macrofase di un ODP mediante la matrice dei flussi di materiale $M$. Ogni elemento $M_{ij}=f_{ij}$ indica i chilogrammi trasferiti dall'occorrenza $i$ all'occorrenza $j$ ed è un numero intero non negativo. Le righe identificano quindi le occorrenze di provenienza e le colonne quelle di destinazione. La riga $i$, evidenziata in giallo, descrive i flussi uscenti dall'occorrenza $i$, mentre la colonna $i$, contornata in blu, ne descrive i flussi entranti:
+Per verificare i bilanci di massa, rappresentiamo i flussi tra le $n$ occorrenze di macrofase incluse nel bilancio materiale di un ODP, escludendo quindi \texttt{HPT}, mediante la matrice dei flussi di materiale $\bm{M}$. Ogni elemento $(\bm{M})_{ij}=f_{ij}$ indica i chilogrammi trasferiti dall'occorrenza $i$ all'occorrenza $j$ ed è un numero intero non negativo. Le righe identificano quindi le occorrenze di provenienza e le colonne quelle di destinazione. La riga $i$, evidenziata in giallo, descrive i flussi uscenti dall'occorrenza $i$, mentre la colonna $i$, contornata in blu, ne descrive i flussi entranti:
 \begin{equation}
 \label{eq:matrix-material-flows}
 \vcenter{\hbox{\input{figures/general-material-flow-matrix}}}
@@ -389,7 +400,7 @@ Per ogni occorrenza diversa da \texttt{TRENOLUNA}, la massa entrante $F_i$ viene
 \end{equation}
 La tolleranza riguarda il confronto tra la somma della colonna e il dato registrato, mentre il bilancio in uscita rimane esatto. Non viene applicato un limite assoluto aggiuntivo in chilogrammi. Il nodo iniziale è escluso da questo confronto perché riceve materiale dall'esterno del grafo, mentre il nodo finale è escluso dal bilancio in uscita perché non trasferisce materiale ad altre occorrenze.
 
-Anche il bilancio complessivo dell'ODP deve rispettare la stessa tolleranza. La quantità in ingresso a \texttt{TRENOLUNA}, meno tutti gli scarti registrati lungo il ciclo, deve corrispondere alla quantità della registrazione di materiale pronto. Questo controllo globale si affianca ai bilanci delle singole occorrenze. Tutti devono essere soddisfatti dalla stessa matrice dei flussi di materiale $M$, utilizzando soltanto collegamenti compatibili con i vincoli temporali.
+Anche il bilancio complessivo dell'ODP deve rispettare la stessa tolleranza. La quantità in ingresso a \texttt{TRENOLUNA}, meno tutti gli scarti registrati lungo il ciclo, deve corrispondere alla quantità della registrazione di materiale pronto. Questo controllo globale si affianca ai bilanci delle singole occorrenze. Tutti devono essere soddisfatti dalla stessa matrice dei flussi di materiale $\bm{M}$, utilizzando soltanto collegamenti compatibili con i vincoli temporali.
 
 % Real example: ODP 000010887181, ODV 0001123859, position 000010.
 % Current raw Consuntivi_260915.csv: q=(18846,3590,17235), s=(1611,0,0).
@@ -413,14 +424,14 @@ La prima riga, evidenziata in giallo, mostra la ripartizione della massa in usci
 % branch_selection.py, MinimumBranchSolver.
 % Two production objectives only: input L1 mass error, then active links.
 % No transition-support or minimum-parallelism research policy is included.
-I vincoli temporali e i bilanci di massa possono ammettere più configurazioni della matrice dei flussi di materiale $M$ per lo stesso ODP. La ricostruzione le confronta applicando due criteri in ordine di priorità. Il primo minimizza gli scostamenti tra le masse entranti ricostruite e quelle registrate. Il secondo, applicato soltanto alle soluzioni con lo stesso scostamento minimo, cerca il minor numero di collegamenti attivi.
+Un ciclo è compatibile se esiste almeno una configurazione della matrice dei flussi di materiale $\bm{M}$ che soddisfa i vincoli temporali e i bilanci di massa. Per lo stesso ODP possono esistere più configurazioni compatibili. La ricostruzione le confronta applicando due criteri in ordine di priorità. Il primo minimizza gli scostamenti tra le masse entranti ricostruite e quelle registrate. Il secondo, applicato soltanto alle soluzioni con lo stesso scostamento minimo, cerca il minor numero di collegamenti attivi.
 
-Indichiamo con $\mathcal{A}$ l'insieme delle matrici che rispettano i vincoli descritti nelle sottosezioni precedenti e con $r$ l'indice dell'occorrenza \texttt{TRENOLUNA}. L'errore complessivo di una matrice $M$ è la somma degli scostamenti assoluti in ingresso, espressi in chilogrammi. Il primo criterio individua il suo valore minimo:
+Indichiamo con $\mathcal{A}$ l'insieme delle matrici che rispettano i vincoli descritti nelle sottosezioni precedenti e con $r$ l'indice dell'occorrenza \texttt{TRENOLUNA}. L'errore complessivo di una matrice $\bm{M}$ è la somma degli scostamenti assoluti in ingresso, espressi in chilogrammi. Il primo criterio individua il suo valore minimo:
 \begin{equation}
 \label{eq:minimum-mass-discrepancy}
 \begin{aligned}
-E(M) &= \sum_{i\neq r}\lvert F_i-q_i\rvert, \\
-E^{\star} &= \min_{M\in\mathcal{A}} E(M).
+E(\bm{M}) &= \sum_{i\neq r}\lvert F_i-q_i\rvert, \\
+E^{\star} &= \min_{\bm{M}\in\mathcal{A}} E(\bm{M}).
 \end{aligned}
 \end{equation}
 Se esiste una ricostruzione che rispetta esattamente tutte le masse registrate, $E^{\star}=0$. Altrimenti vengono considerate soltanto le matrici che raggiungono il minor scostamento possibile, sempre entro le tolleranze ammesse.
@@ -429,13 +440,13 @@ Un collegamento è attivo quando trasferisce una quantità positiva di materiale
 \begin{equation}
 \label{eq:minimum-active-links}
 \begin{aligned}
-C(M) &= \sum_{i,j}\mathbf{1}_{\{f_{ij}>0\}}, \\
-C^{\star} &= \min_{\substack{M\in\mathcal{A}\\E(M)=E^{\star}}} C(M).
+C(\bm{M}) &= \sum_{i,j}\mathbf{1}_{\{f_{ij}>0\}}, \\
+C^{\star} &= \min_{\substack{\bm{M}\in\mathcal{A}\\E(\bm{M})=E^{\star}}} C(\bm{M}).
 \end{aligned}
 \end{equation}
-Il termine $\mathbf{1}_{\{f_{ij}>0\}}$ vale uno se il collegamento è attivo e zero altrimenti. A parità di occorrenze, ridurre il numero di collegamenti equivale a ridurre le diramazioni e i ricongiungimenti aggiuntivi. Questa preferenza seleziona ricostruzioni più semplici senza peggiorare l'accordo con le masse registrate. Non elimina occorrenze e non modifica quantità, scarti o tempi.
+Il termine $\mathbf{1}_{\{f_{ij}>0\}}$ vale uno se il collegamento è attivo e zero altrimenti. A parità di occorrenze, ridurre il numero di collegamenti equivale a ridurre le diramazioni e i ricongiungimenti aggiuntivi. Questa preferenza seleziona ricostruzioni più semplici senza peggiorare l'accordo con le masse registrate. Non elimina occorrenze e non modifica quantità, scarti o tempi. Un ciclo compatibile può restare ambiguo anche dopo questa scelta. La successiva selezione dei dati utilizzabili considera ulteriori criteri e non coincide quindi con la sola verifica di compatibilità.
 
-I due criteri possono lasciare più configurazioni della matrice dei flussi di materiale $M$ con lo stesso errore minimo $E^{\star}$ e lo stesso numero minimo di collegamenti $C^{\star}$. Queste ricostruzioni possono differire nei collegamenti presenti oppure nelle quantità trasferite. Per descrivere tali differenze, si considera un collegamento alla volta e si calcolano la minima e la massima quantità che può trasportare nelle ricostruzioni rimaste. Se il minimo è zero e il massimo è positivo, il collegamento compare soltanto in alcune ricostruzioni. Se il minimo è positivo, il collegamento è presente in tutte, ma la quantità può cambiare. Quando i due estremi coincidono, la quantità è fissata. Se sono entrambi zero, il collegamento è sempre assente. L'intera ricostruzione è univoca soltanto quando ogni elemento di $M$ ha lo stesso valore in tutte le soluzioni rimaste, come chiarisce il confronto nell'\cref{ex:ambiguous-material-flows}.
+I due criteri possono lasciare più configurazioni della matrice dei flussi di materiale $\bm{M}$ con lo stesso errore minimo $E^{\star}$ e lo stesso numero minimo di collegamenti $C^{\star}$. Queste ricostruzioni possono differire nei collegamenti presenti oppure nelle quantità trasferite. Per descrivere tali differenze, si considera un collegamento alla volta e si calcolano la minima e la massima quantità che può trasportare nelle ricostruzioni rimaste. Se il minimo è zero e il massimo è positivo, il collegamento compare soltanto in alcune ricostruzioni. Se il minimo è positivo, il collegamento è presente in tutte, ma la quantità può cambiare. Quando i due estremi coincidono, la quantità è fissata. Se sono entrambi zero, il collegamento è sempre assente. L'intera ricostruzione è univoca soltanto quando ogni elemento di $\bm{M}$ ha lo stesso valore in tutte le soluzioni rimaste, come chiarisce il confronto nell'\cref{ex:ambiguous-material-flows}.
 
 % Real current-source example: Consuntivi_260915.csv, ODP 000010871161.
 % Raw source sequence: TRENOLUNA, BANCHI, ANTIMIX, PRONTO.
@@ -451,14 +462,14 @@ L'ODP \texttt{000010871161} comprende quattro occorrenze, ordinate qui come \tex
 \begin{equation}
 \label{eq:ambiguous-flow-example}
 \begin{aligned}
-M_A&=\begin{pmatrix}
+\bm{M}_A&=\begin{pmatrix}
 0&710&\textcolor{ReportBlue}{\num{1070}}&\textcolor{ReportBlue}{\num{89315}}\\
 0&0&\textcolor{ReportBlue}{0}&\textcolor{ReportBlue}{710}\\
 0&0&0&710\\
 0&0&0&0
 \end{pmatrix},
 &\quad
-M_B&=\begin{pmatrix}
+\bm{M}_B&=\begin{pmatrix}
 0&710&\textcolor{ReportBlue}{360}&\textcolor{ReportBlue}{\num{90025}}\\
 0&0&\textcolor{ReportBlue}{710}&\textcolor{ReportBlue}{0}\\
 0&0&0&710\\
@@ -466,12 +477,14 @@ M_B&=\begin{pmatrix}
 \end{pmatrix}.
 \end{aligned}
 \end{equation}
-Entrambe rispettano esattamente le masse registrate, hanno cinque collegamenti attivi e sono compatibili con i tempi. Nella configurazione $M_A$, i 710 kg di \texttt{ANTIMIX} vanno direttamente a \texttt{PRONTO}. Nella configurazione $M_B$, passano invece ai \texttt{BANCHI}, che ricevono soltanto i restanti 360 kg direttamente da \texttt{TRENOLUNA}. Gli elementi in blu evidenziano le differenze.
+Entrambe rispettano esattamente le masse registrate, hanno cinque collegamenti attivi e sono compatibili con i tempi. Nella configurazione $\bm{M}_A$, i 710 kg di \texttt{ANTIMIX} vanno direttamente a \texttt{PRONTO}. Nella configurazione $\bm{M}_B$, passano invece ai \texttt{BANCHI}, che ricevono soltanto i restanti 360 kg direttamente da \texttt{TRENOLUNA}. Gli elementi in blu evidenziano le differenze.
 
-Il collegamento \texttt{ANTIMIX} $\rightarrow$ \texttt{BANCHI} ha quindi minimo 0 e massimo 710 kg, perché è assente in $M_A$ e presente in $M_B$. Il collegamento \texttt{TRENOLUNA} $\rightarrow$ \texttt{BANCHI} è invece necessario, ma la sua quantità varia tra 360 e \num{1070} kg. Il trasferimento \texttt{BANCHI} $\rightarrow$ \texttt{PRONTO} resta fissato a 710 kg in entrambe.
+Il collegamento \texttt{ANTIMIX} $\rightarrow$ \texttt{BANCHI} ha quindi minimo 0 e massimo 710 kg, perché è assente in $\bm{M}_A$ e presente in $\bm{M}_B$. Il collegamento \texttt{TRENOLUNA} $\rightarrow$ \texttt{BANCHI} è invece necessario, ma la sua quantità varia tra 360 e \num{1070} kg. Il trasferimento \texttt{BANCHI} $\rightarrow$ \texttt{PRONTO} resta fissato a 710 kg in entrambe.
 \end{examplebox}
 
 L'ampiezza dell'ambiguità viene valutata confrontando, per ogni collegamento da $i$ a $j$, la differenza tra massimo e minimo con lo $0.1\%$ della minore tra la massa disponibile in uscita da $i$ e quella registrata in ingresso a $j$. Si segnala se l'ampiezza supera questa soglia, mantenendo distinta tale valutazione dall'unicità matematica della ricostruzione.
+
+I vincoli descritti fin qui definiscono le condizioni richieste alla ricostruzione. Le sottosezioni seguenti esaminano le correzioni con cui si recuperano alcuni casi che inizialmente non le soddisfano. Alcune regole preliminari verificano le proposte cercando uno schema di collegamento riconosciuto, per esempio una catena lineare o un percorso con un ramo parziale. In questo controllo, i collegamenti devono rispettare la struttura dello schema e i relativi bilanci e tempi. La ricostruzione generale descritta sopra cerca invece i flussi senza imporre uno di questi schemi. Nel seguito viene specificato quale verifica è richiesta da ciascuna regola.
 
 \subsection{Ricostruzione delle quantità pari a zero}
 \label{sec:zero-material-quantities}
@@ -516,22 +529,27 @@ B_p &= \sum_{k\in K_p}b_k, \\
 A_p &= \sum_{k\in K_p}a_k.
 \end{aligned}
 \end{equation}
-Le verifiche richiedono che tutti gli ODP della posizione siano presenti nell'anagrafica utilizzata e abbiano i relativi consuntivi. Ogni ODP deve avere una sola occorrenza \texttt{TRENOLUNA} e una sola registrazione di materiale pronto, con quantità e scarti validi. Le registrazioni di materiale pronto e quelle \texttt{HPT} devono avere scarto pari a zero. Le regole seguenti distinguono il riferimento commerciale dalla massa ricostruita per ciascun ODP.
+Le verifiche richiedono tutti gli ODP associati alla posizione ODV nell'anagrafica utilizzata e i relativi consuntivi. Ogni ODP deve avere una sola occorrenza \texttt{TRENOLUNA}, una sola registrazione di materiale pronto e quantità e scarti validi. Le registrazioni di materiale pronto e quelle \texttt{HPT} devono avere scarto pari a zero. A queste condizioni comuni si aggiungono i criteri specifici dei quattro casi seguenti.
 
-\textbf{Posizione con un solo ODP e bilancio esatto.} Se la quantità evasa coincide esattamente con $b_k$, può sostenere la sostituzione di $a_k$. Per aumentare la quantità registrata, si richiede che essa coincida con la massa netta dell'ultima occorrenza materiale nell'ordine del file sorgente e sia inferiore alla quantità evasa. È richiesta almeno un'occorrenza materiale intermedia. Per ridurla, si richiede invece che il ciclo originale non superi il controllo degli schemi di collegamento e che la sostituzione produca un ciclo compatibile, con bilanci esatti e senza tolleranze locali. Il valore corretto entra poi nelle successive verifiche di ricostruzione.
+\textbf{Posizione con un solo ODP e bilancio esatto.} Si richiedono almeno un'occorrenza materiale intermedia e la coincidenza esatta tra quantità evasa e massa finale attesa, $v_p=b_k$. La quantità proposta è $a_k^{\mathrm{corr}}=v_p$. Per aumentare $a_k$, il valore originale deve coincidere con la massa netta dell'ultima occorrenza materiale nell'ordine del file sorgente. Per ridurlo, il ciclo originale deve risultare incompatibile con gli schemi di collegamento riconosciuti, mentre quello corretto deve superare lo stesso controllo con bilanci esatti, senza tolleranze locali. Il valore corretto viene poi sottoposto alle successive verifiche di ricostruzione.
 
-\textbf{Un solo ODP con bilancio finale incoerente.} Se $B_p$ coincide con $v_p$ entro la tolleranza dello $0.1\%$ e soltanto un ODP $k$ non rispetta il proprio bilancio finale, la quantità proposta è il residuo della quantità evasa dopo aver sottratto il materiale pronto degli altri ODP:
+\textbf{Un solo ODP con bilancio finale incoerente.} Si richiede che $B_p$ e $v_p$ siano coerenti entro lo $0.1\%$ e che soltanto un ODP $k$ non rispetti il proprio bilancio finale. La quantità proposta è il residuo della quantità evasa, sottraendo il materiale pronto degli altri ODP:
 \begin{equation}
 \label{eq:single-child-ready-residual}
 a_k^{\mathrm{corr}}=v_p-\sum_{\substack{h\in K_p\\h\neq k}}a_h.
 \end{equation}
-Gli altri ODP devono già rispettare i rispettivi bilanci finali. Il valore proposto deve essere coerente con $b_k$ entro la stessa tolleranza e consentire una ricostruzione completa del flusso dell'ODP corretto. Per una posizione con un solo ODP, la somma degli altri contributi è zero e il residuo coincide con la quantità evasa.
+Gli altri ODP devono già rispettare i rispettivi bilanci finali. La proposta deve essere coerente con $b_k$ entro la stessa tolleranza e consentire una ricostruzione generale compatibile dell'ODP corretto. Se la posizione ha un solo ODP, il residuo coincide con la quantità evasa.
 
-\textbf{Quantità ricavata dal bilancio di un ODP grezzo.} Per le posizioni i cui ODP hanno tutti finitura \texttt{GREZZO}, è prevista anche la sostituzione di $a_k$ con $b_k$, senza attribuire all'ODP un residuo commerciale. Si considera un solo ODP con bilancio finale incoerente e si richiede che gli altri abbiano già flussi compatibili. Il confronto tra $B_p$ e $v_p$ deve rispettare sia il limite di 100 kg sia quello dello $0.1\%$. Inoltre, lo scostamento $\lvert B_p-v_p\rvert$ deve essere almeno dieci volte più piccolo di $\lvert A_p-v_p\rvert$, usando un chilogrammo come riferimento minimo nel confronto. La sostituzione viene accettata soltanto se il flusso completo dell'ODP corretto è compatibile.
+\textbf{Quantità ricavata dal bilancio di un ODP grezzo.} Tutti gli ODP della posizione devono avere finitura \texttt{GREZZO}. Uno solo deve avere un bilancio finale incoerente e gli altri devono già ammettere flussi compatibili. Si propone $a_k^{\mathrm{corr}}=b_k$. La somma $B_p$ deve concordare con $v_p$ entro entrambi i limiti di 100 kg e dello $0.1\%$. Si richiede inoltre un miglioramento di almeno un fattore dieci rispetto allo scostamento originale, con un chilogrammo come riferimento minimo:
+\begin{equation}
+\label{eq:commercial-corroboration-improvement}
+\lvert A_p-v_p\rvert\geq 10\cdot\max\bigl(\lvert B_p-v_p\rvert,1\ \mathrm{kg}\bigr).
+\end{equation}
+La sostituzione viene accettata se la ricostruzione generale del flusso dell'ODP corretto è compatibile.
 
-\textbf{Riconciliazione congiunta della posizione.} Per le posizioni interamente \texttt{GREZZO} si possono correggere anche più ODP insieme. È necessario che $B_p$ sia coerente con $v_p$ entro lo $0.1\%$, mentre $A_p$ non lo è, e che almeno un ODP con bilancio incoerente registri meno materiale pronto di quello atteso. Gli altri ODP devono avere flussi compatibili. Si sostituisce la quantità di ciascun ODP con bilancio incoerente con il suo $b_k$, lasciando invariati quelli già compatibili. La somma risultante deve ancora coincidere con la quantità evasa entro la tolleranza e tutti gli ODP devono superare i controlli locali e la ricostruzione dei flussi. Le correzioni della posizione sono applicate insieme soltanto se tutte le verifiche hanno esito positivo. Questa regola non aggiunge un limite assoluto in chilogrammi né richiede il miglioramento di un fattore dieci previsto dal caso precedente.
+\textbf{Riconciliazione congiunta della posizione.} Per una posizione interamente \texttt{GREZZO}, si possono correggere più ODP insieme. Si richiede che $B_p$ sia coerente con $v_p$ entro lo $0.1\%$, mentre $A_p$ non lo è. Almeno un ODP con bilancio incoerente deve registrare meno materiale pronto di quello atteso. A ciascun ODP con bilancio incoerente si assegna $a_k^{\mathrm{corr}}=b_k$, mantenendo invariati gli altri, che devono già avere flussi compatibili. La somma risultante deve essere coerente con $v_p$ e ogni ODP deve superare i controlli locali e la ricostruzione generale del flusso. Le correzioni sono applicate insieme soltanto se tutte le verifiche hanno esito positivo. Per questa regola, i confronti tra quantità usano la sola tolleranza relativa dello $0.1\%$.
 
-Le correzioni interessano soltanto la quantità della registrazione di materiale pronto. Le quantità iniziali e intermedie, gli scarti, le durate, i timestamp e la quantità evasa restano invariati. La compatibilità dei flussi dopo la sostituzione non elimina eventuali ambiguità, che vengono valutate separatamente.
+La riconciliazione modifica soltanto la quantità della registrazione di materiale pronto. Quantità iniziali e intermedie, scarti, durate, timestamp e quantità evasa restano invariati. Le eventuali ambiguità dei flussi ricostruiti vengono valutate separatamente.
 
 % Real example verified against current raw sales/production/operation files
 % and sales_ready_quantity_corrections_260915.parquet.
@@ -551,6 +569,101 @@ Il nuovo valore differisce dalla massa attesa di 51 kg, entro la tolleranza dell
 \end{examplebox}
 \endgroup
 
-% Da sviluppare nella 3.3: ulteriori correzioni di massa e durata,
-% completamenti e fasi composite.
+\subsection{Correzione della quantità iniziale e dello scarto di \texttt{TRENOLUNA}}
+\label{sec:root-mass-corrections}
+
+% Implementation: root_mass_rules.py, reconcile_root_masses, _score,
+% _terminal_exit_possible and DEFAULT_POLICY;
+% trenoluna_reconciliation.py, apply_root_mass_proposals.
+% Active production policy: root_mass_empirical_consensus_v2. No ID allow-list,
+% no historical percentage cutoff or frozen per-order mass plan.
+% Fixed bandwidths all/grezzo/compatible_grezzo: 0.55/0.55/0.8.
+% Candidate density comparison includes the kg-squared Jacobian.
+Si riesaminano quantità iniziale e scarto di \texttt{TRENOLUNA} quando un ODP ha un bilancio finale incoerente, ma il materiale pronto complessivo della posizione ODV concorda con la quantità evasa entro lo $0.1\%$. Sono richiesti tutti gli ODP della posizione, finitura \texttt{GREZZO} e quantità e scarti validi. Il materiale pronto resta invariato.
+
+Per l'ODP $k$, lo scostamento tra massa finale attesa $b_k$ e registrata $a_k$ è
+\begin{equation}
+\label{eq:root-mass-discrepancy}
+\delta_k=b_k-a_k.
+\end{equation}
+Indicando con $r$ l'occorrenza \texttt{TRENOLUNA}, si confrontano due correzioni che chiudono lo stesso bilancio:
+\begin{equation}
+\label{eq:root-mass-alternatives}
+\begin{aligned}
+\bigl(q_r^{\mathrm{corr}},s_r^{\mathrm{corr}}\bigr)
+  &=\bigl(q_r-\delta_k,s_r\bigr)
+  &&\text{correzione della quantità lorda},\\
+\bigl(q_r^{\mathrm{corr}},s_r^{\mathrm{corr}}\bigr)
+  &=\bigl(q_r,s_r+\delta_k\bigr)
+  &&\text{correzione dello scarto}.
+\end{aligned}
+\end{equation}
+Se $\delta_k>0$, si riduce la quantità lorda oppure si aumenta lo scarto. Se $\delta_k<0$, si interviene nel verso opposto. Per scegliere quale campo modificare, si confrontano le due coppie quantità lorda--scarto con quelle di ODP simili.
+
+I comparabili sono selezionati per forma, prodotto, stato fisico, marca dell'acciaio e finitura. Se sono meno di 20, si amplia il gruppo prima rinunciando alla marca e poi mantenendo soltanto forma e prodotto. Si scelgono fino a 100 vicini in base a \texttt{dimensione\_1\_mm}, \texttt{sezione\_grezza\_pp} e \texttt{lunghezza\_richiesta}, includendo le parità all'ultima distanza. La massa da correggere non viene usata per scegliere i vicini e gli ODP dello stesso ODV sono esclusi.
+
+Le proposte vengono confrontate mediante densità con nuclei gaussiani sui logaritmi di quantità e scarto, standardizzati usando media e covarianza del riferimento. Le densità sono poi riportate alla scala delle masse. Il confronto è ripetuto su tre popolazioni: tutti gli ODP di riferimento, quelli \texttt{GREZZO} e quelli \texttt{GREZZO} con flussi compatibili. I parametri di lisciamento, adimensionali sulla scala standardizzata, sono rispettivamente \num{0.55}, \num{0.55} e \num{0.8}. Si procede soltanto se i tre confronti preferiscono la stessa proposta e gli scarti proposti sono strettamente positivi. Supporto insufficiente, parità o disaccordo lasciano il caso irrisolto. Il riferimento è fissato prima delle correzioni e non viene aggiornato con i valori sostituiti.
+
+Per $\delta_k>0$, si verifica anche se l'eccesso possa corrispondere a materiale uscito dal ciclo senza confluire nel materiale pronto. Si cercano gruppi di al più tre occorrenze le cui uscite nette corrispondano allo scostamento entro la tolleranza. Se, considerandole ipoteticamente come interamente scartate, si ottiene un flusso compatibile, non si corregge \texttt{TRENOLUNA}.
+
+Le proposte sono accettate insieme per l'intera posizione ODV. Si confrontano a coppie la somma delle masse finali attese corrette, quella del materiale pronto e la quantità evasa, entro lo $0.1\%$ della minore tra le quantità. Tutti gli ODP devono avere flussi compatibili, verificando nuovamente quelli corretti. Se una verifica fallisce, nessuna proposta della posizione viene applicata.
+
+% Real example: current raw Consuntivi_260915.csv and
+% interim/trenoluna_mass_reconciliation_260915.parquet, ODP 000010870727.
+% Original root: gross=94354, scrap=4427; intermediate scraps=154+470=624;
+% observed READY=84757; delta=4546. Accepted reduce_gross to 89808.
+% Alternative increase_scrap to 8973. Three log-density ratios favor reduce_gross:
+% all=4.179231586831147, grezzo=4.200530480700266,
+% compatible_grezzo=2.8088544305517864. Verified flow remains ambiguous.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:root-mass-alternatives]{Due modi di correggere lo stesso scostamento}
+Nell'ODP \texttt{000010870727}, \texttt{TRENOLUNA} registra \num{94354} kg in ingresso e \num{4427} kg di scarto. Le occorrenze successive registrano complessivamente 624 kg di scarto, mentre la quantità di materiale pronto è \num{84757} kg. La massa finale attesa è quindi \num{89303} kg, con un eccesso di \num{4546} kg rispetto al valore registrato.
+
+Le due proposte sono ridurre la quantità iniziale a \num{89808} kg, mantenendo lo scarto a \num{4427} kg, oppure mantenere la quantità iniziale e aumentare lo scarto a \num{8973} kg. Entrambe portano la massa finale attesa a \num{84757} kg. I tre confronti con le popolazioni di riferimento preferiscono la prima proposta, che viene accettata dopo la verifica dei bilanci della posizione ODV e del flusso dell'ODP.
+\end{examplebox}
+\endgroup
+
+\subsection{Correzione delle durate incompatibili con il completamento}
+\label{sec:temporal-duration-corrections}
+
+% Current implementations: duration/correction_models.py,
+% discover_duration_targets, predict_from_models;
+% data/duration_corrections.py, _candidates, _rank, correct_duration_overruns;
+% scripts/prepare_20260924_snapshot.py passes dynamically discovered targets.
+% No frozen ID cohort is used for production target discovery.
+% Keep documenting the current timestamp policy despite the open issue noted
+% under sec:flow-temporal-compatibility. No new data treatment is adopted here.
+Si considerano gli ODP per cui la ricostruzione resta incompatibile a causa dei tempi e almeno un'occorrenza materiale intermedia ha fine calcolata successiva alla chiusura registrata del materiale pronto. Tutte le occorrenze intermedie devono iniziare entro tale chiusura. La correzione riguarda quindi durate che prolungano il ciclo oltre il completamento registrato. I cicli già compatibili vengono mantenuti, compresi quelli ricostruiti con completamenti successivi a \texttt{PRONTO}, trattati separatamente nel seguito.
+
+Per ogni occorrenza da correggere, un modello specifico della macrofase fornisce una durata prevista e un intervallo predittivo calibrato al 90\%. La costruzione e la calibrazione dei modelli sono trattate nel capitolo dedicato alla pulizia statistica e all'imputazione. Qui tali risultati delimitano le durate candidate: si richiedono una previsione positiva, estremi finiti e positivi e una copertura completa delle occorrenze che terminano oltre la chiusura.
+
+Si confrontano tre alternative: mantenere la durata originale, usare la previsione oppure accorciare la durata fino all'inizio di un'altra occorrenza materiale intermedia o alla chiusura del materiale pronto. Ogni durata candidata deve essere positiva e rientrare nell'intervallo predittivo. L'accorciamento deve inoltre ridurre effettivamente la durata originale. Le alternative delle diverse occorrenze sono combinate e verificate sull'intero ODP mediante la ricostruzione generale dei flussi, mantenendo fissa la chiusura registrata del materiale pronto.
+
+Quando un accorciamento usa l'inizio di un'altra occorrenza come limite, il collegamento verso quest'ultima deve trasferire massa positiva in tutte le ricostruzioni ottime. Questo evita di scegliere il limite basandosi su un collegamento presente soltanto in alcune alternative. Se l'occorrenza destinataria è istantanea, è ammesso il passaggio esatto allo stesso istante della sua disponibilità, mantenendo comunque gli inizi strettamente crescenti.
+
+Tra i piani compatibili si preferiscono, nell'ordine, meno sostituzioni con la previsione, meno durate modificate e una minore variazione complessiva rispetto ai valori originali. Indicando con $d_i$ la durata originale, con $d_i^{\mathrm{corr}}$ quella candidata e con $\mathcal{T}$ l'insieme delle occorrenze considerate, l'ultimo criterio minimizza
+\begin{equation}
+\label{eq:duration-correction-change}
+\sum_{i\in\mathcal{T}}\left\lvert\log\left(\frac{d_i^{\mathrm{corr}}}{d_i}\right)\right\rvert.
+\end{equation}
+Un piano basato soltanto su accorciamenti ha quindi precedenza su uno che richiede sostituzioni con le previsioni. Se più piani hanno la stessa priorità e lo stesso valore dell'ultimo criterio, il caso resta irrisolto. Lo stesso avviene se mancano previsioni valide, nessun piano è compatibile o le combinazioni da esaminare superano il limite di \num{4096}. Le correzioni sono applicate insieme per l'intero ODP.
+
+Si aggiornano \texttt{durata\_totale\_minuti} e \texttt{data\_ora\_fine\_calcolata}, quest'ultima con precisione al millisecondo. Vengono poi ricalcolati i riferimenti alla fine precedente e gli sfasamenti interessati. Quantità, scarti, inizi e fini registrate restano invariati. Non vengono ricalcolate la produttività né le durate di setup, lavorazione e fermo. La relazione della \cref{eq:productivity}, verificata sui dati originali, non è quindi necessariamente conservata dopo le correzioni delle quantità o della durata totale.
+
+% Real example: current raw Consuntivi_260915.csv and
+% interim/duration_corrections_260915.parquet, ODP 000010867758.
+% ANTIMIX original: start 2025-10-27 21:12, duration=18 min,
+% calculated/registered end 21:30. READY registered closure=21:24.
+% Prediction=28.768903 min, calibrated 90% interval=[9.467802,87.417313].
+% Accepted truncation=12 min, new calculated end=21:24, one feasible plan,
+% verified flow univoco, no instantaneous handoff.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:duration-truncation]{Durata accorciata alla chiusura del materiale pronto}
+Nell'ODP \texttt{000010867758}, \texttt{ANTIMIX} inizia alle 21:12 e registra una durata di 18 minuti, con fine calcolata alle 21:30. La registrazione \texttt{PRONTO} si chiude però alle 21:24. L'intervallo predittivo ammette durate comprese tra circa \num{9.47} e \num{87.42} minuti. Accorciando la durata a 12 minuti, \texttt{ANTIMIX} termina alle 21:24 e l'intero ODP ammette una ricostruzione univoca. Il valore originale rientrava anch'esso nell'intervallo predittivo, ma non rispettava il vincolo temporale.
+\end{examplebox}
+\endgroup
+
+% Da sviluppare nella 3.3: completamenti e fasi composite.
 % 3.4 Selezione dei dati utilizzabili.
