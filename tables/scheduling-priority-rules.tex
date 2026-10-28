@@ -1,0 +1,21 @@
+% Source: scheduling/heuristics.py::ListScheduler.enqueue.
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}lp{0.69\textwidth}@{}}
+\toprule
+\textbf{Politica} & \textbf{Lavorazione preferita}\\
+\midrule
+FIFO & Appartiene all'ODP che compare prima nell'elenco in ingresso\\
+SPT & Ha la durata minore\\
+LPT & Ha la durata maggiore\\
+MWKR & Ha la maggiore somma delle durate del lavoro residuo\\
+LWKR & Ha la minore somma delle durate del lavoro residuo\\
+MOPNR & Ha il maggior numero di lavorazioni residue\\
+EDD & Appartiene alla posizione ODV con la scadenza più vicina\\
+EDD pesata & Appartiene alla posizione ODV con il rapporto $D_p/w_p$ minore\\
+\bottomrule
+\end{tabular}
+\caption{Politiche euristiche di priorità. La scadenza $D_p$ è misurata dall'origine del piano e $w_p$ è la priorità della posizione ODV.}
+\label{tab:scheduling-priority-rules}
+\end{table}

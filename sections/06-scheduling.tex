@@ -1,6 +1,118 @@
 \chapter{Pianificazione}
 \label{sec:scheduling}
 
-% Capitolo da scrivere.
-% Formulazione del problema, risorse e vincoli produttivi.
-% Metodo di soluzione, scenari ed esperimenti con risultati quantitativi.
+Gli scenari generati nel \cref{sec:modelling-and-production-scenarios} definiscono cosa produrre, quali lavorazioni eseguire e con quali durate e scadenze. In questo capitolo vediamo come pianificarle, stabilendo quando eseguire ciascuna lavorazione nel rispetto delle precedenze del ciclo e della disponibilità delle risorse. Consideriamo due obiettivi: ridurre il tempo necessario a completare tutte le produzioni oppure i ritardi rispetto alle scadenze, tenendo conto delle priorità delle posizioni ODV. Un esempio finale mostra come le scelte di pianificazione incidano sui tempi di completamento e sul rispetto delle scadenze.
+
+\section{Dagli scenari al problema di pianificazione}
+\label{sec:scheduling-inputs-and-resources}
+
+% Sources: scheduling/adapters.py::problem_from_graph_tables;
+% scheduling/domain.py::ProductionJob, MachinePool, SchedulingProblem;
+% scheduling/config.py::SchedulerConfig; webapp/scheduling.py::prepare, with_deadlines.
+Il problema di pianificazione comprende le posizioni ODV dello scenario e tutti gli ODP associati. Per ciascun ODP si usano il grafo del ciclo, le durate delle lavorazioni e le caratteristiche del prodotto generate nel capitolo precedente. Questi dati rimangono fissati durante la pianificazione, così da confrontare metodi e configurazioni delle risorse sullo stesso insieme di produzioni.
+
+Ogni nodo del grafo identifica un'occorrenza di macrofase e ogni collegamento impone una precedenza tra due occorrenze. Si mantengono le diramazioni e i ricongiungimenti: rami diversi possono avanzare in parallelo quando le risorse lo consentono, mentre una lavorazione con più predecessori deve attenderne il completamento. \texttt{HPT} e gli stati di materiale pronto restano nel grafo con durata nulla e non occupano le risorse per un intervallo di tempo.
+
+A ogni macrofase è dedicato un gruppo di risorse equivalenti, ciascuna in grado di eseguire una sola lavorazione alla volta. Il numero di risorse è configurabile e inizialmente pari a uno per macrofase. La configurazione può inoltre specificare calendari settimanali di disponibilità e tempi di cambio tra lavorazioni con caratteristiche diverse.
+
+Anche le fasi composite, come \texttt{BANCHI+ANTIMIX}, hanno un gruppo di risorse dedicato. È una semplificazione del prototipo: il blocco viene pianificato come un'unica lavorazione, senza rappresentare separatamente l'occupazione delle risorse delle componenti.
+
+I tempi del piano sono espressi in ore a partire da una data e un'ora di riferimento. Si assume che tutti gli ODP siano disponibili al tempo zero. Ogni posizione ODV conserva una scadenza comune ai suoi ODP ed è completata quando tutti questi hanno terminato le proprie lavorazioni. Alla posizione è associata anche una priorità, usata per pesare il ritardo rispetto alla scadenza.
+
+\begin{samepage}
+\section{Vincoli e obiettivi}
+\label{sec:scheduling-constraints-and-objectives}
+
+% Sources: scheduling/validation.py::validate_schedule;
+% scheduling/calendars.py::advance, retreat; scheduling/domain.py::SchedulingProblem;
+% scheduling/changeover_cp_sat.py::solve_changeovers.
+Un piano ammissibile deve rispettare tre condizioni:
+\begin{itemize}
+\item ogni lavorazione prevista nel ciclo viene eseguita una sola volta, su una risorsa della propria macrofase, con la durata fissata nello scenario
+\item una lavorazione può iniziare dopo il completamento di tutti i suoi predecessori nel grafo
+\item due lavorazioni assegnate alla stessa risorsa non possono sovrapporsi.
+\end{itemize}
+\end{samepage}
+Gli inizi devono essere successivi o uguali al tempo zero. Non si aggiungono tempi di trasferimento tra le macrofasi. Una lavorazione iniziata prosegue fino al completamento, salvo le sospensioni dovute al calendario.
+
+Senza un calendario, le risorse sono sempre disponibili. Con un calendario settimanale, che non considera le festività, il lavoro si sospende nelle chiusure e riprende alla riapertura, mantenendo la risorsa riservata alla stessa lavorazione. La durata generata indica le ore di lavoro, mentre l'intervallo tra inizio e fine include anche le chiusure.
+
+I tempi di cambio sono facoltativi e dipendono dalla successione delle lavorazioni sulla stessa risorsa. Per ogni macrofase si possono scegliere le caratteristiche da confrontare, per esempio marca dell'acciaio o prima dimensione, e una durata di cambio. Il cambio si applica quando queste caratteristiche differiscono tra due lavorazioni consecutive. Non è previsto per la prima lavorazione della risorsa e può iniziare solo quando tutti i predecessori della lavorazione successiva sono terminati. Occupa la risorsa e segue lo stesso calendario del lavoro. È un tempo aggiuntivo configurato per lo scenario, oltre alla durata totale generata, che comprende già il setup registrato nei dati.
+
+% Sources: scheduling/deadlines.py::objective_value, deadline_metrics,
+% add_tardiness_objective; webapp/scheduling.py::with_deadlines.
+Il primo obiettivo è ridurre il tempo necessario a completare tutte le produzioni, detto \emph{makespan}. Indichiamo con $\mathcal{K}$ l'insieme degli ODP e con $C_k$ l'istante in cui termina l'ultima lavorazione dell'ODP $k$. Tutti i tempi sono espressi in ore dall'origine del piano. L'obiettivo è
+\begin{equation}
+\label{eq:scheduling-makespan}
+\min C_{\max}, \qquad C_{\max}=\max_{k\in\mathcal{K}} C_k.
+\end{equation}
+Questa scelta cerca di anticipare il completamento dell'intero insieme di ODP, senza attribuire un peso alle singole scadenze.
+
+Il secondo obiettivo è ridurre i ritardi delle posizioni ODV, pesati per priorità. Indichiamo con $\mathcal{P}$ l'insieme delle posizioni e con $\mathcal{K}_p$ gli ODP della posizione $p$. Il suo completamento è $C_p=\max_{k\in\mathcal{K}_p}C_k$. La scadenza $D_p$ è espressa in ore dall'origine del piano e comprende l'intera giornata della data indicata. Con priorità $w_p$, il problema diventa
+\begin{equation}
+\label{eq:scheduling-weighted-tardiness}
+\min\sum_{p\in\mathcal{P}} w_p\cdot T_p,
+\qquad T_p=\max(0,C_p-D_p).
+\end{equation}
+Le priorità sono pesi interi positivi, inizialmente uguali a uno: una priorità maggiore dà più peso alle ore di ritardo della posizione. Le scadenze non sono vincoli obbligatori, perciò un piano può essere ammissibile anche quando alcune posizioni terminano in ritardo.
+
+\section{Metodi di soluzione}
+\label{sec:scheduling-solution-methods}
+
+% Sources: scheduling/heuristics.py::ListScheduler, DISPATCH_RULES;
+% scheduling/cp_sat.py::_best_heuristic, CpSatScheduler;
+% scheduling/changeover_cp_sat.py::sequence_candidates, solve_changeovers;
+% scheduling/base.py::run_scheduler; scheduling/validation.py::validate_result.
+Il prototipo permette di costruire un piano con politiche euristiche di priorità oppure di cercare una soluzione migliore con il solver CP-SAT di OR-Tools. Entrambi gli approcci rispettano i vincoli della \cref{sec:scheduling-constraints-and-objectives}, compresi i calendari e i tempi di cambio quando sono configurati.
+
+Quando una risorsa è libera, la politica euristica sceglie tra le lavorazioni i cui predecessori sono già terminati, seguendo un criterio predefinito. Costruisce così il piano passo dopo passo, senza esplorare sequenze alternative né rivedere le decisioni già prese. Le otto politiche disponibili sono riassunte nella \cref{tab:scheduling-priority-rules}. Per il lavoro residuo si considera la lavorazione corrente insieme a tutte quelle raggiungibili da essa nel grafo dello stesso ODP, contando ciascuna una sola volta. A parità di criterio si segue l'ordine degli ODP in ingresso e poi quello delle lavorazioni nel ciclo. Se sono libere più risorse equivalenti, si preferisce quella che richiede meno tempo di cambio.
+
+\input{tables/scheduling-priority-rules}
+
+CP-SAT parte dal migliore degli otto piani rispetto all'obiettivo scelto e cerca di migliorarlo modificando gli inizi e l'ordine delle lavorazioni sulle risorse. Tra i piani disponibili con lo stesso ritardo pesato, si sceglie quello con makespan minore.
+
+La ricerca ha un limite di tempo configurabile, esclusi la costruzione del modello e i controlli finali. Nei problemi più grandi può essere limitata a un insieme ridotto di sequenze oppure non essere avviata. Si restituisce il migliore piano trovato, conservando quello iniziale delle politiche euristiche se non si ottengono miglioramenti. Il piano rispetta i vincoli ed è dichiarato ottimo solo quando ne viene dimostrata l'ottimalità.
+
+Infine, un controllo separato dal metodo di soluzione verifica la presenza di tutte le lavorazioni, le durate, le precedenze e l'assenza di sovrapposizioni sulle risorse. Quando sono attivi, verifica anche calendari e tempi di cambio. Un piano che non supera questi controlli non viene accettato.
+
+\section{Esempio di pianificazione}
+\label{sec:scheduling-example}
+
+Il piano associa a ogni lavorazione una risorsa e gli istanti di inizio e fine. Nel diagramma di Gantt ogni riga rappresenta una risorsa e ogni barra il tempo durante il quale è occupata da una lavorazione. Seguendo le barre dello stesso ODP si leggono l'avanzamento del ciclo e le attese tra le macrofasi.
+
+% Illustrative inputs, not measured or generated production records.
+% Reproduced with run_scheduler, ListScheduler('fifo') and CpSatScheduler.
+% CP-SAT certifies the best heuristic warm start in this illustrative instance.
+% Evidence and figure: scripts/collect_scheduling_example.py;
+% tables/data/scheduling-example.json; figures/scheduling-example.tex.
+\begingroup
+\tcbset{lines before break=30}
+\begin{examplebox}[ex:scheduling-plan]{Tre ODP su risorse condivise}
+Consideriamo una posizione ODV A con due ODP, A1 e A2, e una posizione B con il solo ODP B1. Le durate della tabella sono scelte a scopo illustrativo ed espresse in ore. Ogni ciclo segue le macrofasi indicate da sinistra a destra e termina in \texttt{PRONTO}, con durata nulla. Il trattino indica una macrofase assente dal ciclo.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{ODP} & \texttt{TRENOLUNA} & \texttt{BANCHI} & \texttt{RADDR} & \texttt{ANTIMIX}\\
+\midrule
+A1 & 2 & 3 & -- & 1\\
+A2 & 1 & -- & 2 & 1\\
+B1 & 2 & -- & -- & 1\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Si usa una risorsa per macrofase, sempre disponibile e senza tempi di cambio. Confrontiamo FIFO, con gli ODP nell'ordine A1, A2, B1, e CP-SAT con l'obiettivo di minimizzare il makespan.
+
+\begin{center}
+\reportfigurecontent{\input{figures/scheduling-example}}
+\end{center}
+
+Con FIFO tutti e tre gli ODP sono pronti per \texttt{ANTIMIX} all'ora 5. A1 viene lavorato per primo, A2 attende un'ora e B1 due ore. Il makespan è di 8 ore.
+
+Nel piano restituito da CP-SAT, A2 viene lavorato per primo su \texttt{TRENOLUNA} e raggiunge \texttt{ANTIMIX} già all'ora 3. B1 termina all'ora 6 e A1 all'ora 7, riducendo il makespan a 7 ore. Questo piano è già ottenuto da una delle altre politiche euristiche e il solver ne dimostra l'ottimalità.
+
+La posizione A termina all'ora 7 in entrambi i piani. Con scadenze a 6 ore per A e a 8 ore per B, A mantiene un'ora di ritardo e B è puntuale. Ridurre il makespan, quindi, non implica necessariamente ridurre i ritardi.
+\end{examplebox}
+\endgroup
