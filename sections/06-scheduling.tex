@@ -63,7 +63,7 @@ Le priorità sono pesi interi positivi, inizialmente uguali a uno: una priorità
 % scheduling/cp_sat.py::_best_heuristic, CpSatScheduler;
 % scheduling/changeover_cp_sat.py::sequence_candidates, solve_changeovers;
 % scheduling/base.py::run_scheduler; scheduling/validation.py::validate_result.
-Il prototipo permette di costruire un piano con politiche euristiche di priorità oppure di cercare una soluzione migliore con il solver CP-SAT di OR-Tools. Entrambi gli approcci rispettano i vincoli della \cref{sec:scheduling-constraints-and-objectives}, compresi i calendari e i tempi di cambio quando sono configurati.
+Il prototipo permette di costruire un piano con politiche euristiche di priorità oppure di cercare una soluzione migliore con il solver CP-SAT di OR-Tools \parencite{google2024cpsat}. Entrambi gli approcci rispettano i vincoli della \cref{sec:scheduling-constraints-and-objectives}, compresi i calendari e i tempi di cambio quando sono configurati.
 
 Quando una risorsa è libera, la politica euristica sceglie tra le lavorazioni i cui predecessori sono già terminati, seguendo un criterio predefinito. Costruisce così il piano passo dopo passo, senza esplorare sequenze alternative né rivedere le decisioni già prese. Le otto politiche disponibili sono riassunte nella \cref{tab:scheduling-priority-rules}. Per il lavoro residuo si considera la lavorazione corrente insieme a tutte quelle raggiungibili da essa nel grafo dello stesso ODP, contando ciascuna una sola volta. A parità di criterio si segue l'ordine degli ODP in ingresso e poi quello delle lavorazioni nel ciclo. Se sono libere più risorse equivalenti, si preferisce quella che richiede meno tempo di cambio.
 
