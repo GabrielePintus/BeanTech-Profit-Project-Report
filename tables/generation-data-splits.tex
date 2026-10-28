@@ -1,0 +1,22 @@
+% Sources: tables/data/{feature,odp,graph,duration,readiness}-generation-summary.json.
+% Two-ODP test positions: 286 total - 186 training - 59 validation = 41.
+% Lookup fitting cohort: configs/odv_to_odp_lookups_selected.json.
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Componente} & \textbf{Unità} & \textbf{Addestramento} & \textbf{Validazione} & \textbf{Test}\\
+\midrule
+Caratteristiche ODV & Posizioni & \num{3780} & 675 & --\\
+Numero di ODP & Posizioni & \num{3119} & 652 & 642\\
+Ripartizione della quantità & Posizioni & 186 & 59 & 41\\
+Marca e tolleranze ODP & Posizioni & \num{4455} & -- & --\\
+Cicli e flussi & ODP & \num{3417} & 723 & 720\\
+Durate & Occorrenze & \num{8204} & \num{1314} & Come i cicli\\
+Scadenze & Posizioni & \num{3658} & -- & --\\
+\bottomrule
+\end{tabular}
+\caption{Dati usati dai componenti. La ripartizione riguarda le posizioni con due ODP. Le durate seguono gli stessi gruppi di ODV dei cicli. Il trattino indica che non è previsto un gruppo separato. I gruppi di test non sono valutati in questo capitolo.}
+\label{tab:generation-data-splits}
+\end{table}

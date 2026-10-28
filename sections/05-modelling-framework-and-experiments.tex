@@ -28,7 +28,9 @@ La \cref{fig:production-generation-overview} riassume questi passaggi. Una stess
 % Evaluation scope: scripts/evaluate_production_cascade.py.
 % Graph validation and upstream training cohorts are not identical.
 % The upstream-unseen subset checks the count-training split, not every component.
-La valutazione riguarda sia i singoli modelli sia il loro funzionamento insieme, perché gli errori di un modello possono influenzare i risultati dei successivi. Si confrontano le previsioni e la variabilità degli scenari generati con i dati di riferimento, controllando anche la completezza dei cicli e il rispetto dei bilanci di massa. Per addestrare i modelli e confrontare le alternative si usano gruppi di dati separati. Le posizioni e gli ODP dello stesso ODV rimangono nello stesso gruppo. Poiché le suddivisioni possono cambiare tra i modelli, nelle sezioni successive si chiarisce quali dati vengono usati in ciascun confronto e quali limiti ne derivano.
+La valutazione riguarda sia i singoli modelli sia il loro funzionamento insieme, perché gli errori di un modello possono influenzare i risultati dei successivi. Si confrontano le previsioni e la variabilità degli scenari generati con i dati di riferimento, controllando anche la completezza dei cicli e il rispetto dei bilanci di massa. La \cref{tab:generation-data-splits} riassume i dati usati dai componenti. Quando si separano addestramento, validazione e test, le posizioni e gli ODP dello stesso ODV rimangono nello stesso gruppo. I gruppi di test sono riservati e non vengono usati nei risultati presentati.
+
+\input{tables/generation-data-splits}
 
 \section{Generazione delle caratteristiche della domanda}
 \label{sec:demand-feature-generation}
@@ -40,7 +42,7 @@ L'utente può conoscere soltanto una parte delle caratteristiche della posizione
 
 % Sources: preparation_report_v2.json, odv_complete_families_v2.yaml,
 % odv_features_complete_families_v2.json and selected model preprocessing.
-Il campione contiene le \num{4455} posizioni ODV mantenute dopo la selezione dei dati. Ogni posizione compare una sola volta, anche quando è associata a più ODP. Il modello descrive quindi questa parte della domanda, composta dalle posizioni per cui sono stati conservati tutti gli ODP. Si usano \num{3780} posizioni di \num{1787} ODV per l'addestramento e 675 posizioni di 316 ODV per la validazione, senza un ulteriore gruppo di test.
+Il campione contiene le \num{4455} posizioni ODV mantenute dopo la selezione dei dati. Ogni posizione compare una sola volta, anche quando è associata a più ODP. Il modello descrive quindi questa parte della domanda, composta dalle posizioni per cui sono stati conservati tutti gli ODP.
 
 Le variabili modellate sono 21 e comprendono la quantità richiesta, le caratteristiche geometriche, la qualità dell'acciaio, lo stato fisico e i riferimenti commerciali e tecnici della posizione. Gli identificativi di ODV e posizione, le quantità evase o spedite e i risultati della produzione non entrano nel modello. Il valore di \texttt{quantita\_odv\_kg} deve essere fornito durante la generazione e viene mantenuto esattamente. I campi \texttt{lunghezza\_minima}, \texttt{lunghezza\_massima} e \texttt{dimensione\_2\_mm}, costanti nel campione, vengono restituiti separatamente con valore zero.
 
@@ -78,7 +80,7 @@ Il punteggio misura quanto il modello considera probabili i valori nascosti: pro
 
 Il VAEAC selezionato ottiene il punteggio più basso e l'accuratezza più alta tra i modelli confrontati (\cref{tab:feature-generation-comparison}). Rispetto alla variante con quantità sempre nota in addestramento, il punteggio migliora di \num{0.086} nat per valore nascosto, con intervallo al 95\% $[\num{0.050},\num{0.127}]$, ottenuto con \num{1000} ricampionamenti per ODV. L'accuratezza riguarda le categorie nascoste presenti nell'addestramento.
 
-La \cref{fig:feature-generation-gains} mostra il vantaggio rispetto al riferimento indipendente per ciascuna variabile. Il guadagno è maggiore per diversi codici e riferimenti tecnici, mentre è quasi nullo per finitura e modello PP richiesto. Il risultato dipende dalle informazioni fornite: la prova lascia nota circa metà delle caratteristiche e non misura direttamente la qualità della generazione quando si conosce soltanto la quantità.
+La \cref{fig:feature-generation-gains} mostra il vantaggio rispetto al riferimento indipendente per ciascuna variabile. Il guadagno è maggiore per versione tecnica, macrociclo, marca cliente e codice materiale, mentre è quasi nullo per finitura e modello PP richiesto. Il risultato dipende dalle informazioni fornite: la prova lascia nota circa metà delle caratteristiche e non misura direttamente la qualità della generazione quando si conosce soltanto la quantità.
 
 \begin{figure}[H]
 \centering
@@ -104,9 +106,9 @@ Una volta definite le caratteristiche della posizione ODV, si determina quanti O
 
 % Selected component: odv_count_mass_logistic_v2.spmodel, embedded in production_cascade_v6.
 % Recomputed on the current snapshot by scripts/collect_odp_generation_evidence.py.
-Il numero di ODP viene scelto da una regressione logistica che usa la quantità richiesta, il suo logaritmo e un indicatore del superamento di 93 t. L'addestramento assegna più peso ai casi con due ODP, meno frequenti, per evitare che la decisione sia dominata dai casi con un solo ordine. Nella generazione si sceglie la classe con il punteggio maggiore. Questi punteggi risentono del bilanciamento e non rappresentano direttamente le frequenze attese dei due casi.
+Il numero di ODP viene scelto da una regressione logistica che usa la quantità richiesta, il suo logaritmo e un indicatore del superamento di 93 t. Questo riferimento riprende la regola di suddivisione già usata nel prototipo e discussa con BeanTech. L'addestramento assegna più peso ai casi con due ODP, meno frequenti, per evitare che la decisione sia dominata dai casi con un solo ordine. Nella generazione si sceglie la classe con il punteggio maggiore. Questi punteggi risentono del bilanciamento e non rappresentano direttamente le frequenze attese dei due casi.
 
-Si usano \num{3119} posizioni per l'addestramento e 652 per la validazione, mantenendo separati gli ODV. Altre 642 posizioni sono riservate al test e non entrano nei risultati qui presentati. Nella validazione, 593 posizioni hanno un ODP e 59 ne hanno due. La \cref{tab:odp-count-comparison} confronta il modello con due regole semplici: generare sempre un ODP oppure generarne due soltanto quando la quantità supera 93 t. L'accuratezza bilanciata è la media delle percentuali di casi riconosciuti correttamente nelle due classi e dà loro lo stesso peso.
+Nella validazione, 593 posizioni hanno un ODP e 59 ne hanno due. La \cref{tab:odp-count-comparison} confronta il modello con due regole semplici: generare sempre un ODP oppure generarne due soltanto quando la quantità supera 93 t. L'accuratezza bilanciata è la media delle percentuali di casi riconosciuti correttamente nelle due classi e dà loro lo stesso peso.
 
 \input{tables/odp-count-comparison}
 
@@ -126,7 +128,7 @@ R\mid Q &\sim \operatorname{Beta}\bigl(\mu\cdot\phi(Q),\,(1-\mu)\cdot\phi(Q)\big
 \label{eq:odp-quantity-allocation}
 q_1 &= R\cdot Q, \qquad q_2=(1-R)\cdot Q.
 \end{align}
-I parametri vengono stimati su 186 posizioni di addestramento con due ODP. La media $\mu$ è costante e pari al \num{50.55}\%. Il parametro $\phi(Q)$ cresce esponenzialmente con la distanza tra la quantità richiesta e 93 t: allontanandosi da questo valore, le quote si concentrano maggiormente intorno alla media, come mostra la \cref{fig:odp-quantity-split}. Le quantità generate sono positive e sommano a $Q$. La quota appresa dai dati viene quindi applicata alla quantità richiesta, anche quando il totale pronto osservato era diverso.
+I parametri vengono stimati sulle posizioni di addestramento con due ODP. La media $\mu$ è costante e pari al \num{50.55}\%. Il parametro $\phi(Q)$ cresce esponenzialmente con la distanza tra la quantità richiesta e 93 t: allontanandosi da questo valore, le quote si concentrano maggiormente intorno alla media, come mostra la \cref{fig:odp-quantity-split}. Le quantità generate sono positive e sommano a $Q$. La quota appresa dai dati viene quindi applicata alla quantità richiesta, anche quando il totale pronto osservato era diverso.
 
 \begin{figure}[htbp]
 \centering
@@ -184,7 +186,7 @@ Per ciascun ODP si genera un ciclo produttivo con le occorrenze di macrofase, i 
 % mass_aware_graph_zero_duration_v1.spmodel. Whole ODV groups, all-data structural support.
 I cicli ricostruiti dai dati formano un catalogo di 291 strutture distinte. Ogni struttura descrive le occorrenze e i loro collegamenti, senza fissare quantità, scarti o durate. Una macrofase può comparire più volte, in occorrenze diverse. La generazione ammette soltanto strutture del catalogo, che deriva dalle ricostruzioni dei capitoli precedenti.
 
-Per l'addestramento si usano \num{3417} ODP di \num{3108} posizioni, mentre la validazione comprende 723 ODP di 675 posizioni. Altri 720 ODP sono riservati al test. Gli ODV rimangono separati tra i gruppi e ogni struttura del catalogo è rappresentata nell'addestramento. Il catalogo è definito sull'intero campione, mentre frequenze, trasformazioni delle variabili e parametri dei modelli vengono stimati sul solo addestramento.
+Ogni struttura del catalogo è rappresentata nell'addestramento. Il catalogo è definito sull'intero campione, mentre frequenze, trasformazioni delle variabili e parametri dei modelli vengono stimati sul solo addestramento.
 
 Le informazioni in input al modello comprendono le specifiche geometriche, la qualità dell'acciaio, lo stato del prodotto e i riferimenti commerciali e tecnici. Si aggiungono la quantità richiesta dalla posizione, quella assegnata all'ODP, il numero di ODP associati alla posizione e l'ordine in cui vengono generati. Gli scarti osservati vengono espressi come rapporti rispetto alle quantità in ingresso e i flussi come quote del materiale in uscita. Il modello apprende così le proporzioni da usare nella generazione, mantenendo esatti i bilanci anche quando le quantità registrate ammettevano piccoli scostamenti.
 
@@ -271,7 +273,7 @@ Dopo aver generato il ciclo e i flussi di materiale, si assegna una durata a cia
 % refit_duration_heads_v4.py; extend_duration_tratt_lfc.py --refit.
 Il modello usa la quantità in ingresso alla singola occorrenza, lo scarto relativo e il rapporto tra questa quantità e la massa iniziale dell'ODP. Si aggiungono prima dimensione, lunghezza richiesta, prodotto, forma, finitura, stato fisico, marca dell'acciaio e classe di carbonio. Quantità, dimensione e lunghezza vengono trasformate con il logaritmo. Quantità e scarti provengono dal ciclo appena generato.
 
-Si mantiene la suddivisione per ODV usata per i cicli. L'addestramento comprende \num{8204} occorrenze con durata positiva, incluse \num{1373} durate sostituite dai trattamenti statistici del \cref{sec:statistical-cleaning-and-imputation}. Le sostituzioni si concentrano in \texttt{ANTIMIX}: \num{1325} delle sue \num{1977} occorrenze di addestramento, circa il 67\%, hanno una durata imputata. La validazione esclude le durate sostituite e comprende \num{1314} occorrenze di 723 ODP, appartenenti a 316 ODV.
+Si mantiene la suddivisione per ODV usata per i cicli. L'addestramento usa durate positive e include \num{1373} valori sostituiti dai trattamenti statistici del \cref{sec:statistical-cleaning-and-imputation}. Le sostituzioni si concentrano in \texttt{ANTIMIX}: \num{1325} delle sue \num{1977} occorrenze di addestramento, circa il 67\%, hanno una durata imputata. Il modello di \texttt{ANTIMIX} dipende quindi in misura rilevante anche dalle durate stimate nel capitolo precedente. La validazione usa soltanto durate non sostituite.
 
 \subsection{Modelli per macrofase e generazione}
 \label{sec:duration-generation-models}
@@ -287,9 +289,9 @@ Il termine $\varepsilon_i$ rappresenta la variabilità non spiegata dalle caratt
 
 Per la valutazione si usa la durata media prevista dal modello. Nella generazione degli scenari si estrae invece una durata dalla distribuzione stimata, per rappresentare la variabilità dei dati.
 
-Per \texttt{CIRCO} e \texttt{TRATT\_LUNA} si usa un valore fisso pari alla media nell'addestramento, rispettivamente \num{344.08} e \num{460.31} minuti. Per \texttt{MOL} si mantiene il valore convenzionale di 100 minuti. \texttt{HPT} e gli stati di materiale pronto hanno durata nulla.
+Per \texttt{CIRCO} e \texttt{TRATT\_LUNA} si usa un valore fisso pari alla media nell'addestramento, rispettivamente \num{344.08} e \num{460.31} minuti. Per \texttt{TRATT\_LUNA} la media differisce dai \num{452.42} minuti della \cref{sec:duration-replacement-rules}, calcolati sulle durate positive non segnalate prima delle sostituzioni. Per \texttt{MOL} si mantiene il valore convenzionale di 100 minuti. \texttt{HPT} e gli stati di materiale pronto hanno durata nulla.
 
-Nelle macrofasi composite si generano separatamente le durate delle componenti, usando per ciascuna la quantità in ingresso alla macrofase composita, e si prende la maggiore. Si assume così che le componenti si sovrappongano completamente. Nella previsione deterministica si usa il massimo delle loro medie, come approssimazione della durata complessiva.
+Nelle macrofasi composite si generano separatamente le durate delle componenti, usando per ciascuna la quantità in ingresso alla macrofase composita, e si prende la maggiore. Si assume così che le componenti si sovrappongano completamente. La finestra ricostruita nella \cref{sec:composite-phases}, dal primo inizio all'ultima fine, può invece essere più lunga quando la sovrapposizione è parziale. Nella previsione deterministica si usa il massimo delle loro medie, come approssimazione della durata complessiva.
 
 \subsection{Valutazione e risultati}
 \label{sec:duration-generation-results}
@@ -365,7 +367,7 @@ Si riprende la posizione ODV dell'\cref{ex:odp-generation}, suddivisa in due ODP
 \section{Valutazione della generazione completa}
 \label{sec:complete-generation-evaluation}
 
-Si verifica ora il funzionamento dei modelli collegati in sequenza. Il confronto usa le 675 posizioni della validazione dei cicli e distingue due prove: nella prima si forniscono quantità e caratteristiche commerciali osservate, nella seconda soltanto la quantità. Si controllano sia la corrispondenza con le produzioni osservate sia la coerenza degli scenari generati.
+Si verifica ora il funzionamento dei modelli collegati in sequenza. Il confronto usa le 675 posizioni della validazione dei cicli e distingue due usi del prototipo: previsioni deterministiche da quantità e caratteristiche commerciali osservate, e generazione casuale dalla sola quantità. Cambiano quindi sia le informazioni fornite sia la modalità di generazione. Si controllano sia la corrispondenza con le produzioni osservate sia la coerenza degli scenari generati.
 
 \subsection{Generazione dalle richieste commerciali osservate}
 \label{sec:cascade-observed-inputs}
