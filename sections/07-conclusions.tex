@@ -1,5 +1,14 @@
 \chapter{Conclusioni}
 \label{sec:conclusions}
 
-% Capitolo da scrivere.
-% Risultati principali, limiti del lavoro e sviluppi futuri.
+% Synthesis of chapters 3--6: current data preparation, selected generation
+% models and scheduling implementation. No new quantitative results.
+Il lavoro ha portato allo sviluppo di un prototipo di ricerca per esplorare il collegamento tra richieste commerciali e pianificazione delle produzioni. La preparazione dei dati ricostruisce cicli plausibili e tratta le incoerenze nelle quantità e nei tempi, fornendo il riferimento per i modelli statistici. Questi completano le caratteristiche non specificate della richiesta e generano gli ODP, i cicli, i flussi di materiale, le durate e le scadenze. La pianificazione stabilisce poi quando eseguire le lavorazioni, rispettando le precedenze e la disponibilità delle risorse. I diversi passaggi formano così una procedura che parte dalla domanda del cliente e arriva a un piano produttivo.
+
+Il prototipo offre una base per valutare scenari di pianificazione strategica di lungo termine. Una stessa richiesta può dare luogo a produzioni diverse, mentre uno stesso insieme di produzioni può essere pianificato con configurazioni delle risorse e criteri differenti. Si possono quindi esaminare i carichi di lavoro, i tempi di completamento e i ritardi rispetto alle scadenze. La distinzione tra generazione e pianificazione permette di separare la variabilità delle produzioni dagli effetti delle scelte sul loro svolgimento. L'esempio del \cref{sec:scheduling} mostra inoltre che anticipare il completamento complessivo non riduce necessariamente i ritardi delle singole posizioni ODV: la scelta dell'obiettivo deve riflettere ciò che si vuole valutare.
+
+L'interpretazione dei risultati dipende dalla qualità dei dati e dalle ipotesi adottate. I cicli ricostruiti rispettano i criteri del trattamento e potranno essere affinati attraverso il confronto con i referenti aziendali. I modelli apprendono dai dati selezionati e corretti, e la coerenza dei bilanci non garantisce da sola che ogni scenario generato sia rappresentativo della produzione reale. Anche la pianificazione usa una rappresentazione semplificata delle risorse, in particolare per le macrofasi composite. Questi aspetti delimitano l'uso attuale del prototipo e guidano le verifiche da svolgere sui casi aziendali.
+
+% Open issue: StrategicPlannerBeanTech/notes/Pipeline - stato della
+% ricostruzione dei cicli.md, "Punto aperto: timestamp e trattamento dei dati".
+Eventuali sviluppi potrebbero includere un approfondimento con i referenti aziendali sul significato dei timestamp e sul loro rapporto con la successione delle lavorazioni, per valutare possibili revisioni della ricostruzione. Altre direzioni potrebbero riguardare la verifica degli scenari su casi concreti e una descrizione più precisa delle risorse, dei calendari e dei tempi di cambio, in funzione delle decisioni strategiche di interesse.
