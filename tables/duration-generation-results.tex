@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{MAE [minuti]}} & \\
+\cmidrule(lr){3-4}
+\textbf{Macrofase} & \textbf{Casi} & \textbf{Modello} & \textbf{Media} & \textbf{Copertura [\%]}\\
+\midrule
+\texttt{TRENOLUNA} & 723 & \num{55.04} & \num{151.58} & \num{95.44}\\
+\texttt{BANCHI} & 363 & \num{49.34} & \num{85.55} & \num{92.29}\\
+\texttt{ANTIMIX} & 75 & \num{11.03} & \num{29.15} & \num{97.33}\\
+\texttt{TAG} & 94 & \num{58.50} & \num{153.48} & \num{97.87}\\
+\texttt{RADDR} & 31 & \num{89.87} & \num{131.60} & \num{93.55}\\
+\texttt{CONF} & 4 & \num{16.79} & \num{89.11} & \num{100.00}\\
+\texttt{CIRCO} & 7 & \num{160.50} & \num{160.50} & --\\
+\texttt{TRATT\_LUNA} & 3 & \num{18.41} & \num{18.31} & --\\
+\texttt{TRATT\_LFC} & 14 & \num{476.47} & \num{711.36} & \num{92.86}\\
+\bottomrule
+\end{tabular}
+\caption{Previsione delle durate positive non sostituite dai trattamenti statistici, su ODV di validazione. La copertura riguarda gli intervalli nominali al 95\%. Per i modelli a durata fissa non viene calcolata. \texttt{MOL} non compare perché non ha casi valutabili.}
+\label{tab:duration-generation-results}
+\end{table}

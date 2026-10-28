@@ -1,0 +1,4 @@
+model,exact,accuracy
+Percorso più frequente,120,16.59751037344398
+Solo struttura,395,54.63347164591978
+Struttura e masse,406,56.15491009681881

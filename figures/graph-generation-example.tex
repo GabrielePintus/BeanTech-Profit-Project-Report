@@ -1,0 +1,18 @@
+% Selected graph model, first validation ODP and first sample with seed 42.
+% Exact values in tables/data/graph-generation-summary.json, example_candidates[0].
+\begin{tikzpicture}[
+  phase/.style={draw=ReportBlue!45,fill=white,rounded corners=1.8mm,
+    align=center,minimum width=2.3cm,minimum height=8mm,inner sep=4pt,font=\small},
+  link/.style={-{Stealth[length=1.8mm]},draw=ReportBlue,line width=.8pt,rounded corners=2mm},
+  amount/.style={font=\small,inner sep=2pt}
+]
+\node[phase,minimum width=2.6cm] (t) at (0,0) {\texttt{TRENOLUNA}\\Scarto: \num{9585.02}};
+\productionstart{t}
+\node[phase] (b) at (3,1.5) {\texttt{BANCHI}};
+\node[phase] (a) at (6,1.5) {\texttt{ANTIMIX}};
+\node[phase] (p) at (9,0) {\texttt{PRONTO}\\\num{120000}};
+\draw[link] (t.north) |- node[amount,pos=.7,above]{\num{6331.56}} (b.west);
+\draw[link] (b.east) -- (a.west);
+\draw[link] (a.east) -| node[amount,pos=.35,above]{\num{6331.56}} (p.north);
+\draw[link] (t.south) -- (0,-1.15) -- node[amount,below]{\num{113668.44}} (9,-1.15) -- (p.south);
+\end{tikzpicture}

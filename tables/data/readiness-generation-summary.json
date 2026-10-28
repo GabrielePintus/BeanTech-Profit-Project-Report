@@ -1,0 +1,67 @@
+{
+  "sources_sha256": {
+    "configs/production_cascade_selected.json": "8ea75800dd6fd5f8bec850cff71d6c870dcc25cf4987fc0c395c2f8fd9259652",
+    "configs/readiness_margin_selected.json": "edfe6544d4cab8aa7cd786e1e426f0138262e6c96523db0d5cd11eae77f02a3d",
+    "outputs/analysis/readiness_gamma_v1/summary.json": "cb44e27c95dec601178791e06a77875178c44c5d7ee2da56ab0987ec0787c6a2",
+    "outputs/models/readiness_margin_gamma_v1.spmodel": "40f377e0b38960bc9e0886fd1e1719c57a53e36651b550e946a8459da08afb92",
+    "outputs/models/production_cascade_v6.spmodel": "83fc99e0d9e54776fd26cbf5fce31577dcb69676a8ba2371d8252da824b0378d",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "outputs/analysis/readiness_margin_v2/cleaning_audit.csv": "c4afa0da8150271499d1b70673819fba22e26ec34fbc7ef7e2bcfd3544cf9a87"
+  },
+  "initial_positions": 4455,
+  "invalid_dates": 595,
+  "valid_dates": 3860,
+  "logical_excluded": 13,
+  "mad_excluded": 157,
+  "retained": 3690,
+  "zero_excluded": 5,
+  "negative_excluded": 27,
+  "fitted_positions": 3658,
+  "shape": 3.187546883770513,
+  "scale_days": 5.943715575667012,
+  "observed": {
+    "mean": 18.945872061235647,
+    "std": 10.561709527346393,
+    "median": 16.0,
+    "q05": 6.0,
+    "q95": 39.0,
+    "min": 1,
+    "max": 76
+  },
+  "gamma_continuous": {
+    "mean": 18.945872061235644,
+    "std": 10.611732886996391,
+    "q05": 5.440082452679162,
+    "median": 17.00572947330056,
+    "q95": 39.079204634718295
+  },
+  "gamma_rounded": {
+    "mean": 19.44586882172582,
+    "std": 10.615664451697139,
+    "q05": 6,
+    "median": 18,
+    "q95": 40,
+    "probability_over_81_days": 0.0001794335624443658
+  },
+  "example": {
+    "odv": "0001118360",
+    "posizione_odv": "000010",
+    "reference_date": "2026-11-02",
+    "seed": 42,
+    "margin_days_continuous": 20.212118498991945,
+    "margin_days": 21,
+    "target": "confirmed_readiness",
+    "already_due_at_start": false,
+    "deadline_date": "2026-11-23"
+  },
+  "notes": [
+    "Current snapshot hashes equal the Gamma fitting sources.",
+    "Every margin and filtering decision reproduced from current canonical data.",
+    "Selected standalone Gamma equals the component in production_cascade_selected; stale integrated_in_cascade=false in component configuration is not used as runtime evidence.",
+    "The Gamma is fitted on all retained positive margins, not on the graph train split. Descriptive fit only; no held-out Gamma metrics.",
+    "Histogram model probabilities include upward rounding to whole calendar days. Mean uses exact rounded PMF truncated beyond 1-1e-13 probability.",
+    "No model promotion, training, source changes or test evaluation."
+  ]
+}

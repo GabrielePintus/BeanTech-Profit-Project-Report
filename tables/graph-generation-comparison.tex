@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Modello} & \textbf{Grafi esatti} & \textbf{Accuratezza [\%]}\\
+\midrule
+Percorso più frequente & 120 & \num{16.60}\\
+Solo struttura & 395 & \num{54.63}\\
+Struttura e masse & 406 & \num{56.15}\\
+\bottomrule
+\end{tabular}
+\caption{Riproduzione della struttura completa sui 723 ODP di validazione. Il riferimento più semplice assegna a tutti il percorso più frequente nell'addestramento. Gli altri modelli scelgono a ogni passo l'alternativa con probabilità maggiore.}
+\label{tab:graph-generation-comparison}
+\end{table}

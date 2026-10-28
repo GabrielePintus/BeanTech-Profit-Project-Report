@@ -141,6 +141,11 @@ form, so the transformation is explicit.
 
 ## Production graph
 
+Production-cycle diagrams mark their first phase with a short incoming arrow
+from outside the graph. For TikZ, use `\productionstart{node-name}` (or pass
+local link styling as its optional argument). The full-page Graphviz diagram
+uses an invisible anchor for the same convention, not an additional phase.
+
 The full production graph is stored in `figures/documented-production-graph.dot`.
 Each edge connects two visible phase nodes. Shared final trunks merge connections
 that lead to the same phase. Regenerate the vector PDF after
@@ -251,3 +256,85 @@ The split table uses the mean for point predictions, matching deterministic
 cascade generation. The plotted band is a prediction interval for the allocation
 share, not a confidence interval for its mean. Update rounded LaTeX values when
 the evidence changes.
+
+## Cycle and material generation evidence (section 5.4)
+
+```sh
+OMP_NUM_THREADS=2 MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/collect_graph_generation_evidence.py --project-dir ../StrategicPlannerBeanTech
+MPLCONFIGDIR=/tmp/report-mpl ../StrategicPlannerBeanTech/.venv/bin/python scripts/plot_graph_generation.py
+```
+
+The collector uses the selected frozen graph model and catalog. It checks every
+cached observed phase, input quantity and scrap value against the current Parquets,
+and verifies cached transfers against current flow bounds or completion links.
+Snapshot byte hashes differ from the frozen training metadata, so both provenance
+and these physical consistency checks are recorded. Saved validation predictions
+and normalized reference masses are reproduced before the reported comparison.
+
+The reported evaluation omits `codice_motivo_ordine`, matching its absence in the
+cascade, while supplying other observed upstream characteristics and observed
+allocation shares. It is an isolated component evaluation. Structural accuracy
+is unchanged by this omission; mass errors are recomputed. Ten sampled cycles per
+validation ODP supply the phase-frequency comparison. The test set is not scored.
+No model is fitted and no project data are changed. Exact metrics, sampling seed,
+example values and source hashes are in `tables/data/graph-generation-summary.json`.
+Reference masses are normalized to the same assigned final quantity as predictions.
+
+## Duration generation evidence
+
+Section 5.5 uses the duration component selected by `configs/production_cascade_selected.json`
+in the code repository. `scripts/collect_duration_generation_evidence.py` checks that its
+state equals the component embedded in the production cascade, recomputes predictions on
+the current canonical parquet and reproduces all 1,314 eligible saved validation targets
+and point predictions. It never refits models or evaluates test orders. Source hashes,
+cohort counts and the example are saved in `tables/data/duration-generation-summary.json`.
+
+Run with the code repository's Python environment and `--project-dir /path/to/code`.
+The mean baseline consistently uses positive training durations without the two statistical
+imputation flags. This changes the TRATT_LFC baseline slightly relative to its saved analysis.
+The frozen imputers use a different ODV split, so this is a component diagnostic on treated
+data, not an independent evaluation of the full preparation pipeline.
+
+`scripts/plot_duration_generation.py` renders the conditional intervals and one seeded
+duration draw for the same generated cycle used in Section 5.4. The plot has a logarithmic
+minute axis and transparent background to preserve the shared example-box styling.
+
+## Readiness deadline evidence
+
+Section 5.6 describes the Gamma readiness-margin component embedded in the selected
+production cascade. `scripts/collect_readiness_generation_evidence.py --project-dir /path/to/code`
+verifies the current source hashes, reconstructs every observed margin and filtering
+decision, and checks equality between the selected standalone and embedded models.
+The Gamma fitting cohort contains 3,658 positive margins. Results are descriptive
+on that cohort, not held-out Gamma validation metrics. The stale component-config
+flag `integrated_in_cascade=false` is superseded by the verified runtime archive.
+
+The collector writes the cohort, histogram probabilities and provenance to
+`tables/data/readiness-generation-*`. `scripts/plot_readiness_generation.py` renders
+the histogram using exact Gamma probabilities after upward rounding to calendar days.
+The example reuses the two generated ODP of Example 5.2 and explicitly assumes a
+scenario reference date; one seeded draw supplies their shared deadline.
+
+## Complete cascade evaluation
+
+Section 5.7 uses `scripts/collect_cascade_generation_evidence.py --project-dir /path/to/code`,
+run with the code repository's Python environment. It reuses the graph collector's
+validation of cached quantities and current flow bounds, checks every selected embedded
+component, and evaluates 675 graph-validation positions in two modes: deterministic
+generation from observed commercial specifications, and one sampled scenario per position
+from requested quantity alone. Count decoding remains deterministic in both modes.
+The direct mapper is extracted from its source package and its field names are converted
+exactly as in the cascade build.
+
+Reference material balances use the same normalization as Section 5.4. Duration references
+come from the current parquet, not the older graph cache, and exclude entire positions
+with statistically replaced, nonpositive or unsupported material durations. The duration
+metric sums operation minutes; it is not elapsed production time or makespan.
+
+Results, failures (none in the recorded run), component hashes, matching rules and three
+complete sample outputs are retained in `tables/data/cascade-generation-*`. The 193-position
+subset excludes ODV in the count/allocation training split; it is not a universal held-out
+set for every component. The full procedure is a diagnostic integration evaluation, not
+an independent final test. `scripts/plot_cascade_generation.py` compares phase presence
+in observed ODP and scenarios generated from quantity only. No production model or
+source data is changed by these scripts.

@@ -1,0 +1,173 @@
+{
+  "sources_sha256": {
+    "configs/production_cascade_selected.json": "8ea75800dd6fd5f8bec850cff71d6c870dcc25cf4987fc0c395c2f8fd9259652",
+    "outputs/models/phase_durations_complete_v6.spmodel": "a84aa3d3f7c0d4612a57ef3e4f37346fd0340b73759fe56ba69935eb142a7b15",
+    "outputs/models/production_cascade_v6.spmodel": "83fc99e0d9e54776fd26cbf5fce31577dcb69676a8ba2371d8252da824b0378d",
+    "configs/splits/production_graph_zero_duration_v1.json": "dda1ce335b81069f2c274e99b9786d600ed73f944194c1f2639a1067767baaff",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "outputs/analysis/phase_durations_zero_imputed_v4/validation_predictions.csv": "4a6a05f48496c6570e81f2b51cac4fd2d3c7b9497fb2365549612bee86524bdf",
+    "outputs/analysis/tratt_lfc_duration_v2/validation_predictions.csv": "73d65d0bd59886a79c98a839ef862a117abeca9028a23c0fe51f23276e8db64d"
+  },
+  "training_operations": 8204,
+  "training_observed": 6831,
+  "training_imputed": 1373,
+  "validation_operations": 1314,
+  "validation_orders": 723,
+  "validation_sales_orders": 316,
+  "saved_predictions_reproduced": 1314,
+  "metrics": [
+    {
+      "phase": "TRENOLUNA",
+      "training": 3417,
+      "training_observed": 3417,
+      "training_imputed": 0,
+      "validation": 723,
+      "mae_minutes": 55.038756906539625,
+      "baseline_mae_minutes": 151.5767124834699,
+      "coverage95": 0.9543568464730291,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "BANCHI",
+      "training": 1634,
+      "training_observed": 1625,
+      "training_imputed": 9,
+      "validation": 363,
+      "mae_minutes": 49.33847286248789,
+      "baseline_mae_minutes": 85.55483537064843,
+      "coverage95": 0.9228650137741047,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "ANTIMIX",
+      "training": 1977,
+      "training_observed": 652,
+      "training_imputed": 1325,
+      "validation": 75,
+      "mae_minutes": 11.02540895730255,
+      "baseline_mae_minutes": 29.146571204839802,
+      "coverage95": 0.9733333333333334,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "TAG",
+      "training": 484,
+      "training_observed": 484,
+      "training_imputed": 0,
+      "validation": 94,
+      "mae_minutes": 58.49779714880462,
+      "baseline_mae_minutes": 153.47613322190554,
+      "coverage95": 0.9787234042553191,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "RADDR",
+      "training": 287,
+      "training_observed": 287,
+      "training_imputed": 0,
+      "validation": 31,
+      "mae_minutes": 89.86876089601991,
+      "baseline_mae_minutes": 131.60394828586334,
+      "coverage95": 0.9354838709677419,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "CONF",
+      "training": 109,
+      "training_observed": 86,
+      "training_imputed": 23,
+      "validation": 4,
+      "mae_minutes": 16.789317194331986,
+      "baseline_mae_minutes": 89.10618124451747,
+      "coverage95": 1.0,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "CIRCO",
+      "training": 40,
+      "training_observed": 40,
+      "training_imputed": 0,
+      "validation": 7,
+      "mae_minutes": 160.5043378693717,
+      "baseline_mae_minutes": 160.50433786937168,
+      "coverage95": null,
+      "fixed_minutes": 344.0763817787172
+    },
+    {
+      "phase": "TRATT_LUNA",
+      "training": 80,
+      "training_observed": 79,
+      "training_imputed": 1,
+      "validation": 3,
+      "mae_minutes": 18.405792864404457,
+      "baseline_mae_minutes": 18.305944354222316,
+      "coverage95": null,
+      "fixed_minutes": 460.31095314796534
+    },
+    {
+      "phase": "TRATT_LFC",
+      "training": 159,
+      "training_observed": 158,
+      "training_imputed": 1,
+      "validation": 14,
+      "mae_minutes": 476.46797834839373,
+      "baseline_mae_minutes": 711.3592093331473,
+      "coverage95": 0.9285714285714286,
+      "fixed_minutes": null
+    },
+    {
+      "phase": "MOL",
+      "training": 17,
+      "training_observed": 3,
+      "training_imputed": 14,
+      "validation": 0,
+      "mae_minutes": null,
+      "baseline_mae_minutes": null,
+      "coverage95": null,
+      "fixed_minutes": 100.00000000000004
+    }
+  ],
+  "example": {
+    "odp": "000010867850",
+    "odv": "0001117322",
+    "position": "000020",
+    "graph_evidence_sha256": "d0551888b0ec3ee23b864a7632b3980bc9f957fafdf7e833104d07bd7e0cd3cb",
+    "seed": 42,
+    "durations": [
+      {
+        "phase": "TRENOLUNA",
+        "mass_kg": 129585.02173653999,
+        "predicted_minutes": 893.884719745265,
+        "lower95_minutes": 473.21452123132576,
+        "upper95_minutes": 1541.939741375633,
+        "sampled_minutes": 936.3575293088982
+      },
+      {
+        "phase": "BANCHI",
+        "mass_kg": 6331.561665426163,
+        "predicted_minutes": 156.01996897742814,
+        "lower95_minutes": 24.60839745635849,
+        "upper95_minutes": 534.0737767736441,
+        "sampled_minutes": 50.670455619602016
+      },
+      {
+        "phase": "ANTIMIX",
+        "mass_kg": 6331.561665426163,
+        "predicted_minutes": 16.928518974409172,
+        "lower95_minutes": 5.861555043207489,
+        "upper95_minutes": 38.75930905558747,
+        "sampled_minutes": 21.639588025310882
+      }
+    ]
+  },
+  "notes": [
+    "Frozen standalone duration state equals embedded selected cascade state.",
+    "Predictions and eligible observed targets reproduced against current canonical parquet, not historical data.",
+    "Baseline uses only non-statistically-imputed positive training targets consistently for all phases; TRATT_LFC baseline therefore differs slightly from its saved report.",
+    "Observed selection excludes durata_zero_imputata and durata_imputata_statisticamente. Earlier temporal adjustments are not separately filtered.",
+    "Frozen imputers use different ODV splits; this is a component diagnostic, not an independent evaluation of the complete treatment pipeline.",
+    "No training, source edits or test predictions."
+  ]
+}

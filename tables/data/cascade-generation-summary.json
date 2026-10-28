@@ -1,0 +1,164 @@
+{
+  "sources_sha256": {
+    "configs/production_cascade_selected.json": "8ea75800dd6fd5f8bec850cff71d6c870dcc25cf4987fc0c395c2f8fd9259652",
+    "outputs/models/odv_feature_distribution_mass_given_v2.spmodel": "b24bd337cededdcae8e556a1156ad0681b9b571c3f491ad91ea2b84dd5d8624f",
+    "outputs/models/odv_count_mass_logistic_v2.spmodel": "a5ea87637738bc58ad676107bba33f0d3322a83a24e482dd9e80a38fe25625c5",
+    "outputs/models/odv_mass_split_distance_beta_v2.spmodel": "0a019ed18103b793706037cfebf82f1c3fa59a92b82e5b0eec91501cd387c220",
+    "outputs/models/odv_to_odp_lookups_v3.spmodel": "a633092c0297a60aff4ef1de6706b1c46d5feead3ccdfb46ea84d7efbb98ef8a",
+    "outputs/models/mass_aware_graph_zero_duration_v1.spmodel": "e2c67a2498de43b30e9837924f12d517194c3486b7038b436c8f747ce635e08f",
+    "outputs/models/phase_durations_complete_v6.spmodel": "a84aa3d3f7c0d4612a57ef3e4f37346fd0340b73759fe56ba69935eb142a7b15",
+    "outputs/models/odv_to_odp_v3.spmodel": "9c209131dd60b0a2517a4acd99344043c1bcc441224ed412c2d83729c292777e",
+    "outputs/models/readiness_margin_gamma_v1.spmodel": "40f377e0b38960bc9e0886fd1e1719c57a53e36651b550e946a8459da08afb92",
+    "outputs/models/production_cascade_v6.spmodel": "83fc99e0d9e54776fd26cbf5fce31577dcb69676a8ba2371d8252da824b0378d",
+    "outputs/analysis/odp_count_classification_20261021/summary.json": "b5456d57a18bba42e4f15d9defe12a039dccbc88b0819b27cf608a8a1f9c14f5",
+    "configs/splits/odv_features_complete_families_v2.json": "8a4f331bdf59cb35f6a1f3938cbf22d0ad951486eb5307b83b056733d38c0ad9",
+    "data/interim/odv_260915.parquet": "e06056d80afdd248712d971793e276de8aa78c5784f2df5b6a6c6637ca4df1e7",
+    "data/interim/consuntivi_260915.parquet": "da5c1c19183f3ec083ed2fba28e15d5e6d5ed0d95ef3dd7dc1dd870ee9b75479",
+    "data/interim/odp_260915.parquet": "3a81cdbcfdd28150d98f8f376c2086b75c967625f14e453483b409212cc98843"
+  },
+  "verification": {
+    "observed_nodes_verified": 18294,
+    "flow_links_verified": 14440,
+    "orders": 4860,
+    "catalog_size": 291,
+    "split_positions": {
+      "train": 3108,
+      "validation": 675,
+      "test": 672
+    },
+    "split_odv": {
+      "train": 1472,
+      "validation": 316,
+      "test": 315
+    }
+  },
+  "protocol": {
+    "validation_positions": 675,
+    "sample_draws_per_position": 1,
+    "seed": 42,
+    "count_uses_argmax": true,
+    "matching": "observed numeric ODP order vs generated ordinal; no best permutation",
+    "reference_masses": "same normalized balances and assigned observed final shares as section 5.4",
+    "duration_target": "sum of current observed material-operation minutes; excludes entire positions with statistically-imputed, zero or unsupported material durations",
+    "mass_only_input": "requested commercial quantity only; all remaining modelled sales features sampled",
+    "test_evaluated": false
+  },
+  "metrics": [
+    {
+      "mode": "specified",
+      "positions": 675,
+      "observed_orders": 723,
+      "generated_orders": 821,
+      "unsupported_count_positions": 6,
+      "balanced_count_accuracy_supported": 0.7143353404353867,
+      "exact_positions": 296,
+      "exact_position_pct": 43.851851851851855,
+      "exact_graphs": 387,
+      "complete_positions": 675,
+      "initial_mae_kg": 479.2179747354181,
+      "scrap_mae_kg": 479.2179747354179,
+      "duration_positions": 373,
+      "total_operation_minutes_mae": 147.4703568313977,
+      "median_total_operation_minutes": 271.7667815164555,
+      "q95_total_operation_minutes": 1060.056306973234,
+      "mean_margin_days": 19.0,
+      "max_balance_error_kg": 1.4551915228366852e-11,
+      "max_local_balance_error_kg": 1.4551915228366852e-11,
+      "max_final_error_kg": 1.4551915228366852e-11
+    },
+    {
+      "mode": "specified_unseen_count",
+      "positions": 193,
+      "observed_orders": 204,
+      "generated_orders": 238,
+      "unsupported_count_positions": 0,
+      "balanced_count_accuracy_supported": 0.7137862137862138,
+      "exact_positions": 79,
+      "exact_position_pct": 40.932642487046635,
+      "exact_graphs": 108,
+      "complete_positions": 193,
+      "initial_mae_kg": 572.218745406586,
+      "scrap_mae_kg": 572.2187454065858,
+      "duration_positions": 104,
+      "total_operation_minutes_mae": 137.7499444025376,
+      "median_total_operation_minutes": 291.54258316744756,
+      "q95_total_operation_minutes": 1008.5298701007291,
+      "mean_margin_days": 19.0,
+      "max_balance_error_kg": 1.4551915228366852e-11,
+      "max_local_balance_error_kg": 1.4551915228366852e-11,
+      "max_final_error_kg": 1.4551915228366852e-11
+    },
+    {
+      "mode": "quantity_only",
+      "positions": 675,
+      "observed_orders": 723,
+      "generated_orders": 821,
+      "unsupported_count_positions": 6,
+      "balanced_count_accuracy_supported": 0.7143353404353867,
+      "exact_positions": 65,
+      "exact_position_pct": 9.62962962962963,
+      "exact_graphs": 89,
+      "complete_positions": 675,
+      "initial_mae_kg": 2671.3793497501515,
+      "scrap_mae_kg": 2671.3793497501515,
+      "duration_positions": 373,
+      "total_operation_minutes_mae": 401.4880258386562,
+      "median_total_operation_minutes": 321.8298754508775,
+      "q95_total_operation_minutes": 2427.9822832971877,
+      "mean_margin_days": 20.245925925925928,
+      "max_balance_error_kg": 2.9103830456733704e-11,
+      "max_local_balance_error_kg": 1.4551915228366852e-11,
+      "max_final_error_kg": 2.9103830456733704e-11
+    }
+  ],
+  "failures": [],
+  "phase_denominators": {
+    "observed": 723,
+    "specified": 821,
+    "quantity_only": 821
+  },
+  "count_training_overlapping_positions": 482,
+  "px_training_overlapping_positions": 0,
+  "notes": [
+    "Frozen cache validated against current observed masses and flow bounds. Duration references come from current operations, not cached durations.",
+    "Embedded components match selected sources; the direct mapper is extracted from its source package and its field names are canonically converted as in the cascade build.",
+    "Not an independent end-to-end test: upstream component splits differ; lookups, structural support and deadline Gamma use broader data.",
+    "No model fitting or production-source edits."
+  ],
+  "aggregate_comparisons": {
+    "quantity_only": {
+      "requested_kg": 19320000.0,
+      "observed_initial_kg": 20373190.124364592,
+      "generated_initial_kg": 21820422.28586982,
+      "observed_scrap_kg": 1053190.1243645917,
+      "generated_scrap_kg": 2500422.285869819,
+      "observed_counts": {
+        "1": 635,
+        "2": 34,
+        "3": 5,
+        "5": 1
+      },
+      "generated_counts": {
+        "1": 529,
+        "2": 146
+      }
+    },
+    "specified": {
+      "requested_kg": 19320000.0,
+      "observed_initial_kg": 20373190.124364592,
+      "generated_initial_kg": 20475769.69345331,
+      "observed_scrap_kg": 1053190.1243645917,
+      "generated_scrap_kg": 1155769.693453309,
+      "observed_counts": {
+        "1": 635,
+        "2": 34,
+        "3": 5,
+        "5": 1
+      },
+      "generated_counts": {
+        "1": 529,
+        "2": 146
+      }
+    }
+  }
+}

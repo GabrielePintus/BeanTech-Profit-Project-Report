@@ -169,3 +169,234 @@ La posizione \texttt{000010} dell'ODV \texttt{0001118360} richiede \num{100000} 
 La richiesta proviene dai dati, mentre le quantità dei due ODP sono generate dal modello. Un'altra estrazione può cambiare la ripartizione, mantenendo lo stesso totale.
 \end{examplebox}
 \endgroup
+
+\section{Generazione dei cicli e dei flussi di materiale}
+\label{sec:graph-and-material-generation}
+
+Per ciascun ODP si genera un ciclo produttivo con le occorrenze di macrofase, i collegamenti tra esse, le quantità lavorate e gli scarti. Il modello costruisce insieme il percorso e i flussi di materiale, usando le caratteristiche del prodotto, la quantità finale assegnata all'ODP e le informazioni sulla posizione ODV. Le durate vengono aggiunte in un passaggio successivo.
+
+\subsection{Dati di riferimento e strutture ammesse}
+\label{sec:graph-generation-data}
+
+% Sources: production_graph_zero_duration_v1.json, observed_graph_catalog_zero_duration_v1.json,
+% mass_aware_graph_zero_duration_v1.spmodel. Whole ODV groups, all-data structural support.
+I cicli ricostruiti dai dati formano un catalogo di 291 strutture distinte. Ogni struttura descrive le occorrenze e i loro collegamenti, senza fissare quantità, scarti o durate. Una macrofase può comparire più volte, in occorrenze diverse. La generazione ammette soltanto strutture del catalogo, che deriva dalle ricostruzioni dei capitoli precedenti.
+
+Per l'addestramento si usano \num{3417} ODP di \num{3108} posizioni, mentre la validazione comprende 723 ODP di 675 posizioni. Altri 720 ODP sono riservati al test. Gli ODV rimangono separati tra i gruppi e ogni struttura del catalogo è rappresentata nell'addestramento. Il catalogo è definito sull'intero campione, mentre frequenze, trasformazioni delle variabili e parametri dei modelli vengono stimati sul solo addestramento.
+
+Le informazioni in input al modello comprendono le specifiche geometriche, la qualità dell'acciaio, lo stato del prodotto e i riferimenti commerciali e tecnici. Si aggiungono la quantità richiesta dalla posizione, quella assegnata all'ODP, il numero di ODP associati alla posizione e l'ordine in cui vengono generati. Gli scarti osservati vengono espressi come rapporti rispetto alle quantità in ingresso e i flussi come quote del materiale in uscita. Il modello apprende così le proporzioni da usare nella generazione, mantenendo esatti i bilanci anche quando le quantità registrate ammettevano piccoli scostamenti.
+
+\subsection{Costruzione del ciclo e conservazione del materiale}
+\label{sec:joint-graph-mass-generation}
+
+% Implementations: models/mass_aware_graph.py; production_generation/mass_state.py.
+% Six heads: phase, parent, degree, scrap_mode (categorical), split_fraction,
+% scrap_fraction (Beta). Numerical parameters are fitted on training only.
+Il modello è autoregressivo: costruisce il grafo un passo alla volta e usa quanto ha già generato per scegliere come proseguire. Per ogni nuova occorrenza determina la macrofase, le occorrenze da cui riceve materiale, la modalità di scarto e il numero di collegamenti in uscita. Queste scelte usano regressioni logistiche, condizionate dalle caratteristiche dell'ODP, dalla parte di grafo già costruita e dal materiale ancora disponibile. Per scegliere la macrofase e i collegamenti, il modello combina le frequenze osservate nei dati di addestramento con le caratteristiche dell'ODP e il materiale ancora disponibile.
+
+Lo scarto può essere nullo, parziale o totale. Nel caso parziale, una regressione Beta descrive lo scarto relativo alla quantità lavorata. Un'altra regressione Beta descrive la frazione trasferita lungo un collegamento quando il materiale deve essere suddiviso. Le due distribuzioni hanno medie che dipendono dalle informazioni disponibili al passo corrente. La generazione estrae le scelte dalle probabilità stimate e le frazioni dalle distribuzioni Beta. Per ottenere una previsione deterministica si scelgono invece le alternative con probabilità maggiore e si usano le medie delle frazioni.
+
+\begin{samepage}
+La conservazione del materiale segue regole esplicite e deterministiche:
+\begin{itemize}
+\item Ogni trasferimento preleva una parte della quantità ancora disponibile nell'occorrenza di origine. L'ultimo collegamento ne riceve tutto il residuo.
+\item Quando più collegamenti arrivano alla stessa occorrenza, le quantità si sommano.
+\item Lo scarto totale chiude il ramo. Negli altri casi, il materiale rimasto deve essere trasferito.
+\item La generazione termina quando tutto il materiale è stato assegnato al prodotto finale o allo scarto, con una quantità finale positiva.
+\end{itemize}
+\end{samepage}
+Le scelte ammesse devono rispettare sia queste regole sia una possibile continuazione nel catalogo. Le occorrenze \texttt{HPT} restano escluse dai trasferimenti e dai bilanci di materiale, come nella ricostruzione dei dati.
+
+La costruzione parte da una massa iniziale unitaria. Al termine, la quota che raggiunge il prodotto finale definisce la resa generata $\eta$. Se $q^{\mathrm{fin}}$ è la quantità finale assegnata all'ODP, la massa iniziale necessaria è
+\begin{equation}
+\label{eq:generated-root-mass}
+m^{\mathrm{in}}=\frac{q^{\mathrm{fin}}}{\eta}.
+\end{equation}
+Tutte le quantità, gli scarti e i flussi del grafo unitario vengono moltiplicati per $m^{\mathrm{in}}$. Si ottiene così esattamente la quantità finale richiesta e, indicando con $s_i$ lo scarto dell'occorrenza $i$, vale il bilancio
+\begin{equation}
+\label{eq:generated-global-balance}
+m^{\mathrm{in}}=q^{\mathrm{fin}}+\sum_i s_i.
+\end{equation}
+
+\subsection{Valutazione e risultati}
+\label{sec:graph-generation-results}
+
+% Recomputed by scripts/collect_graph_generation_evidence.py on selected frozen models.
+% All current observed phases, masses and scrap are checked against the graph cache.
+% codice_motivo_ordine is omitted as in the deployed cascade. The omission leaves
+% graph accuracy unchanged but changes initial-mass MAE from 458.76 to 455.24 kg.
+Per valutare separatamente il modello dei cicli e dei flussi di materiale, si usano le caratteristiche osservate e si ripartisce la quantità richiesta secondo le quote pronte osservate. Il campo \texttt{codice\_motivo\_ordine}, presente nell'addestramento ma non fornito dalla procedura di generazione, viene lasciato mancante anche nella verifica. I risultati non includono quindi gli errori dei modelli che generano le caratteristiche e suddividono la posizione ODV.
+
+La \cref{tab:graph-generation-comparison} confronta tre alternative: usare sempre il percorso più frequente nell'addestramento, generare soltanto la struttura del ciclo oppure generare insieme struttura e flussi di materiale. I due modelli di generazione ricevono gli stessi input. Un grafo è considerato esatto se riproduce tutte le occorrenze di macrofase del riferimento, con gli stessi ruoli e collegamenti. Quantità e scarti vengono valutati separatamente.
+
+\input{tables/graph-generation-comparison}
+
+Considerare il materiale disponibile migliora la riproduzione del percorso e permette di generare quantità coerenti con le scelte strutturali. L'errore medio assoluto sulla massa iniziale è di \num{455.24} kg. È uguale a quello sullo scarto complessivo, perché il modello e il riferimento hanno la stessa quantità finale. Per questo confronto, anche le masse di riferimento vengono ricondotte alla quantità finale assegnata, mantenendo i rapporti di scarto e le quote dei trasferimenti.
+
+Per valutare la generazione variabile si estraggono dieci cicli per ciascun ODP di validazione, ottenendo \num{7230} cicli. Tutti i cicli, sia nelle previsioni deterministiche sia nelle estrazioni, risultano completi e rispettano il totale finale e i bilanci, salvo l'approssimazione numerica dei calcoli. La \cref{fig:graph-generation-phases} confronta la presenza delle macrofasi nei cicli osservati e generati. Le frequenze di \texttt{ANTIMIX} e \texttt{BANCHI} sono vicine a quelle dei dati, mentre alcune macrofasi meno frequenti, tra cui \texttt{CONF} e i trattamenti, vengono generate più spesso.
+
+\begin{figure}[htbp]
+\centering
+\reportgraphic{graph-generation-phases.pdf}
+\caption{Presenza delle principali macrofasi nei 723 ODP di validazione e nei \num{7230} cicli generati dalle stesse caratteristiche. Ogni macrofase viene contata al massimo una volta per ciclo. Sono omessi \texttt{TRENOLUNA}, gli stati di materiale pronto e le macrofasi composite.}
+\label{fig:graph-generation-phases}
+\end{figure}
+
+% Real validation ODP 000010867850, ODV 0001117322, position 000020.
+% First sample of the ordered validation cohort, random seed 42.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:generated-material-cycle]{Generare un ciclo con una diramazione}
+Si usano le caratteristiche dell'ODP \texttt{000010867850}, associato alla posizione \texttt{000020} dell'ODV \texttt{0001117322}, con una quantità finale richiesta di \num{120000} kg. Un'estrazione del modello genera il ciclo seguente, con quantità espresse in chilogrammi.
+
+\begin{center}
+\reportfigurecontent{\input{figures/graph-generation-example}}
+\end{center}
+
+La massa iniziale generata è \num{129585.02} kg. Dopo lo scarto di \texttt{TRENOLUNA}, una parte prosegue attraverso \texttt{BANCHI} e \texttt{ANTIMIX}, senza ulteriori scarti, mentre la restante raggiunge direttamente \texttt{PRONTO}. I due rami si ricongiungono e restituiscono i \num{120000} kg richiesti. Il ciclo e le quantità mostrati sono generati usando le caratteristiche di un ODP reale.
+\end{examplebox}
+\endgroup
+
+\section{Generazione delle durate}
+\label{sec:duration-generation}
+
+Dopo aver generato il ciclo e i flussi di materiale, si assegna una durata a ciascuna occorrenza di macrofase. Si modella la durata totale del passaggio, espressa da \texttt{durata\_totale\_minuti}, senza distinguere setup, lavorazione e fermo. Le durate completano il grafo.
+
+\subsection{Dati e variabili in input}
+\label{sec:duration-generation-data}
+
+% Sources: models/phase_duration.py; data/zero_duration.py::imputer_features;
+% refit_duration_heads_v4.py; extend_duration_tratt_lfc.py --refit.
+Il modello usa la quantità in ingresso alla singola occorrenza, lo scarto relativo e il rapporto tra questa quantità e la massa iniziale dell'ODP. Si aggiungono prima dimensione, lunghezza richiesta, prodotto, forma, finitura, stato fisico, marca dell'acciaio e classe di carbonio. Quantità, dimensione e lunghezza vengono trasformate con il logaritmo. Quantità e scarti provengono dal ciclo appena generato.
+
+Si mantiene la suddivisione per ODV usata per i cicli. L'addestramento comprende \num{8204} occorrenze con durata positiva, incluse \num{1373} durate sostituite dai trattamenti statistici del \cref{sec:statistical-cleaning-and-imputation}. La validazione esclude queste sostituzioni e comprende \num{1314} occorrenze di 723 ODP, appartenenti a 316 ODV.
+
+\subsection{Modelli per macrofase e generazione}
+\label{sec:duration-generation-models}
+
+Per \texttt{TRENOLUNA}, \texttt{BANCHI}, \texttt{TAG}, \texttt{RADDR}, \texttt{CONF} e \texttt{TRATT\_LFC} si usa una regressione Ridge sul logaritmo della durata. Per \texttt{ANTIMIX} si usa CatBoost, un modello che combina alberi decisionali e può descrivere relazioni non lineari tra le variabili.
+
+Indicando con $h$ la macrofase, con $\bm{x}_i$ le caratteristiche dell'occorrenza $i$ e con $g_h$ il modello corrispondente, la durata generata in minuti è
+\begin{equation}
+\label{eq:duration-generation-law}
+d_i=\exp\bigl(g_h(\bm{x}_i)+\varepsilon_i\bigr).
+\end{equation}
+Il termine $\varepsilon_i$ rappresenta la variabilità non spiegata dalle caratteristiche. La sua distribuzione è stimata dagli errori ottenuti prevedendo gruppi di ODV dell'addestramento con modelli addestrati sugli altri gruppi. Si usano soltanto gli errori sulle durate non sostituite dai trattamenti statistici. La distribuzione degli errori è normale per tutte queste macrofasi tranne \texttt{CONF}, per cui è logistica. Le durate risultano quindi rispettivamente lognormali e log-logistiche, sempre positive.
+
+Per la valutazione si usa la durata media prevista dal modello. Nella generazione degli scenari si estrae invece una durata dalla distribuzione stimata, per rappresentare la variabilità dei dati.
+
+Per \texttt{CIRCO} e \texttt{TRATT\_LUNA} si usa un valore fisso pari alla media nell'addestramento, rispettivamente \num{344.08} e \num{460.31} minuti. Per \texttt{MOL} si mantiene il valore convenzionale di 100 minuti. \texttt{HPT} e gli stati di materiale pronto hanno durata nulla.
+
+Nelle macrofasi composite si generano separatamente le durate delle componenti, usando per ciascuna la quantità in ingresso alla macrofase composita, e si prende la maggiore. Si assume così che le componenti si sovrappongano completamente. Nella previsione deterministica si usa il massimo delle loro medie, come approssimazione della durata complessiva.
+
+\subsection{Valutazione e risultati}
+\label{sec:duration-generation-results}
+
+% Recomputed on current parquet and the duration component embedded in the selected
+% cascade. Every saved eligible target and point prediction is reproduced.
+% Evidence: tables/data/duration-generation-summary.json and validation.csv.
+La verifica usa quantità, scarti e caratteristiche presenti nei dati, così da valutare le durate separatamente dai modelli precedenti. La \cref{tab:duration-generation-results} confronta le previsioni con un riferimento semplice: assegnare a tutte le occorrenze la media delle durate positive non sostituite della stessa macrofase nell'addestramento. Il MAE misura l'errore assoluto medio in minuti. Per i modelli probabilistici si riporta anche la copertura dell'intervallo nominale al 95\%, cioè la percentuale di durate osservate che vi ricade.
+
+\input{tables/duration-generation-results}
+
+I modelli che usano le caratteristiche del prodotto e le quantità e gli scarti della singola occorrenza riducono l'errore rispetto alla sola media per macrofase. Il miglioramento è particolarmente evidente per \texttt{TRENOLUNA}, \texttt{TAG} e \texttt{ANTIMIX}, mentre per \texttt{TRATT\_LFC} rimane un errore di diverse ore. Le coperture sono vicine al livello nominale del 95\%, ma per \texttt{CONF} e i trattamenti i pochi casi di validazione non permettono conclusioni solide. Gli intervalli derivano dalle distribuzioni stimate e non dalla calibrazione al 90\% usata per le correzioni temporali nella \cref{sec:duration-correction-models}.
+
+% Same generated cycle and inputs as ex:generated-material-cycle.
+% Independent duration draws with seed 42, in node order.
+\begingroup
+\tcbset{lines before break=12}
+\begin{examplebox}[ex:generated-cycle-durations]{Le durate del ciclo generato}
+Si riprende il ciclo dell'\cref{ex:generated-material-cycle}. Il modello riceve le caratteristiche dello stesso ODP e le quantità generate: \num{129585.02} kg per \texttt{TRENOLUNA} e \num{6331.56} kg per \texttt{BANCHI} e \texttt{ANTIMIX}. Il grafico mostra la durata media prevista, l'intervallo nominale al 95\% e una possibile estrazione per ogni occorrenza.
+
+\begin{center}
+\reportgraphic{duration-generation-example.pdf}
+\end{center}
+
+\end{examplebox}
+\endgroup
+
+\section{Generazione delle scadenze}
+\label{sec:deadline-generation}
+
+La scadenza indica la data entro cui il materiale della posizione ODV deve essere pronto. Il modello genera un margine temporale da aggiungere alla data di riferimento della pianificazione. Se la posizione viene suddivisa in più ODP, tutti condividono la stessa scadenza.
+
+\subsection{Margine temporale e dati di riferimento}
+\label{sec:readiness-margin-data}
+
+% Sources: fit_readiness_margin.py, fit_clean_readiness_margin.py,
+% models/readiness_cleaning.py. All margins and final filtering decisions
+% reproduced from current canonical parquet by collect_readiness_generation_evidence.py.
+Nei dati, il margine è la differenza in giorni tra \texttt{data\_approntamento\_confermata} e il primo giorno di produzione della posizione ODV, individuato dal primo inizio di \texttt{TRENOLUNA} tra i suoi ODP. La data di ricezione dell'ordine non è disponibile. Il margine descrive quindi il tempo tra l'avvio della produzione e l'impegno confermato per il materiale pronto.
+
+Per stimare il modello si escludono le posizioni senza una data valida di approntamento confermata. Le date disponibili devono rispettare l'ordine approntamento, uscita merci e consegna. Si rimuovono inoltre i margini estremi mediante soglie basate sul MAD, calcolate per stato fisico. Per i gruppi piccoli o con MAD nullo si usa il riferimento complessivo. Infine si considerano solo margini positivi, perché si vogliono generare scadenze successive alla data di riferimento. Restano \num{3658} delle \num{4455} posizioni ODV. Questi filtri riguardano soltanto la stima delle scadenze e non rimuovono posizioni dagli altri modelli.
+
+\subsection{Distribuzione del margine e scadenza generata}
+\label{sec:readiness-margin-generation}
+
+% Selected runtime: GammaReadinessMarginModel, models/deadline.py;
+% models/production_cascade.py::_generate. The component config's stale
+% integrated_in_cascade=false is superseded by the verified cascade artifact.
+Si usa una distribuzione Gamma, stimata sui margini positivi e comune a tutte le posizioni. Il margine generato non dipende dalle caratteristiche del prodotto, dalle durate o dal carico degli impianti. La distribuzione rappresenta margini sempre positivi, con una maggiore concentrazione sui tempi brevi e una coda verso quelli più lunghi.
+
+Per ogni posizione $p$ si estrae un margine $\ell_p$ dalla Gamma e lo si arrotonda per eccesso al giorno intero. Indicando con $t_0$ la data di riferimento, la scadenza è
+\begin{equation}
+\label{eq:generated-readiness-date}
+t_p^{\mathrm{scad}}=t_0+\lceil\ell_p\rceil\;\text{giorni}.
+\end{equation}
+L'estrazione avviene una sola volta per posizione ODV. Si contano giorni di calendario, senza spostare le scadenze in base al giorno della settimana. Nella generazione deterministica si usa invece la media della Gamma, arrotondata a 19 giorni.
+
+La \cref{fig:readiness-generation-distribution} confronta i margini osservati con quelli descritti dal modello, dopo l'arrotondamento. Il margine medio osservato è di \num{18.95} giorni e quello generato è di \num{19.45} giorni. La differenza deriva dall'arrotondamento per eccesso. Il modello riproduce l'andamento complessivo, senza seguire tutte le oscillazioni delle frequenze osservate. Il confronto riguarda gli stessi dati usati per stimare la Gamma, non un campione di validazione separato.
+
+\begin{figure}[H]
+\centering
+\reportgraphic{readiness-generation-distribution.pdf}
+\caption{Distribuzione dei margini delle \num{3658} posizioni di riferimento e probabilità del modello Gamma dopo l'arrotondamento al giorno intero. Ogni classe comprende tre giorni.}
+\label{fig:readiness-generation-distribution}
+\end{figure}
+
+% One seeded draw from the selected embedded Gamma: 20.212118498991945 days.
+% Reference date is a scenario assumption. The position is the real input of ex:odp-generation.
+\begin{examplebox}[ex:generated-readiness-date]{Una scadenza condivisa dai due ODP}
+Si riprende la posizione ODV dell'\cref{ex:odp-generation}, suddivisa in due ODP, e si sceglie il 2 novembre 2026 come data di riferimento. Un'estrazione del modello fornisce un margine di \num{20.21} giorni, arrotondato a 21. La scadenza è quindi il 23 novembre 2026 per entrambi gli ODP.
+\end{examplebox}
+
+\section{Valutazione della generazione completa}
+\label{sec:complete-generation-evaluation}
+
+Si verifica ora il funzionamento dei modelli collegati in sequenza. Il confronto usa le 675 posizioni della validazione dei cicli e distingue due prove: nella prima si forniscono quantità e caratteristiche commerciali osservate, nella seconda soltanto la quantità. Si controllano sia la corrispondenza con le produzioni osservate sia la coerenza degli scenari generati.
+
+\subsection{Generazione dalle richieste commerciali osservate}
+\label{sec:cascade-observed-inputs}
+
+% Current cascade components verified against their selected sources. The direct
+% mapper is extracted from its source package and converted to canonical field names.
+% No historical cascade metrics reused. Current duration targets, not cached ones.
+La prima prova usa previsioni deterministiche. Il numero di ODP, la ripartizione della quantità, le caratteristiche degli ODP, i cicli, i flussi e le durate sono tutti prodotti dai modelli. Non vengono forniti il numero di ODP osservato né le loro quantità e caratteristiche.
+
+Una posizione è riprodotta esattamente quando coincidono il numero di ODP e tutte le strutture dei loro cicli. Gli ODP osservati e generati vengono abbinati secondo il loro ordine, contando come errori quelli mancanti o aggiuntivi. Quantità e durate sono valutate separatamente. Le masse di riferimento sono ricondotte alla quantità commerciale richiesta, mantenendo i rapporti di scarto e le quote dei trasferimenti come nella \cref{sec:graph-generation-results}.
+
+Le suddivisioni dei dati cambiano tra i componenti. Delle 675 posizioni, 193 appartengono a ODV esclusi dall'addestramento dei modelli del numero di ODP e della ripartizione. La \cref{tab:cascade-generation-results} riporta anche i risultati su questo sottoinsieme. Il confronto valuta l'integrazione dei modelli e non costituisce un test indipendente di tutta la procedura.
+
+\input{tables/cascade-generation-results}
+
+La procedura genera 821 ODP, contro i 723 osservati. La differenza dipende soprattutto dalle posizioni a cui vengono assegnati due ODP: sono 146 nella generazione e 34 nei dati. Il criterio bilanciato della \cref{sec:odp-count-generation} favorisce il riconoscimento dei casi con due ODP, ma non ne riproduce necessariamente la frequenza. Le sei posizioni con più di due ODP restano nel confronto complessivo, pur essendo fuori dai casi modellati.
+
+L'errore sulle durate riguarda la somma delle durate delle occorrenze della posizione, anche quando il ciclo generato è diverso da quello osservato. Non misura il tempo trascorso dall'inizio alla fine della produzione, che dipende anche dalle sovrapposizioni e dalla pianificazione. Il confronto comprende solo posizioni in cui tutte le occorrenze materiali hanno durate positive, modellate e non sostituite dai trattamenti statistici. L'errore sulla massa iniziale coincide con quello sullo scarto complessivo, perché la quantità finale è la stessa nel riferimento e nella generazione.
+
+\subsection{Generazione dalla sola quantità e controlli di coerenza}
+\label{sec:cascade-quantity-only}
+
+Per ogni posizione si mantiene la quantità richiesta e si genera uno scenario, ottenendo 675 scenari. Il VAEAC completa le caratteristiche commerciali, poi gli altri modelli generano gli ODP, le quantità, i cicli, le durate e il margine per la scadenza. Si usano le modalità di estrazione descritte nelle sezioni precedenti, mantenendo deterministica la scelta del numero di ODP.
+
+La generazione termina correttamente per tutte le richieste, in entrambe le prove. Ogni ODP generato ha un ciclo completo e una durata per ciascuna occorrenza. La somma delle quantità finali coincide con la richiesta commerciale e i bilanci di materiale sono rispettati, con scostamenti numerici inferiori a \num{e-9} kg. Le durate delle occorrenze materiali sono positive e ogni posizione riceve un unico margine positivo, condiviso dai suoi ODP.
+
+La \cref{fig:cascade-generation-phases} confronta le frequenze delle macrofasi nei dati e negli scenari generati dalla sola quantità. \texttt{ANTIMIX}, \texttt{TAG}, \texttt{RADDR} e i trattamenti compaiono più spesso, mentre \texttt{HPT} compare meno spesso. Lo scarto complessivo generato è di \num{2500.42} t, contro \num{1053.19} t nel riferimento ricondotto alle stesse quantità finali. I vincoli garantiscono quindi bilanci coerenti, ma non assicurano da soli che le distribuzioni dei cicli e degli scarti coincidano con quelle osservate.
+
+\begin{figure}[H]
+\centering
+\reportgraphic{cascade-generation-phases.pdf}
+\caption{Presenza delle principali macrofasi nei 723 ODP osservati e negli 821 ODP generati fornendo soltanto le quantità delle 675 posizioni. Ogni macrofase è contata al massimo una volta per ODP. Sono omessi \texttt{TRENOLUNA}, gli stati di materiale pronto e le macrofasi composite. Il confronto riguarda una sola estrazione per posizione.}
+\label{fig:cascade-generation-phases}
+\end{figure}
+
+La possibilità di eseguire le produzioni generate con le risorse disponibili e di rispettarne le scadenze deve essere valutata dalla pianificazione, considerando insieme i cicli generati e i vincoli produttivi.

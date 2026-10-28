@@ -1,0 +1,536 @@
+[
+  {
+    "odv": "0001113934",
+    "posizione_odv": "000010",
+    "prediction": {
+      "requested_mass_kg": 25000.0,
+      "sales_features": {
+        "quantita_odv_kg": 25000.0,
+        "classe_carbonio": "BASSO_CARBONIO",
+        "codice_cliente": "0000100640",
+        "descrizione_tipo_lunghezza": "LF",
+        "descrizione_marca_acciaio": "10SMN28",
+        "finitura": "GRE",
+        "forma": "TONDO",
+        "descrizione_macrociclo": "LABAK-TONDO-GRE-NAT-50 MM--",
+        "marca_cliente": "11SMN30",
+        "codice_materiale": "3002600",
+        "modello_pp_richiesto": "CC270",
+        "nfa": "189",
+        "stato_fisico": "NAT",
+        "versione_tecnica": "5895",
+        "tolleranza_massima_lunghezza": 200.0,
+        "tolleranza_minima_lunghezza": 0.0,
+        "difetto_superficiale_massimo": 0.46483304705480366,
+        "sezione_grezza_pp": 49.12813643740894,
+        "indice_criticita": 100.3872414555427,
+        "lunghezza_richiesta": 5722.851843299237,
+        "dimensione_1_mm": 48.70003976813939,
+        "dimensione_2_mm": 0.0,
+        "lunghezza_massima": 0.0,
+        "lunghezza_minima": 0.0
+      },
+      "orders": [
+        {
+          "ordinal": 1,
+          "final_mass_kg": 25000.0,
+          "features": {
+            "codice_cliente": "100640",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "NATURALE",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 49.12813643740894,
+            "dimensione_1_mm": 48.70003976813939,
+            "lunghezza_richiesta": 5722.851843299237,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 200.0,
+            "marca_acciaio": "10SMN28",
+            "tolleranza_massima_dimensione_1_mm": 1.0,
+            "tolleranza_minima_dimensione_1_mm": -1.0,
+            "quantita_richiesta_kg": 25000.0
+          },
+          "context": {
+            "codice_cliente": "100640",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "NATURALE",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 49.12813643740894,
+            "dimensione_1_mm": 48.70003976813939,
+            "lunghezza_richiesta": 5722.851843299237,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 200.0,
+            "marca_acciaio": "10SMN28",
+            "tolleranza_massima_dimensione_1_mm": 1.0,
+            "tolleranza_minima_dimensione_1_mm": -1.0,
+            "quantita_richiesta_kg": 25000.0,
+            "classe_carbonio": "BASSO_CARBONIO",
+            "descrizione_tipo_lunghezza": "LF",
+            "modello_pp_richiesto": "CC270",
+            "nfa": "189",
+            "versione_tecnica": "5895",
+            "codice_materiale": "3002600",
+            "famiglia_macrociclo": "LABAK",
+            "criticita_stato": "specificata",
+            "indice_criticita": 100.3872414555427,
+            "difetto_stato": "specificato",
+            "difetto_superficiale_massimo": 0.46483304705480366,
+            "assigned_mass_kg": 25000.0,
+            "requested_family_mass_kg": 25000.0,
+            "assigned_family_share": 1.0,
+            "sibling_count": 1,
+            "sibling_ordinal": 1
+          },
+          "prediction": {
+            "flow": {
+              "structure": {
+                "nodes": [
+                  {
+                    "phase": "TRENOLUNA",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "PRONTO",
+                    "role": "ready_final",
+                    "aggregated": false
+                  }
+                ],
+                "edges": [
+                  [
+                    0,
+                    1
+                  ]
+                ]
+              },
+              "accounting": {
+                "entering_kg": [
+                  26510.112741860696,
+                  24999.999999999996
+                ],
+                "scrap_kg": [
+                  1510.112741860698,
+                  0.0
+                ],
+                "edges_kg": [
+                  [
+                    0,
+                    1,
+                    24999.999999999996
+                  ]
+                ],
+                "final_kg": 24999.999999999996
+              },
+              "initial_mass_kg": 26510.112741860696,
+              "requested_final_mass_kg": 25000.0,
+              "complete": true,
+              "error": null
+            },
+            "duration_hours": [
+              3.1357650656103293,
+              0.0
+            ],
+            "duration_status": [
+              "sampled_positive_total_duration",
+              "assumed_zero_capacity"
+            ]
+          }
+        }
+      ],
+      "readiness": {
+        "margin_days_continuous": 27.40284718852429,
+        "margin_days": 28,
+        "target": "confirmed_readiness",
+        "already_due_at_start": false,
+        "deadline_date": "2026-11-30"
+      }
+    }
+  },
+  {
+    "odv": "0001114850",
+    "posizione_odv": "000030",
+    "prediction": {
+      "requested_mass_kg": 30000.0,
+      "sales_features": {
+        "quantita_odv_kg": 30000.0,
+        "classe_carbonio": "BASSO_CARBONIO",
+        "codice_cliente": "0000100855",
+        "descrizione_tipo_lunghezza": "LF",
+        "descrizione_marca_acciaio": "15MNVS5",
+        "finitura": "GRE",
+        "forma": "TONDO",
+        "descrizione_macrociclo": "LABAK-TONDO-GRE-NAT-80 MM--",
+        "marca_cliente": "20MNV6 1.5217",
+        "codice_materiale": "3002715",
+        "modello_pp_richiesto": "CC270",
+        "nfa": "1822",
+        "stato_fisico": "NAT",
+        "versione_tecnica": "6964",
+        "tolleranza_massima_lunghezza": 50.0,
+        "tolleranza_minima_lunghezza": 0.0,
+        "difetto_superficiale_massimo": 0.7817418538276792,
+        "sezione_grezza_pp": 78.2321136871401,
+        "indice_criticita": 99.68120032334247,
+        "lunghezza_richiesta": 6244.834044896766,
+        "dimensione_1_mm": 78.15364714521732,
+        "dimensione_2_mm": 0.0,
+        "lunghezza_massima": 0.0,
+        "lunghezza_minima": 0.0
+      },
+      "orders": [
+        {
+          "ordinal": 1,
+          "final_mass_kg": 30000.0,
+          "features": {
+            "codice_cliente": "100855",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "NATURALE",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 78.2321136871401,
+            "dimensione_1_mm": 78.15364714521732,
+            "lunghezza_richiesta": 6244.834044896766,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 50.0,
+            "marca_acciaio": "15MNVS5",
+            "tolleranza_massima_dimensione_1_mm": 1.0,
+            "tolleranza_minima_dimensione_1_mm": -1.0,
+            "quantita_richiesta_kg": 30000.0
+          },
+          "context": {
+            "codice_cliente": "100855",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "NATURALE",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 78.2321136871401,
+            "dimensione_1_mm": 78.15364714521732,
+            "lunghezza_richiesta": 6244.834044896766,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 50.0,
+            "marca_acciaio": "15MNVS5",
+            "tolleranza_massima_dimensione_1_mm": 1.0,
+            "tolleranza_minima_dimensione_1_mm": -1.0,
+            "quantita_richiesta_kg": 30000.0,
+            "classe_carbonio": "BASSO_CARBONIO",
+            "descrizione_tipo_lunghezza": "LF",
+            "modello_pp_richiesto": "CC270",
+            "nfa": "1822",
+            "versione_tecnica": "6964",
+            "codice_materiale": "3002715",
+            "famiglia_macrociclo": "LABAK",
+            "criticita_stato": "specificata",
+            "indice_criticita": 99.68120032334247,
+            "difetto_stato": "specificato",
+            "difetto_superficiale_massimo": 0.7817418538276792,
+            "assigned_mass_kg": 30000.0,
+            "requested_family_mass_kg": 30000.0,
+            "assigned_family_share": 1.0,
+            "sibling_count": 1,
+            "sibling_ordinal": 1
+          },
+          "prediction": {
+            "flow": {
+              "structure": {
+                "nodes": [
+                  {
+                    "phase": "TRENOLUNA",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "CONF",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "ANTIMIX",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "PRONTO",
+                    "role": "ready_final",
+                    "aggregated": false
+                  }
+                ],
+                "edges": [
+                  [
+                    0,
+                    1
+                  ],
+                  [
+                    0,
+                    3
+                  ],
+                  [
+                    1,
+                    2
+                  ],
+                  [
+                    2,
+                    3
+                  ]
+                ]
+              },
+              "accounting": {
+                "entering_kg": [
+                  32094.542662552947,
+                  2192.87159491455,
+                  2192.87159491455,
+                  30000.0
+                ],
+                "scrap_kg": [
+                  2094.542662552947,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "edges_kg": [
+                  [
+                    0,
+                    1,
+                    2192.87159491455
+                  ],
+                  [
+                    0,
+                    3,
+                    27807.128405085452
+                  ],
+                  [
+                    1,
+                    2,
+                    2192.87159491455
+                  ],
+                  [
+                    2,
+                    3,
+                    2192.87159491455
+                  ]
+                ],
+                "final_kg": 30000.0
+              },
+              "initial_mass_kg": 32094.542662552947,
+              "requested_final_mass_kg": 30000.0,
+              "complete": true,
+              "error": null
+            },
+            "duration_hours": [
+              3.9416831744888814,
+              0.7543697522649758,
+              0.11588159278776158,
+              0.0
+            ],
+            "duration_status": [
+              "sampled_positive_total_duration",
+              "sampled_positive_total_duration",
+              "sampled_positive_total_duration",
+              "assumed_zero_capacity"
+            ]
+          }
+        }
+      ],
+      "readiness": {
+        "margin_days_continuous": 13.952840925350504,
+        "margin_days": 14,
+        "target": "confirmed_readiness",
+        "already_due_at_start": false,
+        "deadline_date": "2026-11-16"
+      }
+    }
+  },
+  {
+    "odv": "0001115805",
+    "posizione_odv": "000010",
+    "prediction": {
+      "requested_mass_kg": 15000.0,
+      "sales_features": {
+        "quantita_odv_kg": 15000.0,
+        "classe_carbonio": "ALTO_CARBONIO",
+        "codice_cliente": "0000100213",
+        "descrizione_tipo_lunghezza": "LF",
+        "descrizione_marca_acciaio": "40CRMOS4",
+        "finitura": "GRE",
+        "forma": "TONDO",
+        "descrizione_macrociclo": "LABAK-TONDO-GRE-BON-67 MM--",
+        "marca_cliente": "42CRMOS4 1.7227",
+        "codice_materiale": "3003695",
+        "modello_pp_richiesto": "CC270",
+        "nfa": "1516",
+        "stato_fisico": "BON",
+        "versione_tecnica": "2797",
+        "tolleranza_massima_lunghezza": 100.0,
+        "tolleranza_minima_lunghezza": 0.0,
+        "difetto_superficiale_massimo": 0.6566509946553815,
+        "sezione_grezza_pp": 64.88813575164401,
+        "indice_criticita": 99.9181554498534,
+        "lunghezza_richiesta": 6208.498363595746,
+        "dimensione_1_mm": 66.82785120788012,
+        "dimensione_2_mm": 0.0,
+        "lunghezza_massima": 0.0,
+        "lunghezza_minima": 0.0
+      },
+      "orders": [
+        {
+          "ordinal": 1,
+          "final_mass_kg": 15000.0,
+          "features": {
+            "codice_cliente": "100213",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "BONIFICATO",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 64.88813575164401,
+            "dimensione_1_mm": 66.82785120788012,
+            "lunghezza_richiesta": 6208.498363595746,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 100.0,
+            "marca_acciaio": "40CRMOS4",
+            "tolleranza_massima_dimensione_1_mm": 0.5,
+            "tolleranza_minima_dimensione_1_mm": -0.5,
+            "quantita_richiesta_kg": 15000.0
+          },
+          "context": {
+            "codice_cliente": "100213",
+            "prodotto": "LAMINATO BARRE",
+            "finitura": "GREZZO",
+            "stato_fisico": "BONIFICATO",
+            "forma": "TONDO",
+            "sezione_grezza_pp": 64.88813575164401,
+            "dimensione_1_mm": 66.82785120788012,
+            "lunghezza_richiesta": 6208.498363595746,
+            "tolleranza_minima_lunghezza": 0.0,
+            "tolleranza_massima_lunghezza": 100.0,
+            "marca_acciaio": "40CRMOS4",
+            "tolleranza_massima_dimensione_1_mm": 0.5,
+            "tolleranza_minima_dimensione_1_mm": -0.5,
+            "quantita_richiesta_kg": 15000.0,
+            "classe_carbonio": "ALTO_CARBONIO",
+            "descrizione_tipo_lunghezza": "LF",
+            "modello_pp_richiesto": "CC270",
+            "nfa": "1516",
+            "versione_tecnica": "2797",
+            "codice_materiale": "3003695",
+            "famiglia_macrociclo": "LABAK",
+            "criticita_stato": "specificata",
+            "indice_criticita": 99.9181554498534,
+            "difetto_stato": "specificato",
+            "difetto_superficiale_massimo": 0.6566509946553815,
+            "assigned_mass_kg": 15000.0,
+            "requested_family_mass_kg": 15000.0,
+            "assigned_family_share": 1.0,
+            "sibling_count": 1,
+            "sibling_ordinal": 1
+          },
+          "prediction": {
+            "flow": {
+              "structure": {
+                "nodes": [
+                  {
+                    "phase": "TRENOLUNA",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "BANCHI",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "ANTIMIX",
+                    "role": "material",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "PRONTO",
+                    "role": "ready_final",
+                    "aggregated": false
+                  },
+                  {
+                    "phase": "HPT",
+                    "role": "marker",
+                    "aggregated": false
+                  }
+                ],
+                "edges": [
+                  [
+                    0,
+                    1
+                  ],
+                  [
+                    1,
+                    2
+                  ],
+                  [
+                    2,
+                    3
+                  ]
+                ]
+              },
+              "accounting": {
+                "entering_kg": [
+                  15626.232335591112,
+                  15000.0,
+                  15000.0,
+                  15000.0,
+                  0.0
+                ],
+                "scrap_kg": [
+                  626.2323355911124,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "edges_kg": [
+                  [
+                    0,
+                    1,
+                    15000.0
+                  ],
+                  [
+                    1,
+                    2,
+                    15000.0
+                  ],
+                  [
+                    2,
+                    3,
+                    15000.0
+                  ]
+                ],
+                "final_kg": 15000.0
+              },
+              "initial_mass_kg": 15626.232335591112,
+              "requested_final_mass_kg": 15000.0,
+              "complete": true,
+              "error": null
+            },
+            "duration_hours": [
+              2.436910420693674,
+              3.286746813270944,
+              0.6199743380007199,
+              0.0,
+              0.0
+            ],
+            "duration_status": [
+              "sampled_positive_total_duration",
+              "sampled_positive_total_duration",
+              "sampled_positive_total_duration",
+              "assumed_zero_capacity",
+              "assumed_zero_capacity"
+            ]
+          }
+        }
+      ],
+      "readiness": {
+        "margin_days_continuous": 21.855144407338585,
+        "margin_days": 22,
+        "target": "confirmed_readiness",
+        "already_due_at_start": false,
+        "deadline_date": "2026-11-24"
+      }
+    }
+  }
+]
