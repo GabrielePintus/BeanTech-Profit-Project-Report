@@ -83,6 +83,9 @@ def main():
         assert all(abs(a[0]-b[0]) < .01 or abs(a[1]-b[1]) < .01 for a, b in zip(points, points[1:])), (tail, head)
         routes[tail, head] = tip, points
 
+    # The short incoming arrow marks the start without adding a visible phase.
+    connect('production_start', 'treno', 'e', [])
+
     # BANCHI and HPT share the descending initial trunk from TRENOLUNA.
     # The BANCHI branch leaves that trunk and enters its west border.
     connect('treno', 'conf', 'e', [])
@@ -171,7 +174,7 @@ def main():
         routed = Path(tmp)/'routed.dot'
         routed.write_text(source)
         subprocess.run(['neato', '-n2', '-Tpdf', str(routed), '-o', str(OUTPUT)], check=True)
-    print(f'Rendered {len(nodes)} phase nodes and {len(routes)} rounded orthogonal connections.')
+    print(f'Rendered {len(nodes)-1} phase nodes, {len(routes)-1} internal connections and the incoming start arrow.')
 
 
 if __name__ == '__main__':

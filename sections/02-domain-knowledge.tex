@@ -173,12 +173,14 @@ Due ODP relativi a laminato barre grezzo allo stato naturale presentano percorsi
   every node/.style={font=\small,inner sep=3pt},
   route/.style={-{Stealth[length=1.5mm]},draw=ReportExample!55!black,line width=0.6pt}
 ]
-\node[anchor=east] at (-0.3,0) {\texttt{000010859984}};
+\node[anchor=east] at (-1.2,0) {\texttt{000010859984}};
 \node (firstin) at (1.1,0) {\texttt{TRENOLUNA}};
+\productionstart[route]{firstin}
 \node (firstout) at (8.2,0) {\texttt{PRONTO}};
 \draw[route] (firstin) -- (firstout);
-\node[anchor=east] at (-0.3,-0.8) {\texttt{000010858580}};
+\node[anchor=east] at (-1.2,-0.8) {\texttt{000010858580}};
 \node (secondin) at (1.1,-0.8) {\texttt{TRENOLUNA}};
+\productionstart[route]{secondin}
 \node (banchi) at (3.6,-0.8) {\texttt{BANCHI}};
 \node (antimix) at (5.9,-0.8) {\texttt{ANTIMIX}};
 \node (secondout) at (8.2,-0.8) {\texttt{PRONTO}};

@@ -1,6 +1,6 @@
 // Grafo di sintesi dei percorsi documentati in ABS_Flussi_Luna.pptx.
 // Le condizioni dei singoli flussi restano descritte nel testo della sezione 2.3.
-// Ogni arco collega due macrofasi visibili. Posizioni fisse per seguire la struttura del PPTX.
+// Gli archi collegano macrofasi visibili, salvo la freccia iniziale di ingresso. Posizioni fisse per seguire la struttura del PPTX.
 // Rendering: neato -n2; il riquadro Lavorazioni non aggiunge nodi o transizioni.
 // Trattamenti accorpati per macrofase; condizioni e ricette restano descritte nel testo.
 digraph production {
@@ -10,6 +10,8 @@ digraph production {
        fontname="Latin Modern Mono", fontsize=11, penwidth=0.7,
        margin="0.10,0.06", height=0.34];
  edge [color="#245CC5", penwidth=0.8, arrowsize=0.60, arrowhead=normal];
+ // Invisible anchor draws the incoming arrow; it is not a production phase.
+ production_start [pos="-70.0,448.0!",pin=true,shape=point,width=0,height=0,label="",style=invis];
  treno [pos="0.0,448.0!",pin=true,label="TRENOLUNA"];
  conf [pos="720.0,448.0!",pin=true,label="CONF"];
  ready [pos="832.0,185.6!",pin=true,label="PRONTO*", color="#79BDB6",fillcolor="#F0F8F6"];
@@ -33,6 +35,7 @@ digraph production {
  // Il ramo Q+T conserva RADDR e CIRCO obbligatori.
  // Ordinamento visivo: avvio e confezionamento in alto, recupero sotto.
  // Processo iniziale. CONF: naturale senza recupero o bordioni.
+ production_start -> treno;
  treno -> conf;
  treno -> banchi ;
  treno -> hptfirst ; // ONA, ONA+R, ONA+Q+T; controllo in linea conforme.

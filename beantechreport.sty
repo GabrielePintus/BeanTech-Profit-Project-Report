@@ -63,6 +63,13 @@
 \definecolor{ReportExample}{HTML}{E6AD16}
 \definecolor{ReportMuted}{HTML}{56677A}
 \definecolor{ReportRule}{HTML}{D9E5F4}
+
+% An incoming arrow outside the graph identifies the first production phase.
+% Optional TikZ options keep the arrow consistent with each diagram's links.
+\newcommand{\productionstart}[2][]{%
+  \draw[-{Stealth[length=1.8mm]},draw=ReportBlue,line width=0.8pt,#1]
+    ([xshift=-8mm]#2.west) -- (#2.west);
+}
 \hypersetup{colorlinks=true,linkcolor=ReportBlue,citecolor=ReportBlue,urlcolor=ReportBlue,
   pdfdisplaydoctitle=true,bookmarksnumbered=true}
 \pdfstringdefDisableCommands{\def\qquad{ and }}
