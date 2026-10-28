@@ -3,8 +3,9 @@
 % Individual gate counts come from frozen individual eligibility, not final flags.
 % Family gate: 5190 -> 4860 ODP; 19726 -> 18294 rows.
 % Raw registry has 8059 rows but 8054 distinct ODP; dedup removes 5 registry rows.
-% Contractions reduce row count but do not reject orders. Statistical stages
-% retain all IDs and observation rows. No inferred completion nodes count as R.
+% Contractions reduce row count but do not reject orders.
+% Stop after position selection: statistical treatments belong to Chapter 4.
+% No inferred completion nodes count as R.
 \resizebox{0.97\linewidth}{!}{%
 \begin{tikzpicture}[
   pipelinebox/.style={draw=ReportBlue!40,fill=ReportBlue!3,rounded corners=1.3mm,
@@ -74,25 +75,7 @@
   $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
 \node[note,text=ReportExample!40!black] at (5.0,-14.28) {Rimossi: $P=266$\\$D=330$, $R=\num{1432}$};
 \draw[draw=ReportRule,line width=0.5pt] (s14.east) -- (4.85,-14.28);
-\node[pipelinebox] (s15) at (0,-15.30) {\textbf{Trattamento statistico delle masse}\\[1pt]
+\node[pipelinebox,fill=ReportBlue!10,draw=ReportBlue!65] (s15) at (0,-15.30) {\textbf{Dati selezionati per il trattamento statistico}\\[1pt]
   $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
-\node[note] at (5.0,-15.30) {215 occorrenze riconciliate\\193 modificate. Rimossi: 0};
-\draw[draw=ReportRule,line width=0.5pt] (s15.east) -- (4.85,-15.30);
-\node[pipelinebox] (s16) at (0,-16.32) {\textbf{Durate statistiche e archivio delle componenti}\\[1pt]
-  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
-\node[note] at (5.0,-16.32) {13 durate corrette; 3 colonne\\archiviate. Rimossi: 0 righe};
-\draw[draw=ReportRule,line width=0.5pt] (s16.east) -- (4.85,-16.32);
-\node[pipelinebox] (s17) at (0,-17.34) {\textbf{Imputazione delle durate pari a zero}\\[1pt]
-  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
-\node[note] at (5.0,-17.34) {\num{1977} durate imputate\\Rimossi: 0};
-\draw[draw=ReportRule,line width=0.5pt] (s17.east) -- (4.85,-17.34);
-\node[pipelinebox] (s18) at (0,-18.36) {\textbf{Imputazione al valore atteso di durate positive}\\[1pt]
-  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
-\node[note] at (5.0,-18.36) {1 durata corretta\\Rimossi: 0};
-\draw[draw=ReportRule,line width=0.5pt] (s18.east) -- (4.85,-18.36);
-\node[pipelinebox,fill=ReportBlue!10,draw=ReportBlue!65] (s19) at (0,-19.38) {\textbf{Controlli finali e scrittura dei Parquet}\\[1pt]
-  $P=\num{4455}\qquad D=\num{4860}\qquad R=\num{18294}$};
-\node[note] at (5.0,-19.38) {Rimossi: 0\\Audit conservati a parte};
-\draw[draw=ReportRule,line width=0.5pt] (s19.east) -- (4.85,-19.38);
 \end{tikzpicture}%
 }

@@ -367,3 +367,12 @@ La \cref{fig:zero-duration-distributions} confronta le durate imputate con quell
 Nell'ODP \texttt{000010874347}, un'occorrenza di \texttt{ANTIMIX} ha durata nulla e inizio registrato alle 15:49. Il materiale risulta pronto alle 16:02, lasciando 13 minuti disponibili. La distribuzione prevista assegna a questa finestra una probabilità di circa \num{0.55}\%. L'estrazione condizionata produce \num{12.21} minuti e porta la fine calcolata alle 16:01:12. La durata rientra nel tempo disponibile, ma viene segnalata come fortemente condizionata dal vincolo temporale.
 \end{examplebox}
 \endgroup
+
+La \cref{fig:statistical-treatment-pipeline} prosegue lo schema della \cref{fig:data-treatment-pipeline} e riassume i trattamenti statistici nell'ordine di applicazione. Le correzioni delle durate positive avvengono in due passaggi, prima e dopo l'imputazione delle durate nulle. Non vengono eliminate ulteriori posizioni ODV, ODP o registrazioni.
+
+\begin{figure}[htbp]
+\centering
+\reportfigurecontent{\input{figures/statistical-treatment-pipeline}}
+\caption{Dai dati selezionati ai Parquet finali. $P$ indica le posizioni ODV, $D$ gli ODP distinti e $R$ le righe dei consuntivi. I conteggi complessivi rimangono invariati. Le note riportano i valori trattati nei singoli passaggi, che possono riguardare le stesse registrazioni.}
+\label{fig:statistical-treatment-pipeline}
+\end{figure}

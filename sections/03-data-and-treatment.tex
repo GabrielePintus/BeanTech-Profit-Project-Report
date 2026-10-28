@@ -817,11 +817,11 @@ Parquet finali & \num{4455} & \num{4860} & \num{18294} \\
 
 Dopo la selezione per posizione ODV vengono applicati i trattamenti statistici delle masse e delle durate, oggetto del \cref{sec:statistical-cleaning-and-imputation}. Questi passaggi modificano i valori e, dove previsto, la ricostruzione dei flussi, senza rimuovere altre posizioni ODV, ODP o righe dei consuntivi. La selezione finale dei campi conserva la durata totale ed esclude dalla tabella destinata ai modelli le tre durate di setup, lavorazione e fermo, mantenendole nei registri di controllo. I conteggi finali rimangono quindi quelli delle posizioni selezionate e dei relativi ODP.
 
-La \cref{fig:data-treatment-pipeline} riporta tutti i trattamenti dal CSV al Parquet e i relativi conteggi. I registri di controllo conservano anche le registrazioni escluse e i valori originali. La scrittura è preceduta dalla verifica degli identificativi tra le tabelle e dei riferimenti nei collegamenti.
+La \cref{fig:data-treatment-pipeline} riassume i trattamenti di questo capitolo e i relativi conteggi. I registri di controllo conservano anche le registrazioni escluse e i valori originali. La scrittura è preceduta dalla verifica degli identificativi tra le tabelle e dei riferimenti nei collegamenti.
 
 \begin{figure}[p]
 \centering
 \input{figures/data-treatment-pipeline}
-\caption{Dal CSV al Parquet. $P$ indica le posizioni ODV, $D$ gli ODP distinti e $R$ le righe dei consuntivi. Ogni riquadro riporta i dati che proseguono dopo il trattamento. Le correzioni conteggiate in passaggi diversi possono interessare le stesse occorrenze e non vanno sommate come registrazioni distinte.}
+\caption{Dai dati originali ai dati selezionati per il trattamento statistico. $P$ indica le posizioni ODV, $D$ gli ODP distinti e $R$ le righe dei consuntivi. Ogni riquadro riporta i dati che proseguono dopo il trattamento. Le correzioni conteggiate in passaggi diversi possono interessare le stesse occorrenze e non vanno sommate come registrazioni distinte.}
 \label{fig:data-treatment-pipeline}
 \end{figure}
