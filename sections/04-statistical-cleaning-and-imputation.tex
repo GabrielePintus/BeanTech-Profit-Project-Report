@@ -60,7 +60,7 @@ p_j=g(z_j)=\frac{1}{1+\exp(-z_j)},
 \end{equation}
 
 Il criterio MAD usa la mediana $m$ dei valori $z_j$ e la deviazione assoluta mediana, $\operatorname{MAD}=\operatorname{mediana}_j(\lvert z_j-m\rvert)$. Le soglie delimitano l'intervallo $B(m,3.5\cdot1.4826\cdot\operatorname{MAD})$, dove $B(m,r)=[m-r,m+r]$.
-Il fattore \num{1.4826} rende la MAD confrontabile con la deviazione standard usando la distribuzione normale come riferimento.
+Il fattore \num{1.4826} rende la MAD confrontabile con la deviazione standard usando la distribuzione normale come riferimento \parencite{nist2016mad}.
 
 Il calcolo delle soglie richiede almeno 20 rapporti e una MAD positiva, sia nei dati sia nelle singole repliche bootstrap. Con riferimenti provenienti da almeno due ODV, si eseguono \num{2000} ricampionamenti, mantenendo insieme le osservazioni dello stesso ODV. Per ogni soglia si calcola un intervallo di confidenza al 95\% (IC95) dalle repliche valide. Il criterio MAD + IC95 segnala un valore se è sotto la soglia inferiore e l'estremo inferiore del suo IC95, oppure sopra la soglia superiore e l'estremo superiore del suo IC95.
 
@@ -272,7 +272,7 @@ Le correzioni della \cref{sec:temporal-duration-corrections} usano modelli disti
 
 I riferimenti hanno quantità e durate positive e appartengono a ODP senza occorrenze materiali oltre la chiusura del pronto. Esclusi i 60 ODV riservati ai casi da correggere durante la costruzione dei modelli, i riferimenti sono divisi per ODV in \num{1326} ODV di addestramento, 443 di calibrazione e 443 di verifica. Nell'addestramento si eliminano i logaritmi delle durate sotto il primo quartile o sopra il terzo di oltre \num{1.5} volte la distanza tra i due quartili.
 
-Si confrontano Ridge, Random Forest e CatBoost mediante tre suddivisioni interne per ODV. Per ogni macrofase si sceglie il modello con il minore errore assoluto medio sulla scala logaritmica. La \cref{tab:duration-correction-validation} riporta i risultati dei modelli scelti su ODV di verifica separati. Se i riferimenti non bastano a costruire e calibrare un modello, non viene fornita una previsione.
+Si confrontano Ridge, Random Forest e CatBoost \parencite{prokhorenkova2018catboost} mediante tre suddivisioni interne per ODV. Per ogni macrofase si sceglie il modello con il minore errore assoluto medio sulla scala logaritmica. La \cref{tab:duration-correction-validation} riporta i risultati dei modelli scelti su ODV di verifica separati. Se i riferimenti non bastano a costruire e calibrare un modello, non viene fornita una previsione.
 
 \input{tables/duration-correction-validation}
 
