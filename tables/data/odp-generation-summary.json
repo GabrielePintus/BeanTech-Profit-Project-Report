@@ -184,7 +184,7 @@
   ],
   "notes": [
     "Count predictions are argmax of class-balanced, uncalibrated scores.",
-    "Split median is used for the tabulated MAE; deterministic cascade uses the mean.",
+    "The tabulated MAE and deterministic cascade both use the mean split.",
     "Only validation is evaluated; test remains unused.",
     "Example samples the split then lookups with seed 42, using the observed sales context."
   ]

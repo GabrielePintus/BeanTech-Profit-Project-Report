@@ -5,18 +5,18 @@
 % Describe the selected approach, not the sequence of development experiments.
 Per valutare scenari di pianificazione strategica occorre modellare le produzioni associate a diverse richieste commerciali. I dati preparati nei capitoli precedenti costituiscono il riferimento per costruire i modelli che generano queste produzioni. Il punto di partenza è una posizione ODV, con una quantità richiesta e le caratteristiche note del prodotto. A partire da queste informazioni si completano le caratteristiche non specificate e si generano gli ODP, i relativi cicli, le quantità lavorate, gli scarti, le durate e le scadenze. La generazione permette di ottenere più produzioni possibili per la stessa richiesta, rappresentando la variabilità presente nei dati.
 
-I modelli sono collegati tra loro: il risultato di ciascun passaggio fornisce informazioni ai successivi. Si valutano quindi i singoli componenti e la procedura completa, confrontando i risultati con i dati di riferimento e verificando il rispetto dei vincoli. Le alternative considerate e i risultati sperimentali motivano le scelte adottate. Gli scenari così ottenuti vengono usati per pianificare quando eseguire le lavorazioni, tenendo conto delle risorse disponibili e dei vincoli produttivi.
+Il capitolo descrive i modelli e ne confronta i risultati con i dati di riferimento. Gli scenari così ottenuti vengono usati per pianificare quando eseguire le lavorazioni, tenendo conto delle risorse disponibili e dei vincoli produttivi.
 
 \section{Impostazione generale}
 \label{sec:modelling-overview}
 
 % Sources: models/production_cascade.py (_generate, sample, predict),
 % configs/production_cascade_selected.json; webapp/cascade_simulation.py.
-Il punto di partenza della generazione è la posizione ODV. La quantità richiesta deve essere fornita, mentre le altre caratteristiche possono essere specificate in tutto o in parte. Le caratteristiche non specificate vengono generate in base a quelle note, usando le relazioni apprese dai dati. La posizione così definita determina il numero di ODP e la ripartizione della quantità richiesta tra essi. A ciascun ODP vengono poi associate le caratteristiche necessarie per generarne il ciclo.
+Per ogni posizione ODV, la quantità richiesta deve essere fornita, mentre le altre caratteristiche possono essere specificate in tutto o in parte. Le caratteristiche non specificate vengono generate in base a quelle note, usando le relazioni apprese dai dati. La posizione così definita determina il numero di ODP e la ripartizione della quantità richiesta tra essi. A ciascun ODP vengono poi associate le caratteristiche necessarie per generarne il ciclo.
 
 La quantità assegnata a un ODP rappresenta il materiale da ottenere a fine ciclo. Quando una posizione ODV viene suddivisa tra più ODP, la somma delle loro quantità finali deve coincidere con la quantità richiesta dalla posizione ODV. La massa iniziale viene determinata insieme agli scarti e ai flussi del ciclo, rispettando i bilanci di materiale. A ciascuna occorrenza di macrofase viene inoltre associata una durata. La scadenza è definita per la posizione ODV e condivisa dai suoi ODP: si ottiene aggiungendo alla data di riferimento della pianificazione un margine temporale generato da un modello dedicato.
 
-La \cref{fig:production-generation-overview} riassume questi passaggi. Il risultato comprende gli ODP, i grafi dei cicli con quantità e durate, e la scadenza comune. Una stessa richiesta commerciale può essere soddisfatta attraverso produzioni diverse. I modelli rappresentano questa variabilità generando più scenari, tutti con la quantità richiesta e le caratteristiche specificate dall'utente, ma con possibili differenze nei percorsi produttivi, negli scarti e nelle durate.
+La \cref{fig:production-generation-overview} riassume questi passaggi. Una stessa richiesta commerciale può essere soddisfatta attraverso produzioni diverse. I modelli rappresentano questa variabilità generando più scenari, tutti con la quantità richiesta e le caratteristiche specificate dall'utente, ma con possibili differenze nei percorsi produttivi, negli scarti e nelle durate.
 
 \begin{figure}[H]
 \centering
@@ -76,7 +76,7 @@ Il punteggio misura quanto il modello considera probabili i valori nascosti: pro
 
 \input{tables/feature-generation-comparison}
 
-La \cref{tab:feature-generation-comparison} mostra che il VAEAC selezionato ottiene un punteggio di \num{0.682}, contro \num{2.780} del riferimento indipendente e \num{0.767} della variante con quantità sempre nota in addestramento. Il miglioramento rispetto a quest'ultima è \num{0.086} nat per valore nascosto, con intervallo al 95\% $[\num{0.050},\num{0.127}]$, ottenuto con \num{1000} ricampionamenti per ODV. L'accuratezza sulle categorie nascoste è \num{88.93}\%, contro \num{49.71}\% del riferimento indipendente. Le categorie mai viste nell'addestramento non entrano in questa misura.
+Il VAEAC selezionato ottiene il punteggio più basso e l'accuratezza più alta tra i modelli confrontati (\cref{tab:feature-generation-comparison}). Rispetto alla variante con quantità sempre nota in addestramento, il punteggio migliora di \num{0.086} nat per valore nascosto, con intervallo al 95\% $[\num{0.050},\num{0.127}]$, ottenuto con \num{1000} ricampionamenti per ODV. L'accuratezza riguarda le categorie nascoste presenti nell'addestramento.
 
 La \cref{fig:feature-generation-gains} mostra il vantaggio rispetto al riferimento indipendente per ciascuna variabile. Il guadagno è maggiore per diversi codici e riferimenti tecnici, mentre è quasi nullo per finitura e modello PP richiesto. Il risultato dipende dalle informazioni fornite: la prova lascia nota circa metà delle caratteristiche e non misura direttamente la qualità della generazione quando si conosce soltanto la quantità.
 
@@ -126,7 +126,7 @@ R\mid Q &\sim \operatorname{Beta}\bigl(\mu\cdot\phi(Q),\,(1-\mu)\cdot\phi(Q)\big
 \label{eq:odp-quantity-allocation}
 q_1 &= R\cdot Q, \qquad q_2=(1-R)\cdot Q.
 \end{align}
-La media $\mu$ è costante, mentre $\phi(Q)$ controlla quanto le quote si concentrano intorno alla media: valori maggiori producono ripartizioni meno variabili. Il parametro $\phi(Q)$ cresce esponenzialmente con la distanza tra la quantità richiesta e 93 t, rendendo le ripartizioni più concentrate intorno alla media. I parametri vengono stimati su 186 posizioni di addestramento con due ODP. La media appresa è \num{50.55}\% e la variabilità diminuisce allontanandosi da 93 t, come mostra la \cref{fig:odp-quantity-split}. Le quantità generate sono positive e sommano a $Q$. La quota appresa dai dati viene quindi applicata alla quantità richiesta, anche quando il totale pronto osservato era diverso.
+I parametri vengono stimati su 186 posizioni di addestramento con due ODP. La media $\mu$ è costante e pari al \num{50.55}\%. Il parametro $\phi(Q)$ cresce esponenzialmente con la distanza tra la quantità richiesta e 93 t: allontanandosi da questo valore, le quote si concentrano maggiormente intorno alla media, come mostra la \cref{fig:odp-quantity-split}. Le quantità generate sono positive e sommano a $Q$. La quota appresa dai dati viene quindi applicata alla quantità richiesta, anche quando il totale pronto osservato era diverso.
 
 \begin{figure}[htbp]
 \centering
@@ -151,7 +151,9 @@ Il vantaggio del modello riguarda soprattutto la rappresentazione della variabil
 % Empirical lookups are fitted on all 4455 positions, one observation per position.
 Le caratteristiche geometriche e le tolleranze di lunghezza vengono copiate dalla posizione ODV. Forma, finitura e stato fisico vengono ricodificati nelle diciture usate per gli ODP, per esempio da \texttt{GRE} a \texttt{GREZZO}. Il prodotto deriva dal codice iniziale della descrizione del macrociclo e il codice cliente viene riportato senza gli zeri iniziali.
 
-La marca dell'acciaio e le tolleranze sulla prima dimensione vengono assegnate usando le associazioni osservate nelle \num{4455} posizioni disponibili, contando ogni posizione una sola volta. Per la marca si cerca prima la descrizione dell'acciaio, poi, se non è presente nei riferimenti, il codice \texttt{nfa} e infine la marca cliente. Per le tolleranze si cerca prima la coppia materiale--versione tecnica, poi materiale--cliente, il solo materiale e infine la combinazione di forma, finitura, stato fisico e prima dimensione. Se nessuna corrispondenza è disponibile, si usa la distribuzione complessiva. Quando una chiave corrisponde a più valori, si estrae secondo le frequenze osservate. Le tolleranze minima e massima vengono estratte insieme, preservando le coppie presenti nei dati.
+La marca dell'acciaio e le tolleranze sulla prima dimensione vengono assegnate usando le associazioni osservate nelle \num{4455} posizioni disponibili, contando ogni posizione una sola volta. Per la marca si cerca prima una corrispondenza con la descrizione dell'acciaio. Se manca, si prova con il codice \texttt{nfa} e infine con la marca cliente.
+
+Per le tolleranze si cerca prima la coppia materiale--versione tecnica, poi materiale--cliente, il solo materiale e infine la combinazione di forma, finitura, stato fisico e prima dimensione. In entrambi i casi, se nessuna corrispondenza è disponibile si usa la distribuzione complessiva. Quando sono possibili più valori, si estrae secondo le frequenze osservate. Le tolleranze minima e massima vengono estratte insieme, preservando le coppie presenti nei dati.
 
 Le caratteristiche vengono assegnate una volta per posizione e condivise dai suoi ODP. A ogni ODP si aggiunge la propria quantità richiesta, ottenuta dalla ripartizione. Queste informazioni saranno usate per generare i cicli produttivi.
 
@@ -192,7 +194,7 @@ Le informazioni in input al modello comprendono le specifiche geometriche, la qu
 % Implementations: models/mass_aware_graph.py; production_generation/mass_state.py.
 % Six heads: phase, parent, degree, scrap_mode (categorical), split_fraction,
 % scrap_fraction (Beta). Numerical parameters are fitted on training only.
-Il modello è autoregressivo: costruisce il grafo un passo alla volta e usa quanto ha già generato per scegliere come proseguire. Per ogni nuova occorrenza determina la macrofase, le occorrenze da cui riceve materiale, la modalità di scarto e il numero di collegamenti in uscita. Queste scelte usano regressioni logistiche, condizionate dalle caratteristiche dell'ODP, dalla parte di grafo già costruita e dal materiale ancora disponibile. Per scegliere la macrofase e i collegamenti, il modello combina le frequenze osservate nei dati di addestramento con le caratteristiche dell'ODP e il materiale ancora disponibile.
+Il modello è autoregressivo: costruisce il grafo un passo alla volta e usa quanto ha già generato per scegliere come proseguire. Per ogni nuova occorrenza determina la macrofase, le occorrenze da cui riceve materiale, la modalità di scarto e il numero di collegamenti in uscita. Queste scelte usano regressioni logistiche, condizionate dalle caratteristiche dell'ODP, dalla parte di grafo già costruita e dal materiale ancora disponibile. Per la macrofase e i collegamenti si usano anche le frequenze delle scelte osservate nell'addestramento.
 
 Lo scarto può essere nullo, parziale o totale. Nel caso parziale, una regressione Beta descrive lo scarto relativo alla quantità lavorata. Un'altra regressione Beta descrive la frazione trasferita lungo un collegamento quando il materiale deve essere suddiviso. Le due distribuzioni hanno medie che dipendono dalle informazioni disponibili al passo corrente. La generazione estrae le scelte dalle probabilità stimate e le frazioni dalle distribuzioni Beta. Per ottenere una previsione deterministica si scelgono invece le alternative con probabilità maggiore e si usano le medie delle frazioni.
 
@@ -231,7 +233,7 @@ La \cref{tab:graph-generation-comparison} confronta tre alternative: usare sempr
 
 \input{tables/graph-generation-comparison}
 
-Considerare il materiale disponibile migliora la riproduzione del percorso e permette di generare quantità coerenti con le scelte strutturali. L'errore medio assoluto sulla massa iniziale è di \num{455.24} kg. È uguale a quello sullo scarto complessivo, perché il modello e il riferimento hanno la stessa quantità finale. Per questo confronto, anche le masse di riferimento vengono ricondotte alla quantità finale assegnata, mantenendo i rapporti di scarto e le quote dei trasferimenti.
+Nel confronto, il modello con le masse riproduce correttamente 11 percorsi in più su 723 rispetto al modello della sola struttura. Inoltre genera insieme strutture e quantità, rispettando i bilanci di materiale. L'errore medio assoluto sulla massa iniziale è di \num{455.24} kg. È uguale a quello sullo scarto complessivo, perché il modello e il riferimento hanno la stessa quantità finale. Per questo confronto, anche le masse di riferimento vengono ricondotte alla quantità finale assegnata, mantenendo i rapporti di scarto e le quote dei trasferimenti.
 
 Per valutare la generazione variabile si estraggono dieci cicli per ciascun ODP di validazione, ottenendo \num{7230} cicli. Tutti i cicli, sia nelle previsioni deterministiche sia nelle estrazioni, risultano completi e rispettano il totale finale e i bilanci, salvo l'approssimazione numerica dei calcoli. La \cref{fig:graph-generation-phases} confronta la presenza delle macrofasi nei cicli osservati e generati. Le frequenze di \texttt{ANTIMIX} e \texttt{BANCHI} sono vicine a quelle dei dati, mentre alcune macrofasi meno frequenti, tra cui \texttt{CONF} e i trattamenti, vengono generate più spesso.
 
@@ -269,7 +271,7 @@ Dopo aver generato il ciclo e i flussi di materiale, si assegna una durata a cia
 % refit_duration_heads_v4.py; extend_duration_tratt_lfc.py --refit.
 Il modello usa la quantità in ingresso alla singola occorrenza, lo scarto relativo e il rapporto tra questa quantità e la massa iniziale dell'ODP. Si aggiungono prima dimensione, lunghezza richiesta, prodotto, forma, finitura, stato fisico, marca dell'acciaio e classe di carbonio. Quantità, dimensione e lunghezza vengono trasformate con il logaritmo. Quantità e scarti provengono dal ciclo appena generato.
 
-Si mantiene la suddivisione per ODV usata per i cicli. L'addestramento comprende \num{8204} occorrenze con durata positiva, incluse \num{1373} durate sostituite dai trattamenti statistici del \cref{sec:statistical-cleaning-and-imputation}. La validazione esclude queste sostituzioni e comprende \num{1314} occorrenze di 723 ODP, appartenenti a 316 ODV.
+Si mantiene la suddivisione per ODV usata per i cicli. L'addestramento comprende \num{8204} occorrenze con durata positiva, incluse \num{1373} durate sostituite dai trattamenti statistici del \cref{sec:statistical-cleaning-and-imputation}. Le sostituzioni si concentrano in \texttt{ANTIMIX}: \num{1325} delle sue \num{1977} occorrenze di addestramento, circa il 67\%, hanno una durata imputata. La validazione esclude le durate sostituite e comprende \num{1314} occorrenze di 723 ODP, appartenenti a 316 ODV.
 
 \subsection{Modelli per macrofase e generazione}
 \label{sec:duration-generation-models}
@@ -381,7 +383,9 @@ Le suddivisioni dei dati cambiano tra i componenti. Delle 675 posizioni, 193 app
 
 La procedura genera 821 ODP, contro i 723 osservati. La differenza dipende soprattutto dalle posizioni a cui vengono assegnati due ODP: sono 146 nella generazione e 34 nei dati. Il criterio bilanciato della \cref{sec:odp-count-generation} favorisce il riconoscimento dei casi con due ODP, ma non ne riproduce necessariamente la frequenza. Le sei posizioni con più di due ODP restano nel confronto complessivo, pur essendo fuori dai casi modellati.
 
-L'errore sulle durate riguarda la somma delle durate delle occorrenze della posizione, anche quando il ciclo generato è diverso da quello osservato. Non misura il tempo trascorso dall'inizio alla fine della produzione, che dipende anche dalle sovrapposizioni e dalla pianificazione. Il confronto comprende solo posizioni in cui tutte le occorrenze materiali hanno durate positive, modellate e non sostituite dai trattamenti statistici. L'errore sulla massa iniziale coincide con quello sullo scarto complessivo, perché la quantità finale è la stessa nel riferimento e nella generazione.
+L'errore sulle durate riguarda la somma delle durate delle occorrenze della posizione, anche quando il ciclo generato è diverso da quello osservato. Non misura il tempo trascorso dall'inizio alla fine della produzione, che dipende anche dalle sovrapposizioni e dalla pianificazione. Il confronto comprende solo posizioni in cui tutte le occorrenze materiali hanno durate positive, modellate e non sostituite dai trattamenti statistici.
+
+L'errore sulla massa iniziale è calcolato sulla somma delle masse degli ODP di ciascuna posizione, mentre nella \cref{sec:graph-generation-results} riguardava il singolo ODP. Coincide con l'errore sullo scarto complessivo, perché la quantità finale è la stessa nel riferimento e nella generazione.
 
 \subsection{Generazione dalla sola quantità e controlli di coerenza}
 \label{sec:cascade-quantity-only}
@@ -390,7 +394,10 @@ Per ogni posizione si mantiene la quantità richiesta e si genera uno scenario, 
 
 La generazione termina correttamente per tutte le richieste, in entrambe le prove. Ogni ODP generato ha un ciclo completo e una durata per ciascuna occorrenza. La somma delle quantità finali coincide con la richiesta commerciale e i bilanci di materiale sono rispettati, con scostamenti numerici inferiori a \num{e-9} kg. Le durate delle occorrenze materiali sono positive e ogni posizione riceve un unico margine positivo, condiviso dai suoi ODP.
 
-La \cref{fig:cascade-generation-phases} confronta le frequenze delle macrofasi nei dati e negli scenari generati dalla sola quantità. \texttt{ANTIMIX}, \texttt{TAG}, \texttt{RADDR} e i trattamenti compaiono più spesso, mentre \texttt{HPT} compare meno spesso. Lo scarto complessivo generato è di \num{2500.42} t, contro \num{1053.19} t nel riferimento ricondotto alle stesse quantità finali. I vincoli garantiscono quindi bilanci coerenti, ma non assicurano da soli che le distribuzioni dei cicli e degli scarti coincidano con quelle osservate.
+La \cref{fig:cascade-generation-phases} confronta le frequenze delle macrofasi nei dati e negli scenari generati dalla sola quantità. \texttt{ANTIMIX}, \texttt{TAG}, \texttt{RADDR} e i trattamenti compaiono più spesso, mentre \texttt{HPT} compare meno spesso. Lo scarto complessivo generato è di \num{2500.42} t, contro \num{1053.19} t nel riferimento ricondotto alle stesse quantità finali.
+
+% Source: cascade-generation-positions.csv, quantity_only, ODV 0001119897, position 000010.
+Questo totale risente di alcuni casi estremi. Una sola richiesta di 40 t genera circa 839 t iniziali e 799 t di scarto, quasi il 32\% dello scarto dell'intera prova. I bilanci sono rispettati, ma possono quindi comparire masse molto elevate rispetto al prodotto richiesto. Poiché si usa una sola estrazione per posizione, occorrono più ripetizioni per valutare quanto spesso si presentino questi casi e quanto incidano sui risultati complessivi.
 
 \begin{figure}[H]
 \centering
