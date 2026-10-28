@@ -1,0 +1,519 @@
+{
+  "kind": "illustrative_synthetic_inputs",
+  "objective": "makespan",
+  "problem": {
+    "jobs": [
+      {
+        "job_id": "A1",
+        "operations": [
+          {
+            "index": 0,
+            "macro_phase": "TRENOLUNA",
+            "duration_hours": 2.0,
+            "changeover_key": null
+          },
+          {
+            "index": 1,
+            "macro_phase": "BANCHI",
+            "duration_hours": 3.0,
+            "changeover_key": null
+          },
+          {
+            "index": 2,
+            "macro_phase": "ANTIMIX",
+            "duration_hours": 1.0,
+            "changeover_key": null
+          },
+          {
+            "index": 3,
+            "macro_phase": "PRONTO",
+            "duration_hours": 0.0,
+            "changeover_key": null
+          }
+        ],
+        "precedences": null
+      },
+      {
+        "job_id": "A2",
+        "operations": [
+          {
+            "index": 0,
+            "macro_phase": "TRENOLUNA",
+            "duration_hours": 1.0,
+            "changeover_key": null
+          },
+          {
+            "index": 1,
+            "macro_phase": "RADDR",
+            "duration_hours": 2.0,
+            "changeover_key": null
+          },
+          {
+            "index": 2,
+            "macro_phase": "ANTIMIX",
+            "duration_hours": 1.0,
+            "changeover_key": null
+          },
+          {
+            "index": 3,
+            "macro_phase": "PRONTO",
+            "duration_hours": 0.0,
+            "changeover_key": null
+          }
+        ],
+        "precedences": null
+      },
+      {
+        "job_id": "B1",
+        "operations": [
+          {
+            "index": 0,
+            "macro_phase": "TRENOLUNA",
+            "duration_hours": 2.0,
+            "changeover_key": null
+          },
+          {
+            "index": 1,
+            "macro_phase": "ANTIMIX",
+            "duration_hours": 1.0,
+            "changeover_key": null
+          },
+          {
+            "index": 2,
+            "macro_phase": "PRONTO",
+            "duration_hours": 0.0,
+            "changeover_key": null
+          }
+        ],
+        "precedences": null
+      }
+    ],
+    "resources": [
+      {
+        "macro_phase": "TRENOLUNA",
+        "machine_count": 1
+      },
+      {
+        "macro_phase": "BANCHI",
+        "machine_count": 1
+      },
+      {
+        "macro_phase": "RADDR",
+        "machine_count": 1
+      },
+      {
+        "macro_phase": "ANTIMIX",
+        "machine_count": 1
+      },
+      {
+        "macro_phase": "PRONTO",
+        "machine_count": 1
+      }
+    ],
+    "changeovers": [],
+    "calendars": [],
+    "start_weekday": 0,
+    "start_hour": 6.0,
+    "objective": "makespan",
+    "deadlines": [
+      {
+        "position_id": "A",
+        "job_ids": [
+          "A1",
+          "A2"
+        ],
+        "due_hours": 6,
+        "priority": 2,
+        "deadline_date": null
+      },
+      {
+        "position_id": "B",
+        "job_ids": [
+          "B1"
+        ],
+        "due_hours": 8,
+        "priority": 1,
+        "deadline_date": null
+      }
+    ],
+    "plan_start_date": null
+  },
+  "results": {
+    "fifo": {
+      "status": "feasible",
+      "schedule": {
+        "operations": [
+          {
+            "job_id": "A1",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 0.0,
+            "end_hours": 2.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 1,
+            "macro_phase": "BANCHI",
+            "machine_index": 0,
+            "start_hours": 2.0,
+            "end_hours": 5.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 2.0,
+            "end_hours": 3.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 1,
+            "macro_phase": "RADDR",
+            "machine_index": 0,
+            "start_hours": 3.0,
+            "end_hours": 5.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 3.0,
+            "end_hours": 5.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 2,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 5.0,
+            "end_hours": 6.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 2,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 6.0,
+            "end_hours": 7.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 3,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 6.0,
+            "end_hours": 6.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 1,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 7.0,
+            "end_hours": 8.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 3,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 7.0,
+            "end_hours": 7.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 2,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 8.0,
+            "end_hours": 8.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          }
+        ],
+        "makespan_hours": 8.0
+      },
+      "message": "Feasible heuristic schedule (fifo); optimality is not guaranteed.",
+      "optimization": null,
+      "objective": "makespan",
+      "deadline_summary": {
+        "positions": 2,
+        "on_time": 1,
+        "weighted_tardiness_hours": 2.0,
+        "mean_tardiness_hours": 0.5,
+        "maximum_tardiness_hours": 1.0,
+        "families": [
+          {
+            "position_id": "A",
+            "job_ids": [
+              "A1",
+              "A2"
+            ],
+            "deadline_date": null,
+            "due_hours": 6,
+            "priority": 2,
+            "completion_hours": 7.0,
+            "tardiness_hours": 1.0,
+            "weighted_tardiness_hours": 2.0,
+            "on_time": false
+          },
+          {
+            "position_id": "B",
+            "job_ids": [
+              "B1"
+            ],
+            "deadline_date": null,
+            "due_hours": 8,
+            "priority": 1,
+            "completion_hours": 8.0,
+            "tardiness_hours": 0.0,
+            "weighted_tardiness_hours": 0.0,
+            "on_time": true
+          }
+        ]
+      }
+    },
+    "cp_sat": {
+      "status": "optimal",
+      "schedule": {
+        "operations": [
+          {
+            "job_id": "A2",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 0.0,
+            "end_hours": 1.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 1,
+            "macro_phase": "RADDR",
+            "machine_index": 0,
+            "start_hours": 1.0,
+            "end_hours": 3.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 1.0,
+            "end_hours": 3.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 2,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 3.0,
+            "end_hours": 4.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 1,
+            "macro_phase": "BANCHI",
+            "machine_index": 0,
+            "start_hours": 3.0,
+            "end_hours": 6.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 0,
+            "macro_phase": "TRENOLUNA",
+            "machine_index": 0,
+            "start_hours": 3.0,
+            "end_hours": 5.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A2",
+            "operation_index": 3,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 4.0,
+            "end_hours": 4.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 1,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 5.0,
+            "end_hours": 6.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 2,
+            "macro_phase": "ANTIMIX",
+            "machine_index": 0,
+            "start_hours": 6.0,
+            "end_hours": 7.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "B1",
+            "operation_index": 2,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 6.0,
+            "end_hours": 6.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          },
+          {
+            "job_id": "A1",
+            "operation_index": 3,
+            "macro_phase": "PRONTO",
+            "machine_index": 0,
+            "start_hours": 7.0,
+            "end_hours": 7.0,
+            "changeover_hours": 0.0,
+            "occupied_start_hours": null,
+            "work_segments": [],
+            "changeover_segments": []
+          }
+        ],
+        "makespan_hours": 7.0
+      },
+      "message": "Initial heuristic plan retained: CP-SAT did not return a better original-duration plan.",
+      "optimization": {
+        "solver_status": "OPTIMAL",
+        "time_limit_seconds": 10.0,
+        "time_resolution_seconds": 1,
+        "workers": 1,
+        "solver_seconds": 0.001093013,
+        "total_seconds": 0.0034682379991863854,
+        "initial_makespan_hours": 7.0,
+        "lower_bound_hours": 7.0,
+        "relative_gap": 0.0,
+        "maximum_rounding_seconds": 0.0,
+        "used_heuristic_fallback": true,
+        "grid_optimal": true,
+        "search_scope": "full",
+        "candidate_arcs": null,
+        "full_candidate_arcs": null,
+        "initial_objective_value": null,
+        "objective_lower_bound": null
+      },
+      "objective": "makespan",
+      "deadline_summary": {
+        "positions": 2,
+        "on_time": 1,
+        "weighted_tardiness_hours": 2.0,
+        "mean_tardiness_hours": 0.5,
+        "maximum_tardiness_hours": 1.0,
+        "families": [
+          {
+            "position_id": "A",
+            "job_ids": [
+              "A1",
+              "A2"
+            ],
+            "deadline_date": null,
+            "due_hours": 6,
+            "priority": 2,
+            "completion_hours": 7.0,
+            "tardiness_hours": 1.0,
+            "weighted_tardiness_hours": 2.0,
+            "on_time": false
+          },
+          {
+            "position_id": "B",
+            "job_ids": [
+              "B1"
+            ],
+            "deadline_date": null,
+            "due_hours": 8,
+            "priority": 1,
+            "completion_hours": 6.0,
+            "tardiness_hours": 0.0,
+            "weighted_tardiness_hours": 0.0,
+            "on_time": true
+          }
+        ]
+      }
+    }
+  }
+}
